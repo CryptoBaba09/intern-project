@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #0B0C0B;
+  --color-fg: #EDEEF0;
+  --color-accent: #00C805;
+  --color-ember: #D9A441;
+  --color-line: #1B1D1B;
+}
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --color-bg: var(--color-bg);
+  --color-fg: var(--color-fg);
+  --color-accent: var(--color-accent);
+  --color-ember: var(--color-ember);
+  --color-line: var(--color-line);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-display), sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Reserved for the burn ticker only — the one place glow is earned */
+.ember-glow {
+  text-shadow: 0 0 24px rgba(217, 164, 65, 0.3);
+}
+
+@keyframes ember-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.ember-pulse {
+  animation: ember-pulse 2.4s ease-in-out infinite;
+}
