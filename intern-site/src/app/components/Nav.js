@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import ConnectWalletButton from "./ConnectWalletButton";
 
 const LINKS = [
   { href: "/tokenomics", label: "TOKENOMICS" },
@@ -111,11 +111,7 @@ export default function Nav() {
 
         <div className="flex items-center gap-3">
           <div className="scale-90 origin-right">
-            <ConnectButton
-              showBalance={false}
-              chainStatus="icon"
-              accountStatus={{ smallScreen: "avatar", largeScreen: "full" }}
-            />
+            <ConnectWalletButton />
           </div>
           <button
             type="button"

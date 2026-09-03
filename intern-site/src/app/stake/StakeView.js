@@ -10,7 +10,7 @@ import {
   useWaitForTransactionReceipt,
 } from "wagmi";
 import { formatUnits, parseUnits, maxUint256 } from "viem";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import ConnectWalletButton from "../components/ConnectWalletButton";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { CONTRACTS, isStakingLive } from "../lib/chain";
 import { ERC20_ABI, STAKING_REWARDS_ABI } from "../lib/abis";
@@ -68,7 +68,7 @@ function ConnectPrompt() {
         Connect a wallet to stake
       </Reveal>
       <Reveal delay={0.1} className="flex justify-center">
-        <ConnectButton />
+        <ConnectWalletButton />
       </Reveal>
     </section>
   );
