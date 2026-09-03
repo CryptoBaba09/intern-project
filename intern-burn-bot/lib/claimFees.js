@@ -24,6 +24,8 @@ const LOCKER_ABI = [
   "function collectFees(uint256 tokenId) external",
 ];
 
+const ERC20_ABI = ["function balanceOf(address account) view returns (uint256)"];
+
 /**
  * Claims $INTERN's accumulated creator fees from PAIR — in both BE and
  * $INTERN, since a pool's swap fees land in whichever token was sold at
@@ -75,16 +77,50 @@ async function claimFees({ wallet, config, dryRun }) {
     if (claimableAmount === 0n) continue;
 
     if (dryRun) {
+      // Nothing to measure a real delta against in dry run — this snapshot
+      // is an estimate only, which is fine since no transaction runs.
       console.log(`[claimFees] DRY_RUN — skipping claim of ${asset.label}.`);
-    } else {
+      if (asset.label === "BE") beClaimed = claimableAmount;
+      else internClaimed = claimableAmount;
+      continue;
+    }
+
+    // claim(asset) has no amount argument -- it withdraws whatever is
+    // claimable at execution time, not the `claimableAmount` snapshot above.
+    // collectFees is permissionless (PAIR's own keeper calls it too), so
+    // more could land between our read and this transaction confirming.
+    // Measuring the actual balance delta means bookkeeping always matches
+    // what was really received, never a stale pre-tx estimate.
+    //
+    // Each asset's claim is also independently try/caught: one asset
+    // reverting must not discard the other asset's already-confirmed
+    // claim by throwing out of the loop before it's recorded.
+    try {
+      const token = new ethers.Contract(asset.address, ERC20_ABI, wallet);
+      const balanceBefore = await token.balanceOf(wallet.address);
+
       const tx = await locker.claim(asset.address);
       console.log(`[claimFees] claim(${asset.label}) tx sent: ${tx.hash}`);
       await tx.wait();
-      console.log(`[claimFees] claim(${asset.label}) confirmed.`);
-    }
 
-    if (asset.label === "BE") beClaimed = claimableAmount;
-    else internClaimed = claimableAmount;
+      const balanceAfter = await token.balanceOf(wallet.address);
+      const actuallyClaimed = balanceAfter - balanceBefore;
+      console.log(
+        `[claimFees] claim(${asset.label}) confirmed — received ` +
+          `${ethers.formatEther(actuallyClaimed)} (pre-tx estimate was ` +
+          `${ethers.formatEther(claimableAmount)}).`
+      );
+
+      if (asset.label === "BE") beClaimed = actuallyClaimed;
+      else internClaimed = actuallyClaimed;
+    } catch (err) {
+      console.error(
+        `[claimFees] claim(${asset.label}) FAILED — ${err.shortMessage || err.message}. ` +
+          "Continuing to the next asset rather than aborting the whole cycle; " +
+          "if this asset's claim actually landed on-chain before failing here, " +
+          "verify the wallet's real balance manually."
+      );
+    }
   }
 
   return { beClaimed, internClaimed };

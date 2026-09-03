@@ -89,8 +89,16 @@ async function swapBeForIntern({ wallet, config, beAmount, dryRun }) {
   }
 
   const aggregator = new ethers.Contract(config.routerAddress, AGGREGATOR_ABI, wallet);
+  const internToken = new ethers.Contract(config.internTokenAddress, ERC20_ABI, wallet);
   const deadline = Math.floor(Date.now() / 1000) + 60 * 5;
   const leg = { poolIndex: 0, poolKey, amountIn: beAmount, minAmountOut };
+
+  // Measure the swap's own output as a balance delta, not the wallet's
+  // total $INTERN balance -- the wallet may already be holding $INTERN
+  // claimed directly as a fee this same cycle (see claimFees.js), and
+  // returning the whole balance here would double-count that amount when
+  // index.js adds this return value on top of internClaimed.
+  const balanceBefore = await internToken.balanceOf(wallet.address);
 
   const tx = await aggregator.buyExactInput(
     config.internTokenAddress,
@@ -104,8 +112,10 @@ async function swapBeForIntern({ wallet, config, beAmount, dryRun }) {
   const receipt = await tx.wait();
   console.log(`[swap] Swap confirmed in block ${receipt.blockNumber}`);
 
-  const internToken = new ethers.Contract(config.internTokenAddress, ERC20_ABI, wallet);
-  return await internToken.balanceOf(wallet.address);
+  const balanceAfter = await internToken.balanceOf(wallet.address);
+  const received = balanceAfter - balanceBefore;
+  console.log(`[swap] Received ${ethers.formatEther(received)} $INTERN from the swap.`);
+  return received;
 }
 
 module.exports = { swapBeForIntern };
