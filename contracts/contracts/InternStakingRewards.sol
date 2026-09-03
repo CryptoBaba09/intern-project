@@ -46,6 +46,13 @@ contract InternStakingRewards is ReentrancyGuard, Ownable {
 
     uint256 private constant PRECISION = 1e18;
 
+    /// @notice Upper bound on rewardsDuration, purely as a guardrail
+    /// against operator error (e.g. a unit mix-up setting it absurdly
+    /// large): past a certain length relative to typical deposit sizes,
+    /// integer division would floor rewardRate to 0 and silently strand
+    /// that deposit forever. See setRewardsDuration and _startOrExtendStream.
+    uint256 public constant MAX_REWARDS_DURATION = 30 days;
+
     /// @notice How long a deposited reward streams over. Only changeable
     /// while no reward period is currently active (see setRewardsDuration).
     uint256 public rewardsDuration = 1 hours;
@@ -58,9 +65,11 @@ contract InternStakingRewards is ReentrancyGuard, Ownable {
 
     uint256 public totalStaked;
     uint256 public rewardPerTokenStored;
-    /// @notice BE deposited via notifyRewardAmount while totalStaked was 0
-    /// (nobody around to stream it to). Held here rather than starting an
-    /// un-claimable stream; see sweepUnallocated().
+    /// @notice BE that currently has nobody to stream to: either deposited
+    /// via notifyRewardAmount while totalStaked was already 0, or left
+    /// over from an active stream when the last staker withdrew mid-flight
+    /// (see _pauseStreamIfActive). Held here rather than an un-claimable
+    /// stream continuing to tick down unseen; see sweepUnallocated().
     uint256 public unallocatedRewards;
 
     mapping(address => uint256) public balanceOf;
@@ -136,6 +145,9 @@ contract InternStakingRewards is ReentrancyGuard, Ownable {
         balanceOf[msg.sender] -= amount;
         stakingToken.safeTransfer(msg.sender, amount);
         emit Withdrawn(msg.sender, amount);
+        if (totalStaked == 0) {
+            _pauseStreamIfActive();
+        }
     }
 
     /// @notice Claim all currently-earned BE without unstaking.
@@ -191,6 +203,29 @@ contract InternStakingRewards is ReentrancyGuard, Ownable {
         emit UnallocatedRewardsSwept(amount);
     }
 
+    /// @notice Called whenever totalStaked drops to 0. Without this, an
+    /// active stream would keep counting down in wall-clock time with
+    /// nobody earning it — updateReward's zero-totalStaked guard freezes
+    /// rewardPerTokenStored, but rewardRate/periodFinish would otherwise
+    /// be none the wiser, and the elapsed "dead" time (with no one staked)
+    /// would silently vanish from the payable total when a future staker's
+    /// checkpoint jumps lastUpdateTime forward past it. Instead, whatever
+    /// of the current stream hasn't been emitted yet gets parked into
+    /// unallocatedRewards -- the exact same recovery path notifyRewardAmount
+    /// already uses for "nobody staked at deposit time" -- so it's picked
+    /// back up in a fresh stream via sweepUnallocated() once someone stakes
+    /// again, instead of being lost.
+    function _pauseStreamIfActive() private {
+        if (block.timestamp >= periodFinish) return; // nothing left to strand
+        uint256 remaining = periodFinish - block.timestamp;
+        uint256 leftover = remaining * rewardRate;
+        if (leftover > 0) {
+            unallocatedRewards += leftover;
+        }
+        rewardRate = 0;
+        periodFinish = block.timestamp;
+    }
+
     function _startOrExtendStream(uint256 amount) private {
         if (block.timestamp >= periodFinish) {
             rewardRate = amount / rewardsDuration;
@@ -199,6 +234,11 @@ contract InternStakingRewards is ReentrancyGuard, Ownable {
             uint256 leftover = remaining * rewardRate;
             rewardRate = (amount + leftover) / rewardsDuration;
         }
+
+        // A too-large rewardsDuration relative to `amount` would floor
+        // this to 0 via integer division, silently stranding the whole
+        // deposit in a stream that pays nobody. Fail loudly instead.
+        require(rewardRate > 0, "reward rate rounds to zero");
 
         // Guard against a rate so high (from rounding, or a bug upstream)
         // that the contract couldn't actually pay it out in full.
@@ -215,6 +255,7 @@ contract InternStakingRewards is ReentrancyGuard, Ownable {
     function setRewardsDuration(uint256 _rewardsDuration) external onlyOwner {
         require(block.timestamp > periodFinish, "reward period still active");
         require(_rewardsDuration > 0, "duration must be positive");
+        require(_rewardsDuration <= MAX_REWARDS_DURATION, "duration too long");
         rewardsDuration = _rewardsDuration;
         emit RewardsDurationUpdated(_rewardsDuration);
     }

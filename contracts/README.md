@@ -31,6 +31,19 @@ share requires actually holding the stake over time, not just being
 present for one transaction. See `test/InternStakingRewards.test.js`'s
 "JIT reward-sniping resistance" test for a concrete before/after proof.
 
+**A second review pass** (against the streaming fix itself) caught two
+more issues, both fixed:
+- If every staker fully exited mid-stream, the unstreamed remainder had
+  no way to ever reach anyone — it just sat in the contract forever.
+  Fixed: `_pauseStreamIfActive` now parks that remainder into
+  `unallocatedRewards` (the same recovery path `notifyRewardAmount`
+  already used for "nobody staked yet"), so it flows to whoever stakes
+  next via `sweepUnallocated()` instead of being lost.
+- `rewardsDuration` had no upper bound, so a large-enough value relative
+  to a deposit could floor `rewardRate` to 0 via integer division and
+  silently strand that deposit. Fixed with a `MAX_REWARDS_DURATION` cap
+  (30 days) and an explicit revert if a rate would round to 0.
+
 ## Setup
 
 ```
@@ -39,10 +52,11 @@ npx hardhat compile
 npx hardhat test
 ```
 
-21 tests cover staking/withdrawing, single- and multi-staker reward
+25 tests cover staking/withdrawing, single- and multi-staker reward
 streaming, checkpointing across stake changes mid-stream, the
 zero-stakers-yet edge case (`unallocatedRewards` / `sweepUnallocated`),
-access control, and the JIT-sniping resistance case above.
+access control, the JIT-sniping resistance case, and the two fixes above
+(last-staker-exits-mid-stream, and the zero-reward-rate guard).
 
 ## Deploying
 

@@ -280,11 +280,84 @@ describe("InternStakingRewards", function () {
       ).to.be.revertedWith("reward period still active");
     });
 
+    it("rejects a duration beyond MAX_REWARDS_DURATION", async function () {
+      const { owner, staking } = await loadFixture(deployFixture);
+      const max = await staking.MAX_REWARDS_DURATION();
+      await expect(
+        staking.connect(owner).setRewardsDuration(max + 1n)
+      ).to.be.revertedWith("duration too long");
+      await expect(staking.connect(owner).setRewardsDuration(max)).to.not.be.reverted;
+    });
+
     it("restricts it to the owner", async function () {
       const { alice, staking } = await loadFixture(deployFixture);
       await expect(
         staking.connect(alice).setRewardsDuration(7200)
       ).to.be.revertedWithCustomError(staking, "OwnableUnauthorizedAccount");
+    });
+  });
+
+  describe("guards against a reward rate that rounds to zero", function () {
+    it("rejects notifying an amount too small for the configured duration", async function () {
+      const { owner, alice, staking } = await loadFixture(deployFixture);
+      await staking.connect(alice).stake(ethers.parseEther("1"));
+      await staking.connect(owner).setRewardsDuration(30 * 24 * 60 * 60); // MAX, 30 days
+
+      // 1000 wei of BE over a 30-day duration floors to a rate of 0.
+      await expect(
+        staking.connect(owner).notifyRewardAmount(1000n)
+      ).to.be.revertedWith("reward rate rounds to zero");
+    });
+  });
+
+  describe("last staker exiting mid-stream", function () {
+    it("preserves the unstreamed remainder instead of stranding it, recoverable via sweepUnallocated", async function () {
+      const { owner, alice, bob, staking, beToken } = await loadFixture(deployFixture);
+
+      await staking.connect(alice).stake(ethers.parseEther("100"));
+      await staking.connect(owner).notifyRewardAmount(ethers.parseEther("3600")); // rate = 1/sec
+
+      // 10 minutes in, Alice exits entirely -- totalStaked drops to 0
+      // while ~3000 seconds (~3000 BE) of the stream is still unpaid.
+      await time.increase(600);
+      await staking.connect(alice).exit();
+      const alicePayout = await beToken.balanceOf(alice.address);
+      expect(alicePayout).to.be.closeTo(ethers.parseEther("600"), ethers.parseEther("2"));
+
+      // The remainder must not have vanished -- it should now sit in
+      // unallocatedRewards rather than continuing to (uselessly) tick
+      // down against nobody.
+      const unallocated = await staking.unallocatedRewards();
+      expect(unallocated).to.be.closeTo(ethers.parseEther("3000"), ethers.parseEther("2"));
+
+      // Time passes with nobody staked -- must not further erode the
+      // parked amount (it's no longer tied to wall-clock time at all).
+      await time.increase(1200);
+      expect(await staking.unallocatedRewards()).to.equal(unallocated);
+
+      // Bob stakes; the parked remainder isn't credited until swept...
+      await staking.connect(bob).stake(ethers.parseEther("100"));
+      expect(await staking.earned(bob.address)).to.equal(0);
+
+      // ...but once swept, it streams to him in full over a fresh period.
+      await staking.sweepUnallocated();
+      await time.increase(ONE_HOUR + 10);
+      expect(await staking.earned(bob.address)).to.be.closeTo(unallocated, ethers.parseEther("2"));
+
+      // Nothing was permanently lost across the whole saga: Alice's
+      // payout + Bob's eventual payout reconstructs the full deposit.
+      const total = alicePayout + (await staking.earned(bob.address));
+      expect(total).to.be.closeTo(ethers.parseEther("3600"), ethers.parseEther("3"));
+    });
+
+    it("does not try to strand anything if the stream had already finished", async function () {
+      const { owner, alice, staking } = await loadFixture(deployFixture);
+      await staking.connect(alice).stake(ethers.parseEther("1"));
+      await staking.connect(owner).notifyRewardAmount(ethers.parseEther("100"));
+
+      await time.increase(ONE_HOUR + 10); // let the stream fully finish
+      await expect(staking.connect(alice).exit()).to.not.be.reverted;
+      expect(await staking.unallocatedRewards()).to.equal(0);
     });
   });
 
