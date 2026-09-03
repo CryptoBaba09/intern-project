@@ -7,7 +7,7 @@ hash logged as public proof:
 | Bucket | Default | What happens to it |
 | --- | --- | --- |
 | Burn | 70% | Swapped for $INTERN on the open market, then sent to the dead address |
-| Distribution | 20% | Sent in BE to `DISTRIBUTION_POOL_ADDRESS`, held for future $INTERN-holder payouts |
+| Distribution | 20% | Deposited into the `InternStakingRewards` contract (see `../contracts`) via `notifyRewardAmount()`, which streams it to everyone staking $INTERN, pro-rata and time-weighted |
 | Treasury | 10% | Sent in BE to `TREASURY_ADDRESS` for ops/marketing/expansion |
 
 Percentages are configurable via `BURN_PERCENT` / `DISTRIBUTION_PERCENT` /
@@ -27,15 +27,15 @@ Percentages are configurable via `BURN_PERCENT` / `DISTRIBUTION_PERCENT` /
   hardcoded to 0 in `lib/swap.js`). This is unsafe to run for real until
   wired to a real price quote — see the comment in that file. Do not flip
   `DRY_RUN=false` until this is fixed.
-- **The distribution pool is not yet a payout mechanism.** This bot
-  correctly sets aside the 20% holder-distribution cut in BE, but it does
-  not enumerate $INTERN holders or send anyone their share automatically.
-  That needs either an indexer that can list holder balances or an
-  on-chain claim contract (similar in spirit to how theindex.finance pays
-  its holders) — a separate build from this bot. Until that ships, treat
-  `DISTRIBUTION_POOL_ADDRESS` as a multisig or otherwise carefully
-  controlled wallet, since funds accumulate there without an automated
-  way out yet.
+- **Holder distributions are now a real, working payout mechanism** —
+  `../contracts/contracts/InternStakingRewards.sol`. Holders stake $INTERN
+  into it and earn a pro-rata, time-weighted share of every BE deposit this
+  bot makes; no indexer or off-chain holder list needed, since the contract
+  itself tracks staker balances. It's unit-tested (`../contracts/test`,
+  21 tests, including a specific test proving resistance to "stake right
+  before a deposit, exit right after" reward sniping) but has **not** had a
+  professional security audit — do not point real value at
+  `DISTRIBUTOR_ADDRESS` until it has.
 
 ## Setup
 
@@ -81,9 +81,11 @@ true, it'll log exactly what it *would* do without spending anything.
 - [ ] Real `INTERN_TOKEN_ADDRESS`, `BE_TOKEN_ADDRESS`,
   `FEE_CLAIM_CONTRACT_ADDRESS`, `ROUTER_ADDRESS` filled in from the actual
   live PAIR launch
-- [ ] `TREASURY_ADDRESS` and `DISTRIBUTION_POOL_ADDRESS` set to real,
-  carefully-controlled wallets (ideally multisigs) — not the same wallet
-  as `PRIVATE_KEY`'s
+- [ ] `TREASURY_ADDRESS` set to a real, carefully-controlled wallet
+  (ideally a multisig) — not the same wallet as `PRIVATE_KEY`'s
+- [ ] `InternStakingRewards` deployed (see `../contracts`) and its address
+  set as `DISTRIBUTOR_ADDRESS` — and reviewed by someone beyond this
+  repo's own tests before real value flows through it
 - [ ] `BURN_PERCENT` + `DISTRIBUTION_PERCENT` + `TREASURY_PERCENT` sum to
   100 and match what the website says
 - [ ] Real ABIs swapped into `claimFees.js` and `swap.js` (confirmed

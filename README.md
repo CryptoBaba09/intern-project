@@ -1,11 +1,12 @@
 # intern-project
 
-Monorepo with two independently-deployed pieces:
+Monorepo with three pieces:
 
 - [`intern-site/`](./intern-site) — Next.js website. Deployed on **Vercel**.
-- [`intern-burn-bot/`](./intern-burn-bot) — Node.js background worker (fee-claim / buyback bot). Deployed on **Railway** as a worker (no public web port).
+- [`intern-burn-bot/`](./intern-burn-bot) — Node.js background worker (fee-claim / split / buyback bot). Deployed on **Railway** as a worker (no public web port).
+- [`contracts/`](./contracts) — Solidity (Hardhat). `InternStakingRewards`, the stake-to-earn contract the burn bot deposits BE into for holder distributions. Not yet deployed to a real network — see that folder's README before it is.
 
-Each subfolder has its own `package.json` and is deployed as its own "root directory" project on its respective platform, pointed at this one repo.
+`intern-site` and `intern-burn-bot` each have their own `package.json` and are deployed as their own "root directory" project on their respective platform, pointed at this one repo. `contracts` is a separate local dev/test workspace — it isn't deployed to Vercel or Railway.
 
 See each subfolder's own README for details on that piece.
 

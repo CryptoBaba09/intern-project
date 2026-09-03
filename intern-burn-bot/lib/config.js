@@ -22,10 +22,10 @@ const config = {
   // Ops/marketing/expansion wallet — receives the treasury cut of every
   // claim, in BE, no swap involved.
   treasuryAddress: process.env.TREASURY_ADDRESS || "",
-  // Holding wallet for the holder-distribution cut, in BE. This bot only
-  // routes funds here — it does NOT yet pay individual $INTERN holders.
-  // See lib/distribute.js for why that's a separate, later piece of work.
-  distributionPoolAddress: process.env.DISTRIBUTION_POOL_ADDRESS || "",
+  // The deployed InternStakingRewards contract (see ../contracts). This
+  // bot deposits the distribution cut here via notifyRewardAmount(), which
+  // streams it to everyone staking $INTERN, pro-rata and time-weighted.
+  distributorAddress: process.env.DISTRIBUTOR_ADDRESS || "",
 
   deadAddress:
     process.env.DEAD_ADDRESS || "0x000000000000000000000000000000000000dEaD",
@@ -58,7 +58,7 @@ function isLiveConfigured() {
       config.feeClaimContractAddress &&
       config.routerAddress &&
       config.treasuryAddress &&
-      config.distributionPoolAddress
+      config.distributorAddress
   );
 }
 

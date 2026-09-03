@@ -212,7 +212,7 @@ function Tokenomics() {
     ["Liquidity", "Permanently locked Uniswap v4 pool from block one — no bonding curve, no migration step"],
     ["Marketplace deploy fee", "100 $INTERN burned per intern deployed"],
     ["Swap fee", "PAIR's standard protocol fee only — no added creator trading tax"],
-    ["Creator fee split", "70% buy-and-burn · 20% BE holder distributions · 10% treasury — see below"],
+    ["Creator fee split", "70% buy-and-burn · 20% BE staker distributions · 10% treasury — see below"],
     ["Mint function", "None — supply only ever decreases"],
   ];
 
@@ -261,7 +261,7 @@ function FeeSplitBar() {
       label: "DISTRIBUTION",
       pct: 20,
       color: "#D9A441",
-      note: "Held in BE, earmarked for future pro-rata $INTERN-holder payouts",
+      note: "Streamed in BE to everyone staking $INTERN, pro-rata and time-weighted",
     },
     {
       label: "TREASURY",
@@ -305,11 +305,10 @@ function FeeSplitBar() {
         ))}
       </div>
       <p className="font-mono text-[10px] text-[#4A4F54] mt-5 leading-relaxed">
-        The distribution pool accrues BE toward $INTERN holders — the
-        pro-rata payout mechanism itself ships separately, tracked on the
-        roadmap below. This is not a dividend, equity, or a guaranteed
-        return; it&apos;s a share of on-chain protocol fees, when and if
-        the mechanism to pay it out is live.
+        Distributions require staking $INTERN in the InternStakingRewards
+        contract — unstake any time, no lockup. This is not a dividend,
+        equity, or a guaranteed return; it&apos;s a share of on-chain
+        protocol fees, paid only to $INTERN staked at the time.
       </p>
     </Reveal>
   );
@@ -426,8 +425,8 @@ function Protocol() {
       status: "LIVE AT LAUNCH",
     },
     {
-      title: "Holder distributions",
-      body: "20% of every creator fee claim accrues in BE for $INTERN holders. The claiming and splitting is live — the pro-rata payout mechanism to holders is the part still shipping.",
+      title: "Stake-to-earn distributions",
+      body: "Stake $INTERN to earn a time-weighted, pro-rata share of the 20% BE distribution cut from every creator fee claim. The staking contract is built and unit-tested — a security review and mainnet deployment come before it goes live.",
       status: "COMING SOON",
     },
     {
