@@ -6,11 +6,11 @@ import AnimatedNumber from "../components/AnimatedNumber";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { formatNumber } from "../lib/format";
 
-const LAUNCH_SUPPLY = 100_000_000;
+const LAUNCH_SUPPLY = 1_000_000_000;
 
 function Tokenomics() {
   const rows = [
-    ["Total supply", "Fixed at 100,000,000 $INTERN at launch on PAIR — no supply customization, no minting"],
+    ["Total supply", "Fixed at 1,000,000,000 $INTERN at launch on PAIR — no supply customization, no minting"],
     ["Pairing asset", "$INTERN trades directly against Bloom Energy (BE), a tokenized real-world stock — priced in BE, not routed through ETH first"],
     ["Liquidity", "Locked forever in a Uniswap v4 pool from day one — no bonding curve, no migration to a separate pool later"],
     ["Marketplace deploy fee", "10,000 $INTERN burned every time an intern is deployed from the marketplace"],

@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/tokenomics", label: "TOKENOMICS" },
   { href: "/stake", label: "STAKE" },
   { href: "/roadmap", label: "ROADMAP" },
+  { href: "/docs", label: "DOCS" },
 ];
 
 const EXTERNAL_LINKS = [

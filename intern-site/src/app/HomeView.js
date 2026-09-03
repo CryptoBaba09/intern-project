@@ -6,7 +6,7 @@ import ParticleField from "./components/ParticleField";
 import BuyCta from "./components/BuyCta";
 import { formatNumber } from "./lib/format";
 
-const LAUNCH_SUPPLY = 100_000_000;
+const LAUNCH_SUPPLY = 1_000_000_000;
 
 function Hero() {
   return (
