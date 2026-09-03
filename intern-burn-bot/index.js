@@ -2,6 +2,7 @@ const { ethers } = require("ethers");
 const cron = require("node-cron");
 const { config, isLiveConfigured } = require("./lib/config");
 const { claimFees } = require("./lib/claimFees");
+const { splitFees } = require("./lib/distribute");
 const { swapBeForIntern } = require("./lib/swap");
 const { burnIntern } = require("./lib/burn");
 
@@ -20,10 +21,19 @@ async function runCycle(wallet) {
       return;
     }
 
+    // Route the treasury and distribution-pool cuts (in BE, no swap) and
+    // get back only the burn bucket's share to actually swap and burn.
+    const burnBe = await splitFees({
+      wallet,
+      config,
+      totalBe: claimedBe,
+      dryRun: config.dryRun,
+    });
+
     const internBalance = await swapBeForIntern({
       wallet,
       config,
-      beAmount: claimedBe,
+      beAmount: burnBe,
       dryRun: config.dryRun,
     });
 

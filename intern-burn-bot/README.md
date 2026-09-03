@@ -1,13 +1,22 @@
 # $INTERN Burn Bot
 
-Claims $INTERN's accumulated creator fees (paid in BE) from PAIR, buys
-$INTERN on the open market with them, and burns the purchase — automated,
-on a schedule, with every transaction hash logged as public proof.
+Claims $INTERN's accumulated creator fees (paid in BE) from PAIR and splits
+every claim three ways — automated, on a schedule, with every transaction
+hash logged as public proof:
+
+| Bucket | Default | What happens to it |
+| --- | --- | --- |
+| Burn | 70% | Swapped for $INTERN on the open market, then sent to the dead address |
+| Distribution | 20% | Sent in BE to `DISTRIBUTION_POOL_ADDRESS`, held for future $INTERN-holder payouts |
+| Treasury | 10% | Sent in BE to `TREASURY_ADDRESS` for ops/marketing/expansion |
+
+Percentages are configurable via `BURN_PERCENT` / `DISTRIBUTION_PERCENT` /
+`TREASURY_PERCENT` and must sum to 100 (the bot refuses to start otherwise).
 
 ## What's real vs. placeholder right now
 
-- **Burn logic (`lib/burn.js`) is fully real** — a standard ERC20 transfer
-  to the dead address. Works today, no changes needed.
+- **Burn logic (`lib/burn.js`) and the fee split (`lib/distribute.js`) are
+  fully real** — standard ERC20 transfers. Work today, no changes needed.
 - **Claim logic (`lib/claimFees.js`) and swap logic (`lib/swap.js`) use
   placeholder contract ABIs.** PAIR's exact fee-claim contract interface
   and router aren't public until you've actually launched $INTERN — once
@@ -18,6 +27,15 @@ on a schedule, with every transaction hash logged as public proof.
   hardcoded to 0 in `lib/swap.js`). This is unsafe to run for real until
   wired to a real price quote — see the comment in that file. Do not flip
   `DRY_RUN=false` until this is fixed.
+- **The distribution pool is not yet a payout mechanism.** This bot
+  correctly sets aside the 20% holder-distribution cut in BE, but it does
+  not enumerate $INTERN holders or send anyone their share automatically.
+  That needs either an indexer that can list holder balances or an
+  on-chain claim contract (similar in spirit to how theindex.finance pays
+  its holders) — a separate build from this bot. Until that ships, treat
+  `DISTRIBUTION_POOL_ADDRESS` as a multisig or otherwise carefully
+  controlled wallet, since funds accumulate there without an automated
+  way out yet.
 
 ## Setup
 
@@ -63,6 +81,11 @@ true, it'll log exactly what it *would* do without spending anything.
 - [ ] Real `INTERN_TOKEN_ADDRESS`, `BE_TOKEN_ADDRESS`,
   `FEE_CLAIM_CONTRACT_ADDRESS`, `ROUTER_ADDRESS` filled in from the actual
   live PAIR launch
+- [ ] `TREASURY_ADDRESS` and `DISTRIBUTION_POOL_ADDRESS` set to real,
+  carefully-controlled wallets (ideally multisigs) — not the same wallet
+  as `PRIVATE_KEY`'s
+- [ ] `BURN_PERCENT` + `DISTRIBUTION_PERCENT` + `TREASURY_PERCENT` sum to
+  100 and match what the website says
 - [ ] Real ABIs swapped into `claimFees.js` and `swap.js` (confirmed
   against PAIR's docs/explorer, not assumed)
 - [ ] Slippage protection in `swap.js` actually wired to a live quote,

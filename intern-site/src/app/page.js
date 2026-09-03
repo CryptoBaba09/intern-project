@@ -212,6 +212,7 @@ function Tokenomics() {
     ["Liquidity", "Permanently locked Uniswap v4 pool from block one — no bonding curve, no migration step"],
     ["Marketplace deploy fee", "100 $INTERN burned per intern deployed"],
     ["Swap fee", "PAIR's standard protocol fee only — no added creator trading tax"],
+    ["Creator fee split", "70% buy-and-burn · 20% BE holder distributions · 10% treasury — see below"],
     ["Mint function", "None — supply only ever decreases"],
   ];
 
@@ -243,7 +244,74 @@ function Tokenomics() {
           </motion.div>
         ))}
       </motion.div>
+      <FeeSplitBar />
     </section>
+  );
+}
+
+function FeeSplitBar() {
+  const segments = [
+    {
+      label: "BURN",
+      pct: 70,
+      color: "#00C805",
+      note: "Swapped for $INTERN on the open market, then sent to the dead address",
+    },
+    {
+      label: "DISTRIBUTION",
+      pct: 20,
+      color: "#D9A441",
+      note: "Held in BE, earmarked for future pro-rata $INTERN-holder payouts",
+    },
+    {
+      label: "TREASURY",
+      pct: 10,
+      color: "#9BA1A6",
+      note: "Ops, marketing, and expansion — sent directly, no swap",
+    },
+  ];
+
+  return (
+    <Reveal delay={0.15} className="mt-6">
+      <p className="font-mono text-xs text-[#4A4F54] tracking-widest mb-3">
+        EVERY CREATOR FEE CLAIM, SPLIT ON-CHAIN
+      </p>
+      <div className="flex w-full h-3 rounded-full overflow-hidden bg-[#0F1113] border border-[#1B1D1B]">
+        {segments.map((s, i) => (
+          <motion.div
+            key={s.label}
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.8, delay: 0.2 + i * 0.15, ease: [0.16, 1, 0.3, 1] }}
+            style={{ width: `${s.pct}%`, backgroundColor: s.color, transformOrigin: "left" }}
+          />
+        ))}
+      </div>
+      <div className="grid sm:grid-cols-3 gap-4 mt-5">
+        {segments.map((s) => (
+          <div key={s.label} className="flex items-start gap-2.5">
+            <span
+              className="w-2 h-2 rounded-full mt-1 shrink-0"
+              style={{ backgroundColor: s.color }}
+            />
+            <div>
+              <p className="font-mono text-xs text-[#EDEEF0] tracking-wide">
+                {s.pct}% <span className="text-[#9BA1A6]">{s.label}</span>
+              </p>
+              <p className="text-xs text-[#9BA1A6] leading-relaxed mt-0.5">{s.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="font-mono text-[10px] text-[#4A4F54] mt-5 leading-relaxed">
+        The distribution pool accrues BE toward $INTERN holders — the
+        pro-rata payout mechanism itself ships separately, tracked on the
+        roadmap below. This is not a dividend, equity, or a guaranteed
+        return; it&apos;s a share of on-chain protocol fees, when and if
+        the mechanism to pay it out is live.
+      </p>
+    </Reveal>
   );
 }
 
@@ -358,8 +426,8 @@ function Protocol() {
       status: "LIVE AT LAUNCH",
     },
     {
-      title: "Hold-to-earn tiers",
-      body: "Hold $INTERN to earn a share of trading fees — as compute credits, or as a real BE stock dividend.",
+      title: "Holder distributions",
+      body: "20% of every creator fee claim accrues in BE for $INTERN holders. The claiming and splitting is live — the pro-rata payout mechanism to holders is the part still shipping.",
       status: "COMING SOON",
     },
     {
