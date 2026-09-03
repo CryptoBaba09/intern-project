@@ -9,8 +9,8 @@ const INTERNS = [
     name: "Blaze",
     role: "Burn Tracker Intern",
     status: "LIVE",
-    body: "The original hire. Deploy Blaze from the marketplace for a fixed 10,000 $INTERN fee, burned on the spot — no wait, no roadmap, live today.",
-    fee: "10,000 $INTERN per deploy → 100% burned",
+    body: "The protocol's own burn engine — no deploy, no fee, nothing to buy. Every time creator fees are claimed off the $INTERN/BE pool, 70% is bought back and burned automatically, starting from $INTERN's first trade.",
+    fee: "Autonomous — 70% of every fee claim burned, no user action needed",
     href: null,
   },
   {
@@ -45,6 +45,14 @@ const INTERNS = [
     fee: "Free — DRIP charges its own fees, we don't add ours",
     href: "https://dripswap.tech",
     external: true,
+  },
+  {
+    name: "Forge",
+    role: "Custom Build Intern",
+    status: "IN DESIGN",
+    body: "Bring your own intern — payments, writing, automations, or anything else you can spec. A one-time $INTERN fee forges it; a minimum staked balance keeps it running. Drop below the minimum and it pauses until you top back up.",
+    fee: "10,000 $INTERN one-time (burned) + 50,000 $INTERN staked, ongoing",
+    href: null,
   },
 ];
 

@@ -8,8 +8,8 @@ function ManyHats() {
   const hats = [
     {
       n: "01",
-      title: "Marketplace currency",
-      body: "Every intern deployed burns 10,000 $INTERN on the spot.",
+      title: "Autonomous burn engine",
+      body: "Blaze claims creator fees and burns 70% of them automatically — no deploy step required.",
       status: "LIVE",
     },
     {
@@ -40,6 +40,12 @@ function ManyHats() {
       n: "06",
       title: "Inference credit key",
       body: "Staked $INTERN earns a share of real LLM inference credit — spend it on Claude, GPT, Gemini, and more.",
+      status: "IN DESIGN",
+    },
+    {
+      n: "07",
+      title: "Custom-build currency",
+      body: "10,000 $INTERN burned once to launch your own custom intern, plus a staking minimum to keep it live.",
       status: "IN DESIGN",
     },
   ];
@@ -95,7 +101,7 @@ function Protocol() {
   const items = [
     {
       title: "AI agents marketplace",
-      body: "Deploy a template-based intern for a fixed $INTERN fee, burned on the spot. Launching with Blaze, the Burn Tracker Intern.",
+      body: "Launching with Blaze, the protocol's autonomous burn engine — no deploy fee, no user action required. The 10,000 $INTERN deploy-and-burn fee applies to custom intern builds, coming to the marketplace.",
       status: "LIVE AT LAUNCH",
     },
     {
@@ -114,6 +120,12 @@ function Protocol() {
       body: "Staked $INTERN earns a pro-rata share of real LLM inference credit — spend it on Claude, GPT, Gemini, and more. Every dollar issued burns an equal dollar of $INTERN.",
       status: "IN DESIGN",
       href: "/inference-credits",
+    },
+    {
+      title: "Custom intern builds",
+      body: "Launch your own $INTERN-powered agent — payments, writing, automations, or anything else you spec — for a one-time deploy fee plus a staking minimum to keep it running.",
+      status: "IN DESIGN",
+      href: "/marketplace",
     },
     {
       title: "Tiered loyalty rewards",

@@ -13,7 +13,7 @@ function Tokenomics() {
     ["Total supply", "Fixed at 1,000,000,000 $INTERN at launch on PAIR — no supply customization, no minting"],
     ["Pairing asset", "$INTERN trades directly against Bloom Energy (BE), a tokenized real-world stock — priced in BE, not routed through ETH first"],
     ["Liquidity", "Locked forever in a Uniswap v4 pool from day one — no bonding curve, no migration to a separate pool later"],
-    ["Marketplace deploy fee", "10,000 $INTERN burned every time an intern is deployed from the marketplace"],
+    ["Custom intern deploy fee", "10,000 $INTERN burned once, when a user launches their own custom intern from the marketplace"],
     ["Swap fee", "PAIR's standard protocol fee only — $INTERN adds no extra trading tax on top"],
     ["Creator fee split", "70% buy-and-burn · 20% streamed to staked $INTERN · 10% treasury — see the breakdown below"],
     ["Mint function", "None, ever — total supply only ever goes down"],
@@ -170,14 +170,14 @@ function HowItWorks() {
   const steps = [
     {
       n: "01",
-      title: "You hire an intern",
-      body: "Start with Blaze, the Burn Tracker Intern — deploy it from the marketplace for a fixed $INTERN fee.",
+      title: "Every trade pays a fee",
+      body: "PAIR's standard swap fee accrues on every $INTERN trade — no extra tax added on top.",
       status: null,
     },
     {
       n: "02",
-      title: "10,000 $INTERN burns",
-      body: "The deploy fee is burned on the spot — sent to the dead address, gone forever. This is live today, not a promise.",
+      title: "Blaze claims and burns",
+      body: "Blaze, the protocol's always-on burn bot, claims the accumulated fee and burns 70% of it automatically — no deploy step, no user action. This is live today, not a promise.",
       status: null,
     },
     {
