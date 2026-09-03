@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion"
 import ConnectWalletButton from "./ConnectWalletButton";
 
 const LINKS = [
+  { href: "/marketplace", label: "MARKETPLACE" },
   { href: "/tokenomics", label: "TOKENOMICS" },
   { href: "/stake", label: "STAKE" },
   { href: "/roadmap", label: "ROADMAP" },

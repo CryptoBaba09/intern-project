@@ -59,7 +59,7 @@ export default function PersonasView() {
       <section className="px-6 pt-16 pb-16 max-w-5xl mx-auto w-full">
         <Reveal className="flex items-center gap-3 mb-4">
           <p className="font-mono text-xs text-[#00C805] tracking-widest">
-            DIGITAL $INTERN PERSONAS
+            MEET RENDO · MEDIA INTERN
           </p>
           <PreviewBadge />
         </Reveal>
@@ -71,9 +71,10 @@ export default function PersonasView() {
           delay={0.1}
           className="text-[#9BA1A6] text-lg leading-relaxed max-w-2xl mb-4"
         >
-          Stake $INTERN, unlock a personal AI avatar you can use to create
-          content — a promotion ladder from Intern to Full-Time Offer, with
-          higher tiers unlocking more customization and usage.
+          Stake $INTERN, unlock Rendo — a personal AI avatar you can use to
+          create content — on a promotion ladder from Intern to Full-Time
+          Offer. Need more than your tier's allowance? Extra generations
+          cost a per-video $INTERN fee, burned.
         </Reveal>
         <Reveal as="p" delay={0.15} className="text-[#4A4F54] text-sm max-w-2xl">
           This page is a preview of a planned feature — the mockups below
@@ -182,12 +183,20 @@ export default function PersonasView() {
             </Link>{" "}
             for real status.
           </p>
-          <Link
-            href="/stake"
-            className="inline-block rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
-          >
-            GO TO STAKING →
-          </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link
+              href="/stake"
+              className="inline-block rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
+            >
+              GO TO STAKING →
+            </Link>
+            <Link
+              href="/marketplace"
+              className="inline-block rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
+            >
+              MEET THE OTHER INTERNS →
+            </Link>
+          </div>
         </Reveal>
       </section>
     </>

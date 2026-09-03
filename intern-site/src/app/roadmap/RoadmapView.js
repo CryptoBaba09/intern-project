@@ -95,7 +95,7 @@ function Protocol() {
   const items = [
     {
       title: "AI agents marketplace",
-      body: "Deploy a template-based intern for a fixed $INTERN fee, burned on the spot. Launching with the Market/Burn Tracker Intern.",
+      body: "Deploy a template-based intern for a fixed $INTERN fee, burned on the spot. Launching with Blaze, the Burn Tracker Intern.",
       status: "LIVE AT LAUNCH",
     },
     {

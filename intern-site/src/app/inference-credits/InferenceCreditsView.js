@@ -49,7 +49,7 @@ export default function InferenceCreditsView() {
       <section className="px-6 pt-16 pb-16 max-w-5xl mx-auto w-full">
         <Reveal className="flex items-center gap-3 mb-4">
           <p className="font-mono text-xs text-[#00C805] tracking-widest">
-            INFERENCE CREDITS
+            MEET PROMPTLY · INFERENCE INTERN
           </p>
           <PreviewBadge />
         </Reveal>
@@ -62,9 +62,10 @@ export default function InferenceCreditsView() {
           className="text-[#9BA1A6] text-lg leading-relaxed max-w-2xl mb-4"
         >
           Staked $INTERN would earn a pro-rata share of real LLM inference
-          credit — spendable on Claude, GPT, Gemini, and hundreds of other
-          models via OpenRouter. Every dollar of credit issued burns an
-          equal dollar of $INTERN.
+          credit from Promptly — spendable on Claude, GPT, Gemini, and
+          hundreds of other models via OpenRouter, funded by treasury
+          fees. Need credit right now instead of waiting on your stake?
+          Pay $INTERN directly for an instant top-up — burned on the spot.
         </Reveal>
         <Reveal as="p" delay={0.15} className="text-[#4A4F54] text-sm max-w-2xl">
           Nothing on this page is live. The dashboard below is a mockup.
@@ -158,12 +159,20 @@ export default function InferenceCreditsView() {
             </Link>{" "}
             for real status.
           </p>
-          <Link
-            href="/stake"
-            className="inline-block rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
-          >
-            GO TO STAKING →
-          </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link
+              href="/stake"
+              className="inline-block rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
+            >
+              GO TO STAKING →
+            </Link>
+            <Link
+              href="/marketplace"
+              className="inline-block rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
+            >
+              MEET THE OTHER INTERNS →
+            </Link>
+          </div>
         </Reveal>
       </section>
     </>

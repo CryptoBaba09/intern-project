@@ -171,7 +171,7 @@ function HowItWorks() {
     {
       n: "01",
       title: "You hire an intern",
-      body: "Start with the Market/Burn Tracker Intern — deploy it from the marketplace for a fixed $INTERN fee.",
+      body: "Start with Blaze, the Burn Tracker Intern — deploy it from the marketplace for a fixed $INTERN fee.",
       status: null,
     },
     {

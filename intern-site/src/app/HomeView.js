@@ -88,6 +88,11 @@ function Hero() {
 function QuickLinks() {
   const links = [
     {
+      href: "/marketplace",
+      title: "Marketplace",
+      body: "Hire an intern. Every real utility spends $INTERN, and that spend burns supply or rewards stakers.",
+    },
+    {
       href: "/tokenomics",
       title: "Tokenomics",
       body: "Fixed supply, the fee split, and exactly what's live on-chain today vs. what's coming.",
@@ -106,7 +111,7 @@ function QuickLinks() {
 
   return (
     <section className="px-6 py-20 max-w-6xl mx-auto w-full">
-      <div className="grid sm:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {links.map((l) => (
           <Link key={l.href} href={l.href} className="group">
             <motion.div
