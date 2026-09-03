@@ -10,37 +10,47 @@ async function runCycle(wallet) {
   console.log(`\n=== $INTERN burn bot run: ${new Date().toISOString()} ===`);
 
   try {
-    const claimedBe = await claimFees({
+    // Fees accrue in both assets a pool trades — BE and $INTERN itself —
+    // as separate balances (see lib/claimFees.js). Only the BE side goes
+    // through the 70/20/10 split and a swap; $INTERN fees are already the
+    // thing we want to burn, so they skip straight to burnIntern below.
+    const { beClaimed, internClaimed } = await claimFees({
       wallet,
       config,
       dryRun: config.dryRun,
     });
 
-    if (claimedBe === 0n) {
+    if (beClaimed === 0n && internClaimed === 0n) {
       console.log("=== Run complete: nothing to do ===\n");
       return;
     }
 
-    // Route the treasury and distribution-pool cuts (in BE, no swap) and
-    // get back only the burn bucket's share to actually swap and burn.
-    const burnBe = await splitFees({
-      wallet,
-      config,
-      totalBe: claimedBe,
-      dryRun: config.dryRun,
-    });
+    let internToBurn = internClaimed;
 
-    const internBalance = await swapBeForIntern({
-      wallet,
-      config,
-      beAmount: burnBe,
-      dryRun: config.dryRun,
-    });
+    if (beClaimed > 0n) {
+      // Route the treasury and distribution-pool cuts (in BE, no swap) and
+      // get back only the burn bucket's share to actually swap.
+      const burnBe = await splitFees({
+        wallet,
+        config,
+        totalBe: beClaimed,
+        dryRun: config.dryRun,
+      });
+
+      const swappedIntern = await swapBeForIntern({
+        wallet,
+        config,
+        beAmount: burnBe,
+        dryRun: config.dryRun,
+      });
+
+      internToBurn += swappedIntern;
+    }
 
     await burnIntern({
       wallet,
       config,
-      amount: internBalance,
+      amount: internToBurn,
       dryRun: config.dryRun,
     });
 
@@ -67,11 +77,14 @@ async function main() {
 
   if (!isLiveConfigured()) {
     console.warn(
-      "\n⚠️  Token/router addresses are not set yet (INTERN_TOKEN_ADDRESS, " +
-        "BE_TOKEN_ADDRESS, FEE_CLAIM_CONTRACT_ADDRESS, ROUTER_ADDRESS).\n" +
-        "This is expected before $INTERN is live on PAIR. The bot will keep " +
-        "retrying on schedule, but every cycle will fail fast until those " +
-        "are filled in. Fill in .env once you have the real addresses.\n"
+      "\n⚠️  Not fully configured yet. BE_TOKEN_ADDRESS, FEE_CLAIM_CONTRACT_ADDRESS, " +
+        "ROUTER_ADDRESS, LAUNCHPAD_ADDRESS, and QUOTER_ADDRESS already default to " +
+        "real PAIR protocol addresses on Robinhood Chain, so the only things " +
+        "actually missing are likely INTERN_TOKEN_ADDRESS (known once $INTERN " +
+        "launches on PAIR) and/or DISTRIBUTOR_ADDRESS (known once " +
+        "InternStakingRewards is deployed) and/or TREASURY_ADDRESS.\n" +
+        "This is expected before $INTERN is live. The bot will keep retrying " +
+        "on schedule, but every cycle will fail fast until those are filled in.\n"
     );
   }
 

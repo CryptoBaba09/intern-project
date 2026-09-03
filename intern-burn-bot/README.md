@@ -15,18 +15,35 @@ Percentages are configurable via `BURN_PERCENT` / `DISTRIBUTION_PERCENT` /
 
 ## What's real vs. placeholder right now
 
+- **Everything is now wired against PAIR's actual, verified contracts** —
+  `lib/claimFees.js`, `lib/swap.js`, and `lib/pairContracts.js` all use ABIs
+  confirmed against PAIR's docs (https://pair.fund/docs) and each
+  contract's verified source on Blockscout, not guesses. Specifically:
+  - Claiming is the real two-step flow (`PairV4Locker.collectFees(tokenId)`
+    then `.claim(asset)`), and correctly claims **both** BE and $INTERN —
+    a pool's fees land in whichever asset was traded, not just the quote
+    asset.
+  - Swapping goes through `PairV5MultiPoolAggregator` (PAIR's own
+    integrator-facing swap contract), not hand-rolled Uniswap V4 Universal
+    Router calldata — PAIR's docs explicitly warn the Robinhood-deployed
+    router uses a non-standard struct field that's easy to get wrong.
+  - **Slippage protection is real now** — `lib/swap.js` gets an actual
+    pre-trade quote from `V4Quoter` and applies `MAX_SLIPPAGE_PERCENT` to
+    it, replacing what used to be a hardcoded `amountOutMinimum = 0`.
+  - `BE_TOKEN_ADDRESS`, `FEE_CLAIM_CONTRACT_ADDRESS`, `ROUTER_ADDRESS`,
+    `LAUNCHPAD_ADDRESS`, and `QUOTER_ADDRESS` all default to real PAIR
+    protocol addresses (`lib/config.js`) — they're protocol-wide, not
+    per-token, so they don't need $INTERN to exist yet. Only
+    `INTERN_TOKEN_ADDRESS` is genuinely unknowable before launch.
+  - Pool-specific details (position id, fee tier, tick spacing, hook) are
+    read live from PAIR's launchpad contract at runtime
+    (`lib/pairContracts.js`) rather than hardcoded per launch.
+  - One real unknown flagged in code: `PairV4Locker.claimable()`'s exact
+    parameter order isn't confirmed from a named ABI signature (Blockscout
+    returns it unnamed) — see the comment in `claimFees.js` for how to
+    verify it once real balances exist.
 - **Burn logic (`lib/burn.js`) and the fee split (`lib/distribute.js`) are
   fully real** — standard ERC20 transfers. Work today, no changes needed.
-- **Claim logic (`lib/claimFees.js`) and swap logic (`lib/swap.js`) use
-  placeholder contract ABIs.** PAIR's exact fee-claim contract interface
-  and router aren't public until you've actually launched $INTERN — once
-  you have, get the real contract address + ABI from PAIR's docs or block
-  explorer and swap them in. The surrounding structure (config, scheduling,
-  error handling, dry-run mode) is done and tested.
-- **The swap's slippage protection is a TODO** (`amountOutMinimum` is
-  hardcoded to 0 in `lib/swap.js`). This is unsafe to run for real until
-  wired to a real price quote — see the comment in that file. Do not flip
-  `DRY_RUN=false` until this is fixed.
 - **Holder distributions are now a real, working payout mechanism** —
   `../contracts/contracts/InternStakingRewards.sol`. Holders stake $INTERN
   into it and earn a pro-rata, time-weighted share of every BE deposit this
@@ -44,10 +61,12 @@ Percentages are configurable via `BURN_PERCENT` / `DISTRIBUTION_PERCENT` /
 3. Fill in `PRIVATE_KEY` with the wallet that launched $INTERN on PAIR —
    it's the only wallet that can claim creator fees, so it has to run this
    bot. Treat this like a bank password.
-4. Leave `INTERN_TOKEN_ADDRESS`, `BE_TOKEN_ADDRESS`,
-   `FEE_CLAIM_CONTRACT_ADDRESS`, and `ROUTER_ADDRESS` blank until $INTERN
-   is actually live — the bot detects this and warns instead of running
-   against garbage addresses.
+4. Leave `INTERN_TOKEN_ADDRESS` blank until $INTERN is actually live on
+   PAIR — the bot detects this and warns instead of running against a
+   garbage address. `BE_TOKEN_ADDRESS`, `FEE_CLAIM_CONTRACT_ADDRESS`,
+   `ROUTER_ADDRESS`, `LAUNCHPAD_ADDRESS`, and `QUOTER_ADDRESS` already
+   default to real PAIR protocol addresses — you don't need to fill those
+   in unless PAIR ships a new version.
 5. Keep `DRY_RUN=true` while testing. It logs every step without sending
    real transactions.
 
@@ -78,9 +97,7 @@ true, it'll log exactly what it *would* do without spending anything.
 
 ## Before flipping DRY_RUN to false
 
-- [ ] Real `INTERN_TOKEN_ADDRESS`, `BE_TOKEN_ADDRESS`,
-  `FEE_CLAIM_CONTRACT_ADDRESS`, `ROUTER_ADDRESS` filled in from the actual
-  live PAIR launch
+- [ ] Real `INTERN_TOKEN_ADDRESS` filled in from the actual live PAIR launch
 - [ ] `TREASURY_ADDRESS` set to a real, carefully-controlled wallet
   (ideally a multisig) — not the same wallet as `PRIVATE_KEY`'s
 - [ ] `InternStakingRewards` deployed (see `../contracts`) and its address
@@ -88,10 +105,8 @@ true, it'll log exactly what it *would* do without spending anything.
   repo's own tests before real value flows through it
 - [ ] `BURN_PERCENT` + `DISTRIBUTION_PERCENT` + `TREASURY_PERCENT` sum to
   100 and match what the website says
-- [ ] Real ABIs swapped into `claimFees.js` and `swap.js` (confirmed
-  against PAIR's docs/explorer, not assumed)
-- [ ] Slippage protection in `swap.js` actually wired to a live quote,
-  not the hardcoded 0
+- [ ] `PairV4Locker.claimable()`'s parameter order verified against a real
+  claimable balance (see the comment in `claimFees.js`)
 - [ ] Wallet funded with a small amount of native ETH for gas
 - [ ] Tested one full cycle manually with a tiny amount before trusting
   the schedule

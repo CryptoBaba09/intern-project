@@ -1,24 +1,40 @@
 const { ethers } = require("ethers");
+const { getPoolInfo } = require("./pairContracts");
 
 const ERC20_ABI = [
   "function approve(address spender, uint256 amount) external returns (bool)",
   "function allowance(address owner, address spender) external view returns (uint256)",
   "function balanceOf(address account) external view returns (uint256)",
-  "function decimals() external view returns (uint8)",
 ];
 
-// PLACEHOLDER ABI — replace with PAIR's actual router/Uniswap v4 swap
-// router interface once available. This models a standard Uniswap-style
-// exact-input single swap; PAIR's own router may differ (e.g. use the v4
-// PoolManager + a periphery router with a different call shape).
-const ROUTER_ABI = [
-  "function exactInputSingle((address tokenIn,address tokenOut,uint24 fee,address recipient,uint256 deadline,uint256 amountIn,uint256 amountOutMinimum,uint160 sqrtPriceLimitX96)) external payable returns (uint256 amountOut)",
+// Verified against PairV5MultiPoolAggregator's ABI on Blockscout
+// (0x9d7741776098aFA315e4D576ede4F2c67a21d8Ce) — see https://pair.fund/docs.
+//
+// This replaces an earlier placeholder that assumed a plain Uniswap-v3-style
+// exactInputSingle router. PAIR's docs explicitly warn against that: the
+// Robinhood-deployed Universal Router uses a non-standard V4 struct (an
+// extra minHopPriceX36 field), so hand-rolling raw Universal Router calldata
+// is a real way to get this wrong. PAIR instead publishes this aggregator
+// specifically for integrators — a plain approve + function call, no V4
+// action-encoding required on our end.
+const AGGREGATOR_ABI = [
+  "function buyExactInput(address projectToken, address fundingToken, address recipient, tuple(uint8 poolIndex, tuple(address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) poolKey, uint128 amountIn, uint128 minAmountOut)[] legs, uint256 aggregateMinOut, uint256 deadline) external returns (uint256 amountOut)",
+];
+
+// Verified against V4Quoter's ABI on Blockscout
+// (0x8Dc178eFB8111BB0973Dd9d722ebeFF267c98F94). Note this is declared
+// nonpayable, not view — Uniswap's V4 quoters intentionally revert
+// internally to produce a gas-accurate quote, so this must be called via
+// staticCall (a simulated call), never as a real transaction.
+const QUOTER_ABI = [
+  "function quoteExactInputSingle(tuple(tuple(address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) poolKey, bool zeroForOne, uint128 exactAmount, bytes hookData) params) returns (uint256 amountOut, uint256 gasEstimate)",
 ];
 
 /**
- * Swaps `beAmount` of BE for $INTERN on the live pool, buying on the open
- * market — this is what creates real buy pressure, not just an internal
- * bookkeeping burn. Returns the amount of $INTERN received.
+ * Swaps `beAmount` of BE for $INTERN on PAIR's live pool via PairV5MultiPoolAggregator
+ * — this is what creates real buy pressure, not just an internal bookkeeping
+ * burn. Slippage protection comes from a real pre-trade quote (V4Quoter),
+ * not a hardcoded value. Returns the amount of $INTERN received.
  */
 async function swapBeForIntern({ wallet, config, beAmount, dryRun }) {
   if (beAmount < ethers.parseEther(String(config.minBeToSwap))) {
@@ -30,12 +46,12 @@ async function swapBeForIntern({ wallet, config, beAmount, dryRun }) {
     return 0n;
   }
 
-  const beToken = new ethers.Contract(config.beTokenAddress, ERC20_ABI, wallet);
-  const router = new ethers.Contract(config.routerAddress, ROUTER_ABI, wallet);
+  const { poolKey } = await getPoolInfo({ provider: wallet.provider, config });
 
+  const beToken = new ethers.Contract(config.beTokenAddress, ERC20_ABI, wallet);
   const allowance = await beToken.allowance(wallet.address, config.routerAddress);
   if (allowance < beAmount) {
-    console.log("[swap] Approving router to spend BE...");
+    console.log("[swap] Approving aggregator to spend BE...");
     if (!dryRun) {
       const approveTx = await beToken.approve(config.routerAddress, ethers.MaxUint256);
       await approveTx.wait();
@@ -45,25 +61,26 @@ async function swapBeForIntern({ wallet, config, beAmount, dryRun }) {
     }
   }
 
-  // A real implementation should quote the expected output first (via the
-  // pool's quoter contract) and apply config.maxSlippagePercent to compute
-  // amountOutMinimum. Hardcoding 0 here is UNSAFE for production — this is
-  // a placeholder until we wire up a real quote source for the BE/INTERN pool.
-  const amountOutMinimum = 0n; // TODO: replace with a real slippage-protected quote
+  // Real slippage protection: quote the trade first, then apply
+  // config.maxSlippagePercent to the quoted output. This replaces what was
+  // previously a hardcoded amountOutMinimum = 0 (unsafe — that accepted
+  // any output at all, including a sandwich-attacked one).
+  const zeroForOne = config.beTokenAddress.toLowerCase() === poolKey.currency0.toLowerCase();
+  const quoter = new ethers.Contract(config.quoterAddress, QUOTER_ABI, wallet.provider);
+  const [quotedOut] = await quoter.quoteExactInputSingle.staticCall({
+    poolKey,
+    zeroForOne,
+    exactAmount: beAmount,
+    hookData: "0x",
+  });
 
-  const params = {
-    tokenIn: config.beTokenAddress,
-    tokenOut: config.internTokenAddress,
-    fee: 3000, // 0.3% — confirm actual pool fee tier once live
-    recipient: wallet.address,
-    deadline: Math.floor(Date.now() / 1000) + 60 * 5,
-    amountIn: beAmount,
-    amountOutMinimum,
-    sqrtPriceLimitX96: 0n,
-  };
+  const slippageBps = BigInt(Math.round(config.maxSlippagePercent * 100));
+  const minAmountOut = (quotedOut * (10000n - slippageBps)) / 10000n;
 
   console.log(
-    `[swap] Buying $INTERN with ${ethers.formatEther(beAmount)} BE...`
+    `[swap] Quoted ${ethers.formatEther(quotedOut)} $INTERN for ` +
+      `${ethers.formatEther(beAmount)} BE — minimum accepted ` +
+      `${ethers.formatEther(minAmountOut)} (${config.maxSlippagePercent}% slippage)`
   );
 
   if (dryRun) {
@@ -71,18 +88,24 @@ async function swapBeForIntern({ wallet, config, beAmount, dryRun }) {
     return 0n;
   }
 
-  const tx = await router.exactInputSingle(params);
+  const aggregator = new ethers.Contract(config.routerAddress, AGGREGATOR_ABI, wallet);
+  const deadline = Math.floor(Date.now() / 1000) + 60 * 5;
+  const leg = { poolIndex: 0, poolKey, amountIn: beAmount, minAmountOut };
+
+  const tx = await aggregator.buyExactInput(
+    config.internTokenAddress,
+    config.beTokenAddress,
+    wallet.address,
+    [leg],
+    minAmountOut,
+    deadline
+  );
   console.log(`[swap] Swap tx sent: ${tx.hash}`);
   const receipt = await tx.wait();
   console.log(`[swap] Swap confirmed in block ${receipt.blockNumber}`);
 
-  const internToken = new ethers.Contract(
-    config.internTokenAddress,
-    ERC20_ABI,
-    wallet
-  );
-  const balance = await internToken.balanceOf(wallet.address);
-  return balance;
+  const internToken = new ethers.Contract(config.internTokenAddress, ERC20_ABI, wallet);
+  return await internToken.balanceOf(wallet.address);
 }
 
 module.exports = { swapBeForIntern };
