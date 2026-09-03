@@ -35,6 +35,12 @@ function ManyHats() {
       body: "A future phase rewarding holders for contributing resources they aren't using.",
       status: "EXPLORING",
     },
+    {
+      n: "06",
+      title: "Inference credit key",
+      body: "Staked $INTERN earns a share of real LLM inference credit — spend it on Claude, GPT, Gemini, and more.",
+      status: "IN DESIGN",
+    },
   ];
 
   return (
@@ -99,6 +105,11 @@ function Protocol() {
     {
       title: "Digital $INTERN personas",
       body: "Stake tiers unlock a personal AI avatar for content creation — a promotion ladder from Intern to Full-Time Offer.",
+      status: "IN DESIGN",
+    },
+    {
+      title: "Inference credits",
+      body: "Staked $INTERN earns a pro-rata share of real LLM inference credit — spend it on Claude, GPT, Gemini, and more. Every dollar issued burns an equal dollar of $INTERN.",
       status: "IN DESIGN",
     },
     {
