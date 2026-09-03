@@ -183,7 +183,7 @@ function Hero() {
           </div>
           <div className="w-px bg-[#1B1D1B]" />
           <div>
-            <p className="text-[#EDEEF0] text-sm">100</p>
+            <p className="text-[#EDEEF0] text-sm">10,000</p>
             <p>$INTERN PER DEPLOY</p>
           </div>
           <div className="w-px bg-[#1B1D1B]" />
@@ -210,7 +210,7 @@ function Tokenomics() {
     ["Total supply", "Fixed at launch on PAIR — no supply customization, no minting"],
     ["Pairing asset", "Tokenized Bloom Energy (BE) — quoted directly, no ETH leg"],
     ["Liquidity", "Permanently locked Uniswap v4 pool from block one — no bonding curve, no migration step"],
-    ["Marketplace deploy fee", "100 $INTERN burned per intern deployed"],
+    ["Marketplace deploy fee", "10,000 $INTERN burned per intern deployed"],
     ["Swap fee", "PAIR's standard protocol fee only — no added creator trading tax"],
     ["Creator fee split", "70% buy-and-burn · 20% BE staker distributions · 10% treasury — see below"],
     ["Mint function", "None — supply only ever decreases"],
@@ -365,7 +365,7 @@ function HowItWorks() {
     },
     {
       n: "02",
-      title: "100 $INTERN burns",
+      title: "10,000 $INTERN burns",
       body: "The deploy fee is burned on the spot — sent to the dead address, gone forever. This is live today, not a promise.",
       status: null,
     },
@@ -417,6 +417,87 @@ function HowItWorks() {
   );
 }
 
+function ManyHats() {
+  const hats = [
+    {
+      n: "01",
+      title: "Marketplace currency",
+      body: "Every intern deployed burns 10,000 $INTERN on the spot. Live today.",
+      status: "LIVE",
+    },
+    {
+      n: "02",
+      title: "Deflationary asset",
+      body: "Fixed supply at launch, no mint function, ever. Only ever decreases.",
+      status: "LIVE",
+    },
+    {
+      n: "03",
+      title: "Staking asset",
+      body: "Stake it to earn a time-weighted, streamed share of BE from every creator fee claim.",
+      status: "COMING SOON",
+    },
+    {
+      n: "04",
+      title: "Content-creation key",
+      body: "Stake tiers unlock a digital $INTERN avatar for content creation. Spec'd, not built.",
+      status: "IN DESIGN",
+    },
+    {
+      n: "05",
+      title: "Yet to be named",
+      body: "A future phase rewarding holders for contributing resources they're already not using. Early, vague, on purpose.",
+      status: "EXPLORING",
+    },
+  ];
+
+  return (
+    <section className="px-6 py-20 max-w-6xl mx-auto w-full">
+      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+        MANY HATS
+      </Reveal>
+      <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-2">
+        One $INTERN. Multiple hats.
+      </Reveal>
+      <Reveal
+        as="p"
+        delay={0.1}
+        className="text-[#9BA1A6] text-base leading-relaxed max-w-2xl mb-10"
+      >
+        The future of work runs on agents, not headcount. In crypto, an
+        intern is never just one thing either — $INTERN is built to stay
+        useful across every hat below, not just one to trade.
+      </Reveal>
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-80px" }}
+        variants={staggerContainer}
+        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        {hats.map((h) => (
+          <motion.div
+            key={h.n}
+            variants={fadeUp}
+            whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            className="border border-[#1B1D1B] p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <p className="font-mono text-xs text-[#4A4F54]">{h.n}</p>
+              <span className="font-mono text-[10px] text-[#9BA1A6] border border-[#1B1D1B] rounded-full px-2 py-0.5">
+                {h.status}
+              </span>
+            </div>
+            <h3 className="text-lg font-medium mb-2">{h.title}</h3>
+            <p className="text-sm text-[#9BA1A6] leading-relaxed">{h.body}</p>
+          </motion.div>
+        ))}
+      </motion.div>
+    </section>
+  );
+}
+
 function Protocol() {
   const items = [
     {
@@ -430,6 +511,11 @@ function Protocol() {
       status: "COMING SOON",
     },
     {
+      title: "Digital $INTERN personas",
+      body: "Stake tiers unlock a personal AI avatar for content creation — think a promotion ladder from Intern to Full-Time Offer. Spec'd out; needs wallet-connect and a backend built first.",
+      status: "IN DESIGN",
+    },
+    {
       title: "Staked premium interns",
       body: "Stake more $INTERN to unlock more powerful, specialized intern templates.",
       status: "PLANNED",
@@ -438,6 +524,11 @@ function Protocol() {
       title: "Lending & borrowing",
       body: "Post $INTERN as collateral or borrow against it.",
       status: "PLANNED",
+    },
+    {
+      title: "Idle-resource rewards",
+      body: "A later phase exploring rewarding holders for contributing resources they're already not using. Deliberately vague — this is a distinct, heavier undertaking than a token feature, not yet scoped.",
+      status: "EXPLORING",
     },
   ];
 
@@ -513,6 +604,7 @@ export default function Home() {
       <Tokenomics />
       <BurnTicker />
       <HowItWorks />
+      <ManyHats />
       <Protocol />
       <Footer />
     </>
