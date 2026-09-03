@@ -116,6 +116,11 @@ function Protocol() {
       href: "/inference-credits",
     },
     {
+      title: "Tiered loyalty rewards",
+      body: "A recurring treasury-funded bonus on top of the core staking distribution — bigger stakers earn a larger weighted share, funded separately from the 70/20/10 split.",
+      status: "IN DESIGN",
+    },
+    {
       title: "Staked premium interns",
       body: "Stake more $INTERN to unlock more powerful, specialized intern templates.",
       status: "PLANNED",
