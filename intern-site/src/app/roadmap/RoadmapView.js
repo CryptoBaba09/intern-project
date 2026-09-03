@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 
@@ -106,11 +107,13 @@ function Protocol() {
       title: "Digital $INTERN personas",
       body: "Stake tiers unlock a personal AI avatar for content creation — a promotion ladder from Intern to Full-Time Offer.",
       status: "IN DESIGN",
+      href: "/personas",
     },
     {
       title: "Inference credits",
       body: "Staked $INTERN earns a pro-rata share of real LLM inference credit — spend it on Claude, GPT, Gemini, and more. Every dollar issued burns an equal dollar of $INTERN.",
       status: "IN DESIGN",
+      href: "/inference-credits",
     },
     {
       title: "Staked premium interns",
@@ -152,24 +155,39 @@ function Protocol() {
         variants={staggerContainer}
         className="grid sm:grid-cols-2 gap-px bg-[#1B1D1B] border border-[#1B1D1B]"
       >
-        {items.map((item) => (
-          <motion.div
-            key={item.title}
-            variants={fadeUp}
-            whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
-            className="bg-[#0B0C0B] p-6"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-medium">{item.title}</h3>
-              <span className="font-mono text-[10px] text-[#9BA1A6] border border-[#1B1D1B] rounded-full px-2 py-0.5 shrink-0 ml-3">
-                {item.status}
-              </span>
-            </div>
-            <p className="text-sm text-[#9BA1A6] leading-relaxed">
-              {item.body}
-            </p>
-          </motion.div>
-        ))}
+        {items.map((item) => {
+          const content = (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-medium">{item.title}</h3>
+                <span className="font-mono text-[10px] text-[#9BA1A6] border border-[#1B1D1B] rounded-full px-2 py-0.5 shrink-0 ml-3">
+                  {item.status}
+                </span>
+              </div>
+              <p className="text-sm text-[#9BA1A6] leading-relaxed">{item.body}</p>
+              {item.href && (
+                <p className="font-mono text-xs text-[#00C805] mt-3">See preview →</p>
+              )}
+            </>
+          );
+
+          return (
+            <motion.div
+              key={item.title}
+              variants={fadeUp}
+              whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
+              className="bg-[#0B0C0B] p-6"
+            >
+              {item.href ? (
+                <Link href={item.href} className="block">
+                  {content}
+                </Link>
+              ) : (
+                content
+              )}
+            </motion.div>
+          );
+        })}
       </motion.div>
     </section>
   );
