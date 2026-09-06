@@ -21,9 +21,14 @@ const { ethers } = require("ethers");
 const PAIR_API_BASE = "https://pair.fund/api";
 
 /**
- * Resolves everything needed to read or swap against $INTERN's PAIR pool.
- * $INTERN is only ever paired against one market (BE), so this always uses
- * pairs[0] -- a multi-pair project would need one call per pair.
+ * Resolves everything needed to read or swap against $INTERN's BE pool
+ * specifically. $INTERN actually launched with TWO pools (BE + USDG) --
+ * this deliberately finds the BE one by quote-token address rather than
+ * assuming pairs[0], since pair ordering in PAIR's API is not guaranteed
+ * and was in fact USDG-first for the real launch. The USDG pool's fees
+ * are NOT yet handled by this bot (a real, tracked gap -- see the repo's
+ * README/roadmap) -- they sit safely uncollected in the meantime, which
+ * PAIR's own design explicitly allows indefinitely.
  */
 async function getPoolInfo({ config }) {
   const url = `${PAIR_API_BASE}/tokens/${config.internTokenAddress}`;
@@ -43,17 +48,20 @@ async function getPoolInfo({ config }) {
     );
   }
 
-  const pair = token.pairs[0];
-  const quoteToken = pair.quoteToken.address;
+  const pair = token.pairs.find(
+    (p) => p.quoteToken.address.toLowerCase() === config.beTokenAddress.toLowerCase()
+  );
 
-  if (quoteToken.toLowerCase() !== config.beTokenAddress.toLowerCase()) {
-    console.warn(
-      `[pairContracts] WARNING: PAIR reports this pool's quote token as ` +
-        `${quoteToken}, which does not match configured BE_TOKEN_ADDRESS ` +
-        `(${config.beTokenAddress}). Using PAIR's own value below is safe, ` +
-        "but double-check BE_TOKEN_ADDRESS is right."
+  if (!pair) {
+    const found = token.pairs.map((p) => p.quoteToken.symbol).join(", ");
+    throw new Error(
+      `[pairContracts] No pair found quoting BE_TOKEN_ADDRESS ` +
+        `(${config.beTokenAddress}) among $INTERN's real pairs: [${found}]. ` +
+        "Check BE_TOKEN_ADDRESS is right."
     );
   }
+
+  const quoteToken = pair.quoteToken.address;
 
   // Uniswap V4 pools are keyed with currency0 < currency1 by address.
   const [currency0, currency1] =
