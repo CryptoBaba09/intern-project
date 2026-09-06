@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import ConnectWalletButton from "./ConnectWalletButton";
+import Mascot from "./Mascot";
 
 const LINKS = [
   { href: "/marketplace", label: "MARKETPLACE" },
@@ -91,7 +92,7 @@ export default function Nav() {
     >
       <div className="px-6 py-4 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="w-2 h-2 rounded-full bg-[#00C805] ember-pulse" />
+          <Mascot className="w-7 h-7" />
           <span className="font-mono text-sm tracking-widest text-[#EDEEF0]">
             $INTERN
           </span>

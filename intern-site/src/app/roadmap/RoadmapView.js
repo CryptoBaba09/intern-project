@@ -143,6 +143,12 @@ function Protocol() {
       status: "PLANNED",
     },
     {
+      title: "Genesis Interns (NFTs)",
+      body: "500 Blaze-based NFTs, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further.",
+      status: "EXPLORING",
+      href: "/genesis",
+    },
+    {
       title: "Resource-sharing rewards",
       body: "A future phase where holding $INTERN also earns rewards from resources you're not using. More details as this phase takes shape.",
       status: "EXPLORING",

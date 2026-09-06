@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import ParticleField from "./components/ParticleField";
 import BuyCta from "./components/BuyCta";
+import Mascot from "./components/Mascot";
 import { formatNumber } from "./lib/format";
 
 const LAUNCH_SUPPLY = 1_000_000_000;
@@ -79,6 +80,18 @@ function Hero() {
         transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         className="relative"
       >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
+          transition={{
+            opacity: { duration: 0.6, delay: 0.4 },
+            scale: { duration: 0.6, delay: 0.4 },
+            y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 },
+          }}
+          className="absolute -top-16 -right-6 sm:-right-10 w-24 sm:w-28 z-10 drop-shadow-[0_12px_24px_rgba(0,200,5,0.25)]"
+        >
+          <Mascot className="w-full h-full" />
+        </motion.div>
         <BuyCta />
       </motion.div>
     </section>
