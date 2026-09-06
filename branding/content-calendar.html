@@ -1,0 +1,416 @@
+<title>15-Day Launch Calendar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #0B0C0B;
+    --surface: #101210;
+    --surface-2: #14160f;
+    --border: #1B1D1B;
+    --text: #EDEEF0;
+    --text-muted: #9BA1A6;
+    --text-faint: #4A4F54;
+    --green: #00C805;
+    --ember: #D9A441;
+    --x-blue: #7fb2ff;
+    --ig-pink: #e8a3c9;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Space Grotesk',Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
+  .wrap{max-width:980px;margin:0 auto;padding:56px 24px 100px;}
+
+  header{margin-bottom:48px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.14em;color:var(--green);text-transform:uppercase;margin:0 0 12px;}
+  h1{font-size:clamp(1.9rem,4vw,2.6rem);font-weight:700;line-height:1.1;margin:0 0 16px;text-wrap:balance;}
+  .lede{color:var(--text-muted);font-size:1rem;line-height:1.6;max-width:70ch;margin:0 0 20px;}
+
+  .strategy{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px;
+  }
+  .strategy .s-card{border:1px solid var(--border);border-radius:14px;background:var(--surface);padding:16px 18px;}
+  .strategy .s-card .k{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--text-faint);text-transform:uppercase;margin:0 0 6px;}
+  .strategy .s-card .v{font-size:14px;line-height:1.5;margin:0;}
+
+  .phase-label{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+    color:var(--ember);margin:44px 0 18px;padding-top:28px;border-top:1px solid var(--border);
+    display:flex;align-items:center;gap:10px;
+  }
+  .phase-label:first-of-type{border-top:none;padding-top:0;margin-top:32px;}
+  .phase-label .line{flex:1;height:1px;background:var(--border);}
+
+  .day{
+    display:grid;grid-template-columns:56px 1fr;gap:18px;
+    padding:22px 0;border-bottom:1px solid var(--border);
+  }
+  .day:last-child{border-bottom:none;}
+  .day-num{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-faint);padding-top:2px;}
+  .day-num b{display:block;color:var(--text);font-size:20px;font-weight:700;}
+  .day-theme{font-size:1.05rem;font-weight:600;margin:0 0 14px;}
+
+  .platforms{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:720px){.platforms{grid-template-columns:1fr;} .strategy{grid-template-columns:1fr 1fr;}}
+
+  .post{border:1px solid var(--border);border-radius:14px;padding:16px 18px;background:var(--surface);}
+  .post.x{background:linear-gradient(180deg, rgba(127,178,255,0.05), var(--surface) 40%);}
+  .post.ig{background:linear-gradient(180deg, rgba(232,163,201,0.06), var(--surface) 40%);}
+  .post .tag{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+    display:flex;align-items:center;gap:6px;margin-bottom:10px;
+  }
+  .post.x .tag{color:var(--x-blue);}
+  .post.ig .tag{color:var(--ig-pink);}
+  .post p{margin:0 0 10px;font-size:13.5px;line-height:1.6;color:var(--text);}
+  .post p:last-child{margin-bottom:0;}
+  .post .visual{font-size:12px;color:var(--text-muted);font-style:italic;border-top:1px solid var(--border);padding-top:9px;margin-top:9px;}
+  .post .hash{color:var(--text-faint);font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+
+  footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--border);color:var(--text-faint);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">$INTERN &middot; social calendar</p>
+    <h1>15 days, two platforms, one story: Blaze shows up, explains the burn, and $INTERN goes live.</h1>
+    <p class="lede">
+      Built as a flexible arc, not fixed dates — start Day 1 whenever
+      you're ready to begin posting, and slide "Launch day" (Day 12) to
+      whichever real day you actually pull the trigger on PAIR. Post once
+      per platform per day; X can take a second lighter post/reply-bait
+      if you want higher frequency.
+    </p>
+    <div class="strategy">
+      <div class="s-card"><p class="k">Arc</p><p class="v">Meet Blaze → explain the mechanics → build hype → launch → sustain</p></div>
+      <div class="s-card"><p class="k">X cadence</p><p class="v">1 post/day, mornings US time work well for crypto-Twitter; reply to every real comment for the first 15 days</p></div>
+      <div class="s-card"><p class="k">Instagram cadence</p><p class="v">1 feed post/day + a Story repost of the same asset — Stories are where crypto IG engagement actually happens</p></div>
+      <div class="s-card"><p class="k">Hashtags</p><p class="v">Keep IG tags to 5–8, mix broad (#crypto #memecoin) with niche (#RobinhoodChain #PAIR); skip hashtags on X entirely</p></div>
+    </div>
+  </header>
+
+  <div class="phase-label">Phase 1 &middot; Meet Blaze<span class="line"></span></div>
+
+  <div class="day">
+    <div class="day-num mono"><b>01</b>DAY</div>
+    <div>
+      <p class="day-theme">The reveal</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>this is Blaze.</p>
+          <p>overworked, underpaid, technically on fire.</p>
+          <p>he's the face of $INTERN now. more soon.</p>
+          <p class="visual">Visual: Blaze on solid dark background, no other text — let the character carry it.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Meet Blaze. He's an intern. He's on fire. Both are on purpose.</p>
+          <p>$INTERN is coming — a token that burns itself every time someone actually uses it. Blaze is going to explain how, one overworked post at a time.</p>
+          <p class="hash">#crypto #memecoin #newtoken #cryptoart</p>
+          <p class="visual">Visual: full mascot reveal image, centered, high contrast.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>02</b>DAY</div>
+    <div>
+      <p class="day-theme">The lore</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>why is he on fire? because that's the job.</p>
+          <p>every intern $INTERN hires burns supply. Blaze just happens to burn literally too.</p>
+          <p>fixed supply. no mint function. ever.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Why the flame? Because every real thing $INTERN does burns supply — Blaze is just wearing the mechanic on his head.</p>
+          <p>1,000,000,000 $INTERN at launch. No mint function. Ever. It only goes down from here.</p>
+          <p class="hash">#tokenomics #deflationary #crypto #web3</p>
+          <p class="visual">Carousel: slide 1 Blaze close-up, slide 2 the "1B supply, 0% mint" stat card from the site.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>03</b>DAY</div>
+    <div>
+      <p class="day-theme">The burn, explained</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>how $INTERN actually burns, in one breath:</p>
+          <p>every trade generates a fee → Blaze claims it → 70% gets bought back and burned, automatically, forever.</p>
+          <p>no button. no vote. no "trust us." it just happens.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>The mechanic, in three steps: a trade happens → Blaze claims the fee → 70% is bought back and burned on the spot.</p>
+          <p>No one has to click anything. That's the whole point.</p>
+          <p class="hash">#defi #burnmechanism #cryptoeducation</p>
+          <p class="visual">Carousel: 3 slides, one per step, Blaze doing a small action in each (claiming, buying, burning).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 2 &middot; The mechanics<span class="line"></span></div>
+
+  <div class="day">
+    <div class="day-num mono"><b>04</b>DAY</div>
+    <div>
+      <p class="day-theme">Relatable humor</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>Blaze's job description:</p>
+          <p>- claim the fees<br>- burn the supply<br>- receive no thanks<br>- do it again in an hour</p>
+          <p>literally every intern ever. respect.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>POV: you're an autonomous smart contract and it's still technically an unpaid internship.</p>
+          <p>Blaze doesn't clock out. The burn cycle runs on a schedule, whether anyone's watching or not.</p>
+          <p class="hash">#relatable #memes #crypto #internlife</p>
+          <p class="visual">Meme-format image: Blaze at a "desk" made of blockchain blocks, tired eyes, coffee.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>05</b>DAY</div>
+    <div>
+      <p class="day-theme">Why Bloom Energy</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>$INTERN doesn't trade against ETH. it trades against BE — tokenized Bloom Energy, the fuel-cell company powering a growing share of AI data centers.</p>
+          <p>AI needs power. power needs $INTERN to burn. that's the whole thesis.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Every AI agent needs real compute. Real compute needs real power. $INTERN is quoted directly against tokenized Bloom Energy (BE) — not routed through anything else first.</p>
+          <p>Interns run on power. Supply runs down.</p>
+          <p class="hash">#AI #RobinhoodChain #tokenizedstocks #crypto</p>
+          <p class="visual">Split image: data center / power imagery on one side, Blaze on the other.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>06</b>DAY</div>
+    <div>
+      <p class="day-theme">Staking, explained</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>20% of every fee Blaze claims doesn't get burned — it streams straight to everyone staking $INTERN, in real BE.</p>
+          <p>stake it, unstake any time. no lockup. not a promise, a contract.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Stake $INTERN, earn a real, streamed share of BE from every creator fee claim. Unstake whenever — this isn't a lockup, it's just staking.</p>
+          <p class="hash">#staking #passiveincome #defi #crypto</p>
+          <p class="visual">Simple stat card graphic: "70% burn / 20% stakers / 10% treasury" pie-style breakdown in brand colors.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>07</b>DAY</div>
+    <div>
+      <p class="day-theme">The marketplace</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>Blaze isn't alone. the $INTERN marketplace is where you hire agents — Rendo (media), Promptly (inference credits), more coming.</p>
+          <p>every real hire spends $INTERN. every spend burns or rewards.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>The goal isn't one token you hold and hope. It's a place people come to actually hire and run agents — Blaze is just the first one on staff.</p>
+          <p class="hash">#AIagents #cryptomarketplace #web3</p>
+          <p class="visual">Grid graphic: Blaze + silhouettes/placeholders for Rendo and Promptly labeled "in design."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>08</b>DAY</div>
+    <div>
+      <p class="day-theme">Engagement day</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>Blaze wants to know: what should the 2nd intern on the roster do?</p>
+          <p>🔥 burn more tokens<br>🎨 make content<br>🧠 route AI credits<br>💸 pay out rewards</p>
+          <p>reply and he'll actually read them.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Poll in Stories: "What should $INTERN's next intern specialize in?" — options: Payments / Writing / Automations / Surprise me.</p>
+          <p class="hash">#communityfirst #buildinpublic</p>
+          <p class="visual">Story poll sticker over a Blaze illustration looking expectant.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 3 &middot; Build the hype<span class="line"></span></div>
+
+  <div class="day">
+    <div class="day-num mono"><b>09</b>DAY</div>
+    <div>
+      <p class="day-theme">Genesis NFT teaser</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>once $INTERN crosses $1,000,000 in real trading volume, 500 Genesis Interns unlock. Blaze-based, mint → stake → burn.</p>
+          <p>burn one, everyone else staked owns a bigger slice. supply only goes down, at every layer.</p>
+          <p>not day-one hype. earned.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>500 Genesis Interns. Locked until we hit real volume, not day-one. Full concept live on the site — link in bio.</p>
+          <p class="hash">#NFT #NFTcollection #crypto #genesis</p>
+          <p class="visual">Carousel: the 4 illustrative trait recolors from the /genesis page.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>10</b>DAY</div>
+    <div>
+      <p class="day-theme">Trust &amp; safety</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>before real money moves: no mint function, contract source verified on Blockscout the day it deploys, staking contract independently reviewed before it holds real value.</p>
+          <p>we'll say what's live and what isn't. always.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Boring but important: everything claimed "live" on the site is actually live on-chain — nothing marked otherwise. Verify it yourself once we launch, don't take our word for it.</p>
+          <p class="hash">#DYOR #transparency #crypto</p>
+          <p class="visual">Screenshot of the /docs page's real contract-address table.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>11</b>DAY</div>
+    <div>
+      <p class="day-theme">Countdown</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>Blaze is packing his lanyard. $INTERN launches on PAIR soon.</p>
+          <p>fixed supply. quoted in BE. burns on every real use. you'll want to be watching.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Almost time. $INTERN launches on PAIR (Robinhood Chain) soon — set a reminder, this isn't a drill.</p>
+          <p class="hash">#launchingsoon #crypto #newtoken</p>
+          <p class="visual">Countdown-style graphic, Blaze looking anxious/excited by a clock.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 4 &middot; Launch &amp; sustain<span class="line"></span></div>
+
+  <div class="day">
+    <div class="day-num mono"><b>12</b>DAY</div>
+    <div>
+      <p class="day-theme">Launch day</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>$INTERN is live on PAIR.</p>
+          <p>1,000,000,000 fixed supply. quoted in BE. contract: [address]. verify it yourself before you touch it.</p>
+          <p>Blaze starts working the second the first trade lands.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>It's live. $INTERN is trading on PAIR right now. Link in bio for the contract address, the docs, and the pool.</p>
+          <p class="hash">#launchday #welive #crypto #newtoken</p>
+          <p class="visual">Blaze mid-action (small motion blur / spark burst) + "LIVE" badge treatment matching site's own badge style.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>13</b>DAY</div>
+    <div>
+      <p class="day-theme">Proof, not promises</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>first burn tx just landed: [tx hash].</p>
+          <p>that's not a screenshot of a spreadsheet, that's the chain. go look.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Real burn, real transaction, real block explorer. This is what "the mechanic just runs" actually looks like on-chain.</p>
+          <p class="hash">#onchainproof #burn #crypto</p>
+          <p class="visual">Screenshot of the actual Blockscout burn transaction.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>14</b>DAY</div>
+    <div>
+      <p class="day-theme">Staking spotlight</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>staking's live. stake $INTERN, earn a real streamed share of BE from every fee claim. unstake whenever.</p>
+          <p>this is the "hold and hope" alternative. actually do something with it.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>Staking is open. Your $INTERN can be earning BE right now instead of just sitting there. No lockup, no catch.</p>
+          <p class="hash">#staking #earncrypto #defi</p>
+          <p class="visual">Screen recording/screenshot of the live /stake dashboard with real numbers.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-num mono"><b>15</b>DAY</div>
+    <div>
+      <p class="day-theme">Recap &amp; what's next</p>
+      <div class="platforms">
+        <div class="post x">
+          <p class="tag">✕ Post</p>
+          <p>week one: launched, first burns confirmed, staking live.</p>
+          <p>next up: Rendo, Promptly, and the countdown to 500 Genesis Interns starts the moment we hit $1M volume.</p>
+          <p>Blaze isn't done. he's just getting started.</p>
+        </div>
+        <div class="post ig">
+          <p class="tag">◎ Instagram</p>
+          <p>One week in. Live, burning, staking working exactly as documented. Here's what's next on the roadmap.</p>
+          <p class="hash">#roadmap #whatsnext #crypto #community</p>
+          <p class="visual">Roadmap graphic pulled from the site's /roadmap page, Blaze pointing at it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    $INTERN &middot; 15-day launch calendar &middot; v1 — swap phase 4 to match your real launch date
+  </footer>
+</div>
