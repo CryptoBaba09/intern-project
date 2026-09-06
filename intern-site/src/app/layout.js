@@ -4,9 +4,15 @@ import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import CursorGlow from "./components/CursorGlow";
 
-const SITE_URL = "https://intern-project-red-eta.vercel.app";
+// Real bug found during an SEO/social-sharing audit (2026-09-07): this was
+// still the old Vercel preview URL from before internburn.xyz was live.
+// metadataBase feeds every relative OG/canonical URL on the site, so this
+// alone meant every shared link's rich preview -- and every canonical tag
+// Google sees -- pointed at the wrong domain.
+const SITE_URL = "https://internburn.xyz";
 const DESCRIPTION =
   "$INTERN is a fixed-supply utility token on Robinhood Chain: every AI agent hired burns $INTERN on the spot, every creator fee claim splits 70% buy-and-burn / 20% streamed to staked $INTERN / 10% treasury. No mint function, ever.";
+const OG_IMAGE = { url: "/og-image.png", width: 1200, height: 630, alt: "$INTERN — Supply Runs Down" };
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -31,11 +37,15 @@ export const metadata = {
     url: SITE_URL,
     siteName: "$INTERN",
     type: "website",
+    // Missing before this fix -- without an explicit image, a link shared
+    // on X/Telegram/Discord has no guaranteed rich card at all.
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "$INTERN — Supply Runs Down",
     description: DESCRIPTION,
+    images: [OG_IMAGE.url],
   },
   // PWA: lets mobile browsers offer "Add to Home Screen" as a standalone,
   // full-screen app rather than just a bookmark.
