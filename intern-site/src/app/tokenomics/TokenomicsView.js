@@ -11,8 +11,8 @@ const LAUNCH_SUPPLY = 1_000_000_000;
 function Tokenomics() {
   const rows = [
     ["Total supply", "Fixed at 1,000,000,000 $INTERN at launch on PAIR — no supply customization, no minting"],
-    ["Pairing asset", "$INTERN trades directly against Bloom Energy (BE), a tokenized real-world stock — priced in BE, not routed through ETH first"],
-    ["Liquidity", "Locked forever in a Uniswap v4 pool from day one — no bonding curve, no migration to a separate pool later"],
+    ["Pairing assets", "Two live pools: $INTERN/BE (Bloom Energy, a tokenized real-world stock) and $INTERN/USDG — priced directly in each, not routed through ETH first"],
+    ["Liquidity", "Locked forever in Uniswap v4 pools from day one — no bonding curve, no migration to a separate pool later"],
     ["Custom intern deploy fee", "10,000 $INTERN burned once, when a user launches their own custom intern from the marketplace"],
     ["Swap fee", "PAIR's standard protocol fee only — $INTERN adds no extra trading tax on top"],
     ["Creator fee split", "70% buy-and-burn · 20% streamed to staked $INTERN · 10% treasury — see the breakdown below"],

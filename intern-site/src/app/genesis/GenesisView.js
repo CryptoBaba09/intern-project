@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Mascot from "../components/Mascot";
@@ -8,9 +9,35 @@ import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 function PreviewBadge() {
   return (
     <span className="font-mono text-[10px] text-[#D9A441] border border-[#D9A441]/30 rounded-full px-2.5 py-1 tracking-widest">
-      PREVIEW · NOT LIVE
+      ART PREVIEW · MINT NOT LIVE
     </span>
   );
+}
+
+function useVolumeProgress() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/genesis-progress")
+      .then((res) => res.json())
+      .then((json) => {
+        if (cancelled) return;
+        if (json.error) setError(true);
+        else setData(json);
+      })
+      .catch(() => !cancelled && setError(true));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { data, error };
+}
+
+function formatUsd(n) {
+  return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
 
 // Illustrative trait recolors of Blaze -- real trait art doesn't exist
@@ -25,6 +52,8 @@ const TRAIT_PREVIEWS = [
 ];
 
 export default function GenesisView() {
+  const { data: progress, error: progressError } = useVolumeProgress();
+
   return (
     <>
       <section className="px-6 pt-16 pb-16 max-w-5xl mx-auto w-full">
@@ -42,14 +71,14 @@ export default function GenesisView() {
           delay={0.1}
           className="text-[#9BA1A6] text-lg leading-relaxed max-w-2xl mb-4"
         >
-          Blaze, trait-varied, capped at 500 — but minting doesn't open on
-          day one. It opens the moment $INTERN crosses{" "}
-          <span className="text-[#EDEEF0]">$1,000,000</span> in real
-          trading volume on PAIR. Earned, not day-one hype.
+          $INTERN is live and trading now — but minting doesn't open on day
+          one. It opens the moment cumulative volume on PAIR crosses{" "}
+          <span className="text-[#EDEEF0]">$1,000,000</span>. Earned, not
+          day-one hype. Live progress toward that is below.
         </Reveal>
         <Reveal as="p" delay={0.15} className="text-[#4A4F54] text-sm max-w-2xl">
-          Nothing on this page is live — the collection doesn't exist yet,
-          and the volume milestone hasn't been hit. See the full{" "}
+          The trait art on this page is illustrative and the collection
+          doesn't exist on-chain yet. See the full{" "}
           <a
             href="https://github.com/CryptoBaba09/intern-project/blob/main/docs/genesis-nft-spec.md"
             target="_blank"
@@ -59,6 +88,37 @@ export default function GenesisView() {
             design spec ↗
           </a>{" "}
           for what's actually decided vs. still open.
+        </Reveal>
+      </section>
+
+      <section className="px-6 pb-4 max-w-5xl mx-auto w-full">
+        <Reveal className="border border-[#1B1D1B] rounded-2xl p-6 bg-[#0F1113]">
+          <div className="flex items-center justify-between mb-3 font-mono text-xs">
+            <span className="text-[#9BA1A6] tracking-wide">VOLUME TOWARD MINT UNLOCK</span>
+            <span className="text-[#00C805]">
+              {progress
+                ? `${progress.progressPct.toFixed(3)}%`
+                : progressError
+                  ? "—"
+                  : "LOADING…"}
+            </span>
+          </div>
+          <div className="h-2.5 rounded-full bg-[#1B1D1B] overflow-hidden mb-3">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: progress ? `${Math.max(progress.progressPct, 0.4)}%` : "0%" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="h-full bg-[#00C805] rounded-full"
+            />
+          </div>
+          <p className="font-mono text-xs text-[#9BA1A6]">
+            {progress
+              ? `$${formatUsd(progress.volumeUsd)} / $${formatUsd(progress.targetUsd)}`
+              : progressError
+                ? "Couldn't load live volume right now — refresh to retry."
+                : "Fetching cumulative volume from PAIR…"}
+            {progress?.cappedOut && " (partial count — volume has outgrown this page's fetch cap)"}
+          </p>
         </Reveal>
       </section>
 
@@ -139,27 +199,25 @@ export default function GenesisView() {
       <section className="px-6 pb-24 max-w-5xl mx-auto w-full text-center">
         <Reveal className="border border-[#1B1D1B] rounded-2xl p-10 bg-[#0F1113]">
           <p className="font-mono text-xs text-[#9BA1A6] tracking-widest mb-3">
-            NOT LIVE YET
+            MINTING IS GATED, NOT SCHEDULED
           </p>
           <p className="text-[#EDEEF0] text-lg mb-6 max-w-xl mx-auto">
-            The countdown starts the moment $INTERN is trading. Follow the{" "}
-            <Link href="/roadmap" className="text-[#00C805] hover:underline">
-              roadmap
-            </Link>{" "}
-            for real status.
+            No date, no countdown timer — just the volume bar above. It
+            unlocks the instant that number hits $1,000,000, whenever that
+            is. Trade $INTERN to help get it there.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
-              href="/tokenomics"
+              href="/trade"
               className="inline-block rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
             >
-              SEE THE TOKENOMICS →
+              TRADE $INTERN →
             </Link>
             <Link
-              href="/marketplace"
+              href="/tokenomics"
               className="inline-block rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
             >
-              MEET THE INTERNS →
+              SEE THE TOKENOMICS →
             </Link>
           </div>
         </Reveal>

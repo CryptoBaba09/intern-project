@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
@@ -25,17 +26,30 @@ function shortenAddress(address) {
 // extension (wagmi auto-discovers each EIP-6963 wallet as its own
 // connector, on top of this generic injected() one) could silently connect
 // to -- or silently fail against -- the wrong provider, with zero feedback.
-// This version lists every detected connector once there's more than one,
-// and always surfaces the error instead of swallowing it.
+//
+// First fix listed every connector as its own inline button -- fine with
+// two wallets, broken with seven (real case: a wallet with Rabby, Phantom,
+// Keplr, Utila, OKX, MetaMask, etc. all installed overflowed the nav bar
+// and got clipped). This is a proper dropdown instead: one button, a menu
+// on click, closes on an outside click, and still always surfaces errors.
 function SimpleConnectButton() {
   const { address, isConnected } = useAccount();
   const { connect, connectors, isPending, error, variables } = useConnect();
   const { disconnect } = useDisconnect();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onOutsideClick(e) {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onOutsideClick);
+    return () => document.removeEventListener("mousedown", onOutsideClick);
+  }, [open]);
 
   const buttonClass =
     "font-mono text-sm font-medium px-4 py-2 rounded-xl bg-[#00C805] text-[#0B0C0B] hover:bg-[#00b304] transition-colors disabled:opacity-60";
-  const outlineButtonClass =
-    "font-mono text-xs font-medium px-3 py-2 rounded-xl border border-[#1B1D1B] text-[#EDEEF0] hover:border-[#00C805]/50 transition-colors disabled:opacity-60";
 
   if (isConnected && address) {
     return (
@@ -58,34 +72,42 @@ function SimpleConnectButton() {
     );
   }
 
+  function handleConnect(connector) {
+    setOpen(false);
+    connect({ connector });
+  }
+
   return (
-    <div className="flex flex-col items-end gap-1.5">
-      <div className="flex items-center gap-1.5">
-        {connectors.length === 1 ? (
-          <button
-            type="button"
-            onClick={() => connect({ connector: connectors[0] })}
-            disabled={isPending}
-            className={buttonClass}
-          >
-            {isPending ? "Confirm in wallet…" : "Connect Wallet"}
-          </button>
-        ) : (
-          connectors.map((connector) => (
+    <div className="relative" ref={rootRef}>
+      <button
+        type="button"
+        onClick={() =>
+          connectors.length === 1 ? handleConnect(connectors[0]) : setOpen((v) => !v)
+        }
+        disabled={isPending}
+        className={buttonClass}
+      >
+        {isPending ? "Confirm in wallet…" : "Connect Wallet"}
+      </button>
+
+      {open && connectors.length > 1 && (
+        <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-[#1B1D1B] bg-[#0F1113] shadow-lg py-1.5 z-50">
+          {connectors.map((connector) => (
             <button
               key={connector.uid}
               type="button"
-              onClick={() => connect({ connector })}
+              onClick={() => handleConnect(connector)}
               disabled={isPending}
-              className={outlineButtonClass}
+              className="w-full text-left font-mono text-xs px-3.5 py-2.5 text-[#EDEEF0] hover:bg-white/[0.06] transition-colors disabled:opacity-60"
             >
-              {isPending && variables?.connector === connector ? "Confirm…" : connector.name}
+              {isPending && variables?.connector === connector ? "Confirm in wallet…" : connector.name}
             </button>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+
       {error && (
-        <p className="font-mono text-[10px] text-[#E5484D] max-w-[220px] text-right leading-snug">
+        <p className="absolute right-0 top-full mt-1 font-mono text-[10px] text-[#E5484D] w-48 text-right leading-snug">
           {error.shortMessage || error.message}
         </p>
       )}

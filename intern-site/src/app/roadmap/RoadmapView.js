@@ -22,7 +22,7 @@ function ManyHats() {
       n: "03",
       title: "Staking asset",
       body: "Stake it to earn a time-weighted, streamed share of BE from every creator fee claim.",
-      status: "COMING SOON",
+      status: "LIVE",
     },
     {
       n: "04",
@@ -106,8 +106,8 @@ function Protocol() {
     },
     {
       title: "Stake-to-earn distributions",
-      body: "Stake $INTERN to earn a time-weighted, pro-rata share of BE from every creator fee claim. Built and tested — going live once it's passed an independent security review.",
-      status: "COMING SOON",
+      body: "Stake $INTERN to earn a time-weighted, pro-rata share of BE from every creator fee claim. Live now — has not had an independent security review yet.",
+      status: "LIVE",
     },
     {
       title: "Digital $INTERN personas",
@@ -144,8 +144,8 @@ function Protocol() {
     },
     {
       title: "Genesis Interns (NFTs)",
-      body: "500 Blaze-based NFTs, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further.",
-      status: "EXPLORING",
+      body: "500 Blaze-based NFTs, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further. Live volume gauge on the preview page.",
+      status: "IN DESIGN",
       href: "/genesis",
     },
     {
