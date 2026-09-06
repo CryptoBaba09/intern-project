@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useReadContract } from "wagmi";
+import { formatUnits } from "viem";
 import AnimatedNumber from "../components/AnimatedNumber";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { formatNumber } from "../lib/format";
+import { CONTRACTS, DEAD_ADDRESS, isTradingLive } from "../lib/chain";
+import { ERC20_ABI } from "../lib/abis";
 
 const LAUNCH_SUPPLY = 1_000_000_000;
 
@@ -125,11 +129,12 @@ function FeeSplitBar() {
   );
 }
 
-function BurnTicker() {
+function IllustrativeBurnTicker() {
   const [supply, setSupply] = useState(LAUNCH_SUPPLY);
 
-  // Illustrative decrement only — replace with a real totalSupply() poll
-  // against Robinhood Chain once the token and marketplace are live.
+  // Illustrative decrement only, shown pre-launch when there is no real
+  // token contract to read from yet. Replaced by LiveBurnTicker's real
+  // on-chain read the moment isTradingLive() is true.
   useEffect(() => {
     const id = setInterval(() => {
       setSupply((s) => Math.max(s - Math.floor(Math.random() * 40), 0));
@@ -148,7 +153,7 @@ function BurnTicker() {
       <Reveal className="max-w-3xl mx-auto text-center">
         <p className="font-mono text-xs text-[#D9A441] tracking-widest mb-4 flex items-center justify-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#D9A441] ember-pulse" />
-          LIVE SUPPLY · UPDATES ON EVERY INTERN DEPLOYED
+          SUPPLY PREVIEW
         </p>
         <p className="font-mono text-6xl sm:text-7xl font-bold text-[#D9A441] ember-glow tabular-nums">
           <AnimatedNumber value={supply} />
@@ -157,13 +162,72 @@ function BurnTicker() {
           {formatNumber(burned)} INTERN burned so far ({pctBurned}%)
         </p>
         <p className="font-mono text-[10px] text-[#4A4F54] mt-6 max-w-md mx-auto leading-relaxed">
-          This counter is illustrative until the marketplace is live. Once
-          it ships, it reads real burn transactions from Robinhood Chain —
-          nothing here will be self-reported.
+          This counter is illustrative — there is no live $INTERN contract
+          to read yet. Once launched, this becomes a real on-chain read of
+          the dead address's balance.
         </p>
       </Reveal>
     </section>
   );
+}
+
+// $INTERN's burn bot sends tokens to the standard dead address via a
+// plain transfer(), not a real burn() call -- so totalSupply() never
+// moves. The dead address's own balanceOf() IS the true cumulative burn
+// total, read live and directly, with a link to verify it yourself.
+function LiveBurnTicker() {
+  const { data: burnedRaw, isLoading } = useReadContract({
+    address: CONTRACTS.internToken,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [DEAD_ADDRESS],
+    query: { refetchInterval: 10000 },
+  });
+  const { data: decimals } = useReadContract({
+    address: CONTRACTS.internToken,
+    abi: ERC20_ABI,
+    functionName: "decimals",
+  });
+
+  const burned = burnedRaw !== undefined ? Number(formatUnits(burnedRaw, decimals ?? 18)) : null;
+  const supply = burned !== null ? LAUNCH_SUPPLY - burned : LAUNCH_SUPPLY;
+  const pctBurned = burned !== null ? ((burned / LAUNCH_SUPPLY) * 100).toFixed(4) : "0.0000";
+
+  return (
+    <section
+      id="burn"
+      className="px-6 py-24 border-y border-[#1B1D1B] bg-[#0F1113]"
+    >
+      <Reveal className="max-w-3xl mx-auto text-center">
+        <p className="font-mono text-xs text-[#00C805] tracking-widest mb-4 flex items-center justify-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00C805] ember-pulse" />
+          LIVE SUPPLY · READ DIRECTLY FROM THE DEAD ADDRESS
+        </p>
+        <p className="font-mono text-6xl sm:text-7xl font-bold text-[#D9A441] ember-glow tabular-nums">
+          {burned === null ? (isLoading ? "…" : formatNumber(supply)) : <AnimatedNumber value={Math.round(supply)} />}
+        </p>
+        <p className="font-mono text-sm text-[#9BA1A6] mt-4">
+          {burned === null ? "—" : formatNumber(Math.round(burned))} INTERN burned so far ({pctBurned}%)
+        </p>
+        <p className="font-mono text-[10px] text-[#4A4F54] mt-6 max-w-md mx-auto leading-relaxed">
+          Not self-reported — this is {DEAD_ADDRESS}&apos;s real balance,
+          refreshed every 10 seconds.{" "}
+          <a
+            href={`https://robinhoodchain.blockscout.com/address/${DEAD_ADDRESS}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#00C805] hover:underline"
+          >
+            Verify on Blockscout ↗
+          </a>
+        </p>
+      </Reveal>
+    </section>
+  );
+}
+
+function BurnTicker() {
+  return isTradingLive() ? <LiveBurnTicker /> : <IllustrativeBurnTicker />;
 }
 
 function HowItWorks() {

@@ -40,6 +40,12 @@ export const CONTRACTS = {
 
 export const PAIR_POOL_URL = process.env.NEXT_PUBLIC_PAIR_POOL_URL || "";
 
+// The burn bot sends $INTERN here via a plain transfer(), not a real
+// burn() call -- so totalSupply() never moves and can't be used to
+// measure burns. This dead address's own balance IS the real cumulative
+// burn total. Matches DEAD_ADDRESS in intern-burn-bot/lib/config.js.
+export const DEAD_ADDRESS = "0x000000000000000000000000000000000000dEaD";
+
 export function isStakingLive() {
   return Boolean(CONTRACTS.internToken && CONTRACTS.distributor);
 }
