@@ -1,0 +1,302 @@
+<title>Meet Blaze</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #0B0C0B;
+    --surface: #101210;
+    --border: #1B1D1B;
+    --text: #EDEEF0;
+    --text-muted: #9BA1A6;
+    --text-faint: #4A4F54;
+    --green: #00C805;
+    --green-soft: rgba(0,200,5,0.12);
+    --ember: #D9A441;
+    --ember-soft: rgba(217,164,65,0.14);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:72px 24px 96px;}
+
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.16em;
+    color:var(--green);
+    text-transform:uppercase;
+    margin:0 0 14px;
+  }
+
+  h1{
+    font-size:clamp(2.2rem, 5vw, 3.4rem);
+    font-weight:700;
+    line-height:1.05;
+    letter-spacing:-0.01em;
+    margin:0 0 20px;
+    text-wrap:balance;
+    max-width:14ch;
+  }
+  h1 em{
+    font-style:normal;
+    color:var(--green);
+  }
+
+  .lede{
+    font-size:1.05rem;
+    line-height:1.6;
+    color:var(--text-muted);
+    max-width:52ch;
+    margin:0;
+  }
+
+  .hero{
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:56px;
+    align-items:center;
+  }
+
+  .stage{
+    position:relative;
+    aspect-ratio:1/1;
+    border-radius:28px;
+    background:radial-gradient(ellipse at 42% 32%, rgba(0,200,5,0.16), transparent 65%),
+               radial-gradient(ellipse at 68% 78%, rgba(217,164,65,0.10), transparent 60%),
+               var(--surface);
+    border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .stage svg{width:78%;height:78%;}
+
+  .spark{transform-origin:0 60px; animation:flicker 2.6s ease-in-out infinite;}
+  @keyframes flicker{
+    0%,100%{transform:rotate(12deg) scale(1);}
+    50%{transform:rotate(8deg) scale(1.06);}
+  }
+  @media (prefers-reduced-motion: reduce){ .spark{animation:none;} }
+
+  section{margin-top:88px;}
+
+  .section-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    gap:16px;margin-bottom:28px;flex-wrap:wrap;
+  }
+  .section-head h2{
+    font-size:1.5rem;font-weight:600;margin:0;
+  }
+  .section-head p{
+    margin:0;color:var(--text-faint);font-size:13px;font-family:'IBM Plex Mono',monospace;
+  }
+
+  .grid3{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:20px;
+  }
+  .card{
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:var(--surface);
+    padding:24px;
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .card-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--text-muted);
+  }
+  .card-preview{
+    display:flex;align-items:center;justify-content:center;
+    background:var(--bg);
+    border-radius:14px;
+    padding:20px;
+    min-height:180px;
+  }
+  .pfp{
+    width:132px;height:132px;border-radius:50%;overflow:hidden;
+    border:2px solid var(--border);
+    background:radial-gradient(ellipse at 40% 30%, rgba(0,200,5,0.14), transparent 65%), var(--surface);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .pfp svg{width:112%;height:112%;}
+  .tile{
+    width:150px;height:150px;border-radius:20px;overflow:hidden;
+    background:radial-gradient(ellipse at 40% 30%, rgba(0,200,5,0.16), transparent 65%), var(--surface);
+    border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tile svg{width:82%;height:82%;}
+  .lockup{
+    display:flex;align-items:center;gap:14px;
+  }
+  .lockup svg{width:56px;height:56px;flex-shrink:0;}
+  .lockup-word{font-weight:700;font-size:1.4rem;letter-spacing:-0.01em;}
+  .lockup-word .cash{color:var(--green);}
+  .card-note{font-size:13px;color:var(--text-muted);line-height:1.55;margin:0;}
+
+  .rationale{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:20px;
+  }
+  .r-card{
+    border:1px solid var(--border);border-radius:16px;background:var(--surface);
+    padding:22px 24px;
+  }
+  .r-card .num{font-family:'IBM Plex Mono',monospace;color:var(--ember);font-size:12px;letter-spacing:0.1em;}
+  .r-card h3{margin:10px 0 8px;font-size:1.05rem;font-weight:600;}
+  .r-card p{margin:0;color:var(--text-muted);font-size:14px;line-height:1.6;}
+
+  footer{
+    margin-top:88px;padding-top:28px;border-top:1px solid var(--border);
+    color:var(--text-faint);font-family:'IBM Plex Mono',monospace;font-size:12px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+
+  @media (max-width:820px){
+    .hero{grid-template-columns:1fr;}
+    .stage{max-width:360px;margin:0 auto;}
+    .grid3,.rationale{grid-template-columns:1fr;}
+  }
+</style>
+
+<!-- Reusable mascot mark -->
+<template id="mascot-svg">
+  <svg viewBox="0 0 900 900" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bodyGrad" cx="38%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#3DFF4A"/>
+        <stop offset="55%" stop-color="#00C805"/>
+        <stop offset="100%" stop-color="#009104"/>
+      </radialGradient>
+      <linearGradient id="flameGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+        <stop offset="0%" stop-color="#B9740E"/>
+        <stop offset="55%" stop-color="#D9A441"/>
+        <stop offset="100%" stop-color="#FFE49A"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="450" cy="480" rx="380" ry="340" fill="#D9A441" opacity="0.10"/>
+    <path d="M450 90 C 660 90, 795 245, 795 470 C 795 675, 655 830, 450 830 C 245 830, 105 675, 105 470 C 105 245, 240 90, 450 90 Z" fill="url(#bodyGrad)" stroke="#052B02" stroke-width="16"/>
+    <path d="M450 560 C 560 560, 630 610, 630 690 C 630 750, 550 780, 450 780 C 350 780, 270 750, 270 690 C 270 610, 340 560, 450 560 Z" fill="#00A604" opacity="0.55"/>
+    <path d="M340 210 L300 470" stroke="#1B1D1B" stroke-width="20" stroke-linecap="round"/>
+    <path d="M560 210 L600 470" stroke="#1B1D1B" stroke-width="20" stroke-linecap="round"/>
+    <rect x="368" y="455" width="164" height="108" rx="16" fill="#EDEEF0" stroke="#1B1D1B" stroke-width="10"/>
+    <circle cx="450" cy="487" r="14" fill="#9BA1A6"/>
+    <rect x="392" y="516" width="116" height="14" rx="7" fill="#9BA1A6"/>
+    <rect x="404" y="538" width="92" height="10" rx="5" fill="#C7CBCE"/>
+    <ellipse cx="358" cy="360" rx="84" ry="96" fill="#F7FBF4" stroke="#052B02" stroke-width="10"/>
+    <ellipse cx="542" cy="360" rx="84" ry="96" fill="#F7FBF4" stroke="#052B02" stroke-width="10"/>
+    <circle cx="380" cy="382" r="34" fill="#0B0C0B"/>
+    <circle cx="564" cy="382" r="34" fill="#0B0C0B"/>
+    <circle cx="392" cy="368" r="11" fill="#ffffff"/>
+    <circle cx="576" cy="368" r="11" fill="#ffffff"/>
+    <path d="M296 292 Q356 262 410 288" stroke="#052B02" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <path d="M604 292 Q544 262 490 288" stroke="#052B02" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <ellipse cx="450" cy="430" rx="26" ry="20" fill="#052B02"/>
+    <ellipse cx="300" cy="410" rx="26" ry="16" fill="#00E60A" opacity="0.5"/>
+    <ellipse cx="600" cy="410" rx="26" ry="16" fill="#00E60A" opacity="0.5"/>
+    <g class="spark" transform="translate(560,150) rotate(12)">
+      <path d="M0 70 C -34 40, -30 -10, 0 -60 C 30 -10, 34 40, 0 70 Z" fill="url(#flameGrad)" stroke="#7A4A08" stroke-width="6"/>
+      <path d="M0 40 C -14 24, -12 0, 0 -26 C 12 0, 14 24, 0 40 Z" fill="#FFF3D0"/>
+    </g>
+  </svg>
+</template>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <p class="eyebrow">$INTERN &middot; brand mark, v1</p>
+      <h1>Meet <em>Blaze</em>.<br>Overworked. On fire.<br>Yours to remix.</h1>
+      <p class="lede">
+        An original mascot, not a borrowed one — no Pepe, no Simpsons, no
+        Pengu underneath it. Same sticker energy, zero takedown risk, and
+        every future spinoff (Rendo, Promptly, and whoever joins the
+        marketplace next) gets to be recognizably part of the same family.
+      </p>
+    </div>
+    <div class="stage" id="hero-stage"></div>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2>Ready-to-use crops</h2>
+      <p>square tile &middot; profile circle &middot; wordmark lockup</p>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <div class="card-preview"><div class="pfp" id="pfp-slot"></div></div>
+        <div>
+          <p class="card-label">Profile photo</p>
+          <p class="card-note">Survives the circular crop on both X and Instagram — the face stays centered with room to spare.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-preview"><div class="tile" id="tile-slot"></div></div>
+        <div>
+          <p class="card-label">App icon / square tile</p>
+          <p class="card-note">Full-bleed square for anywhere a rounded-square mask gets applied instead of a circle.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-preview">
+          <div class="lockup">
+            <div id="lockup-slot"></div>
+            <span class="lockup-word"><span class="cash">$</span>INTERN</span>
+          </div>
+        </div>
+        <div>
+          <p class="card-label">Wordmark lockup</p>
+          <p class="card-note">For banners, watermarks, and anywhere the mascot needs a name attached.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Why an original mascot</h2>
+    </div>
+    <div class="rationale">
+      <div class="r-card">
+        <p class="num">01</p>
+        <h3>Meme characters are still owned</h3>
+        <p>Pepe is Matt Furie's copyright, the Simpsons is Fox's, Pudgy Penguins is an active registered brand with its own legal team. Crypto's casual reuse of them is tolerated, not licensed — a real risk the moment a project gets attention.</p>
+      </div>
+      <div class="r-card">
+        <p class="num">02</p>
+        <h3>Owned IP compounds</h3>
+        <p>Blaze can front the marketplace, the socials, merch, and every future intern in the roster without asking anyone's permission — and the equity it builds stays $INTERN's, not on loan from someone else's character.</p>
+      </div>
+      <div class="r-card">
+        <p class="num">03</p>
+        <h3>Built for the sticker test</h3>
+        <p>Flat color, thick outline, one readable expression at 40px — the same shape logic that makes the best crypto mascots survive being screenshotted, cropped, and pasted into a hundred reply threads.</p>
+      </div>
+      <div class="r-card">
+        <p class="num">04</p>
+        <h3>Already on-brand</h3>
+        <p>Same green (#00C805) and ember (#D9A441) already running through the site and the burn mechanic — Blaze isn't a new identity bolted on, it's the existing one given a face.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>$INTERN &middot; brand mark v1</span>
+    <span>feedback welcome — this is a first pass, not a final</span>
+  </footer>
+</div>
+
+<script>
+  const tpl = document.getElementById('mascot-svg').content;
+  ['hero-stage','pfp-slot','tile-slot','lockup-slot'].forEach(id => {
+    document.getElementById(id).appendChild(tpl.cloneNode(true));
+  });
+</script>

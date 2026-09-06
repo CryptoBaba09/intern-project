@@ -12,7 +12,25 @@ module.exports = {
     },
   },
   networks: {
-    hardhat: {},
+    hardhat: {
+      // Hardhat's forking simulator refuses to execute calls against a
+      // forked historical block on a chain id it doesn't recognize --
+      // Robinhood Chain (4663) isn't in its built-in registry, so it has
+      // no idea which EVM hardfork rules to apply and errors with
+      // "No known hardfork for execution on historical block ...".
+      // Declaring cancun active since genesis (the latest stable
+      // hardfork as of this project) tells it what ruleset to simulate;
+      // this is a Hardhat-side simulation setting only, not a claim
+      // about which hardfork Robinhood Chain's real Arbitrum Nitro nodes
+      // actually run.
+      chains: {
+        4663: {
+          hardforkHistory: {
+            cancun: 0,
+          },
+        },
+      },
+    },
     // The real deployment target. Copy .env.example to .env here first and
     // fill in PRIVATE_KEY with the bot's operating wallet (same key as
     // intern-burn-bot/.env) -- that wallet needs to be OWNER_ADDRESS anyway

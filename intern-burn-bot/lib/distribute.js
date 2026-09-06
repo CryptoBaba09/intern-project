@@ -12,17 +12,11 @@ const DISTRIBUTOR_ABI = [
 
 /**
  * Splits a claimed BE amount three ways per config.{burn,distribution,treasury}Percent.
- * Returns the burn-bucket amount so the caller can run it through the existing
- * swap+burn flow — this file never touches $INTERN, only BE.
- *
- * - The treasury cut is a plain BE transfer to config.treasuryAddress.
- * - The distribution cut is deposited into the InternStakingRewards contract
- *   at config.distributorAddress via notifyRewardAmount(), which streams it
- *   to everyone currently staking $INTERN, pro-rata and time-weighted (see
- *   contracts/contracts/InternStakingRewards.sol). This bot only funds that
- *   contract — it never touches individual holders' payouts directly.
+ * Returns { burnBe, distributionBe, treasuryBe } rather than performing every
+ * transfer itself -- see index.js for why the burn bucket's swap now happens
+ * BEFORE the distributor/treasury sends below, not after.
  */
-async function splitFees({ wallet, config, totalBe, dryRun }) {
+function computeSplit({ config, totalBe }) {
   const burnBe = (totalBe * BigInt(config.burnPercent)) / 100n;
   const distributionBe = (totalBe * BigInt(config.distributionPercent)) / 100n;
   // Remainder (not totalBe * treasuryPercent / 100n) absorbs integer-division
@@ -30,12 +24,25 @@ async function splitFees({ wallet, config, totalBe, dryRun }) {
   const treasuryBe = totalBe - burnBe - distributionBe;
 
   console.log(
-    `[split] ${ethers.formatEther(totalBe)} BE claimed -> ` +
+    `[split] ${ethers.formatEther(totalBe)} BE to split -> ` +
       `burn ${ethers.formatEther(burnBe)} (${config.burnPercent}%), ` +
       `distribution ${ethers.formatEther(distributionBe)} (${config.distributionPercent}%), ` +
       `treasury ${ethers.formatEther(treasuryBe)} (${config.treasuryPercent}%)`
   );
 
+  return { burnBe, distributionBe, treasuryBe };
+}
+
+/**
+ * Sends the distribution and treasury cuts. Called only AFTER the burn
+ * bucket has already been swapped (see index.js) -- so if this itself
+ * fails partway (e.g. the distributor deposit lands but the treasury send
+ * doesn't), what's left stranded in the wallet is purely
+ * distributionBe+treasuryBe, in BE, never mixed with the burn bucket.
+ * That's still a real residual gap (see index.js's carryover comment for
+ * why it isn't fully self-healing), just a narrower one than before.
+ */
+async function sendDistributionAndTreasury({ wallet, config, distributionBe, treasuryBe, dryRun }) {
   await notifyDistributor({ wallet, config, amount: distributionBe, dryRun });
   await sendBe({
     wallet,
@@ -45,8 +52,6 @@ async function splitFees({ wallet, config, totalBe, dryRun }) {
     label: "treasury",
     dryRun,
   });
-
-  return burnBe;
 }
 
 async function sendBe({ wallet, config, amount, to, label, dryRun }) {
@@ -106,4 +111,4 @@ async function notifyDistributor({ wallet, config, amount, dryRun }) {
   console.log(`[split] notifyRewardAmount confirmed in block ${receipt.blockNumber}`);
 }
 
-module.exports = { splitFees };
+module.exports = { computeSplit, sendDistributionAndTreasury };
