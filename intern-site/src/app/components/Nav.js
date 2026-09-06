@@ -8,6 +8,7 @@ import ConnectWalletButton from "./ConnectWalletButton";
 import Mascot from "./Mascot";
 
 const LINKS = [
+  { href: "/trade", label: "TRADE" },
   { href: "/marketplace", label: "MARKETPLACE" },
   { href: "/tokenomics", label: "TOKENOMICS" },
   { href: "/stake", label: "STAKE" },
@@ -17,7 +18,7 @@ const LINKS = [
 
 const EXTERNAL_LINKS = [
   { href: "https://robinhoodchain.blockscout.com", label: "CONTRACT ↗" },
-  { href: "https://x.com", label: "X ↗" },
+  { href: "https://x.com/Internburn_xyz", label: "X ↗" },
 ];
 
 function NavLink({ href, children, active, onClick }) {

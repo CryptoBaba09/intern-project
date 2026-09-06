@@ -27,10 +27,23 @@ export const CONTRACTS = {
   internToken: process.env.NEXT_PUBLIC_INTERN_TOKEN_ADDRESS || "",
   beToken: process.env.NEXT_PUBLIC_BE_TOKEN_ADDRESS || "",
   distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR_ADDRESS || "",
+  // PAIR protocol infrastructure, not $INTERN-specific -- same aggregator
+  // and quoter every token on PAIR trades through. Addresses verified
+  // against pair.fund/docs and Blockscout's verified source on 2026-09-07.
+  aggregator:
+    process.env.NEXT_PUBLIC_PAIR_AGGREGATOR_ADDRESS ||
+    "0x9d7741776098aFA315e4D576ede4F2c67a21d8Ce",
+  v4Quoter:
+    process.env.NEXT_PUBLIC_PAIR_V4_QUOTER_ADDRESS ||
+    "0x8Dc178eFB8111BB0973Dd9d722ebeFF267c98F94",
 };
 
 export const PAIR_POOL_URL = process.env.NEXT_PUBLIC_PAIR_POOL_URL || "";
 
 export function isStakingLive() {
   return Boolean(CONTRACTS.internToken && CONTRACTS.distributor);
+}
+
+export function isTradingLive() {
+  return Boolean(CONTRACTS.internToken);
 }

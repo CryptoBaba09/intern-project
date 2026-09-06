@@ -1,14 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { PAIR_POOL_URL } from "../lib/chain";
+import Link from "next/link";
+import { PAIR_POOL_URL, isTradingLive } from "../lib/chain";
 
-// Trading itself lives on PAIR, not on this site -- PAIR already solves
-// swap routing, slippage, and liquidity safely; duplicating that here
-// would mean maintaining our own swap security surface for something
-// PAIR does well already. This is a link out, not a widget.
+// Trading now has two doors that hit the exact same locked liquidity:
+// /trade calls PAIR's own public PairV5MultiPoolAggregator contract
+// directly from this site (see lib/pools.js + trade/TradeView.js), and
+// pair.fund is the other, PAIR-hosted door onto the same pools. Neither
+// custodies funds or adds its own liquidity -- this is not a competing
+// swap implementation, it's the same router with our own front end on it.
 export default function BuyCta() {
-  const isLive = Boolean(PAIR_POOL_URL);
+  const isLive = isTradingLive();
 
   return (
     <motion.div
@@ -26,20 +29,30 @@ export default function BuyCta() {
       </div>
 
       <p className="text-sm text-[#9BA1A6] leading-relaxed mb-5">
-        $INTERN trades on PAIR on Robinhood Chain, quoted directly in
-        tokenized Bloom Energy (BE) — permanently locked liquidity from
-        block one, no bonding curve, no migration.
+        $INTERN trades on Robinhood Chain against BE and USDG —
+        permanently locked liquidity from block one, no bonding curve, no
+        migration.
       </p>
 
       {isLive ? (
-        <a
-          href={PAIR_POOL_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors"
-        >
-          TRADE ON PAIR ↗
-        </a>
+        <div className="flex flex-col gap-2">
+          <Link
+            href="/trade"
+            className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors"
+          >
+            BUY / SELL HERE
+          </Link>
+          {PAIR_POOL_URL && (
+            <a
+              href={PAIR_POOL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full rounded-xl border border-[#1B1D1B] text-[#9BA1A6] font-mono text-sm font-medium py-3 hover:border-[#00C805]/50 hover:text-[#EDEEF0] transition-colors"
+            >
+              OR TRADE ON PAIR ↗
+            </a>
+          )}
+        </div>
       ) : (
         <div className="w-full rounded-xl border border-[#1B1D1B] text-[#4A4F54] font-mono text-sm font-medium py-3 text-center">
           TRADING OPENS AT LAUNCH
@@ -47,8 +60,8 @@ export default function BuyCta() {
       )}
 
       <p className="mt-4 font-mono text-[10px] text-[#4A4F54] leading-relaxed">
-        Always verify you&apos;re on pair&apos;s real domain and the
-        contract address on Blockscout before connecting a wallet to trade.
+        Both trade against the same locked pools. Always verify the
+        contract address on Blockscout before connecting a wallet.
       </p>
     </motion.div>
   );
