@@ -116,9 +116,15 @@ export default function GenesisView() {
               ? `$${formatUsd(progress.volumeUsd)} / $${formatUsd(progress.targetUsd)}`
               : progressError
                 ? "Couldn't load live volume right now — refresh to retry."
-                : "Fetching cumulative volume from PAIR…"}
-            {progress?.cappedOut && " (partial count — volume has outgrown this page's fetch cap)"}
+                : "Fetching live volume from PAIR…"}
           </p>
+          {progress?.isRolling24h && (
+            <p className="font-mono text-[10px] text-[#4A4F54] mt-2 leading-relaxed">
+              Rolling 24h volume, not lifetime cumulative — equivalent for now since $INTERN
+              is under a day old, but this will need to become a true running total once
+              older volume starts aging out of that window.
+            </p>
+          )}
         </Reveal>
       </section>
 
