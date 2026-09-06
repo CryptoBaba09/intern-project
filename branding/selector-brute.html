@@ -1,0 +1,31 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<div id="out" style="font-family:monospace;white-space:pre;padding:20px;font-size:14px;"></div>
+<script>
+  const target = "0xb802af88";
+  // Candidate V2 launch function names/shapes -- guessing based on the docs'
+  // description of "Launch V2 launchpad and factory", "policy epoch", modes.
+  const candidates = [
+    "function launchTokenMultiV2((string,string,string,bytes32,tuple(address,uint16)[],address,address,uint8,uint256,uint256,uint256) p) external payable returns (address)",
+    "function launchV2((string,string,string,bytes32,tuple(address,uint16)[],address,address,uint8,uint256,uint256,uint256) p) external payable returns (address)",
+    "function launch((string,string,string,bytes32,tuple(address,uint16)[],address,address,uint8,uint256,uint256,uint256) p) external payable returns (address)",
+    "function createLaunch((string,string,string,bytes32,tuple(address,uint16)[],address,address,uint8,uint256,uint256,uint256) p) external payable returns (address)",
+    "function launchToken((string,string,string,bytes32,tuple(address,uint16)[],address,address,uint8,uint256,uint256,uint256) p) external payable returns (address)",
+    "function launchTokenV2((string,string,string,bytes32,tuple(address,uint16)[],address,address,uint8,uint256,uint256,uint256) p) external payable returns (address)",
+    // Maybe policy mode got added as an extra param on the same struct shape:
+    "function launchTokenMulti((string,string,string,bytes32,tuple(address,uint16)[],address,address,uint8,uint256,uint256,uint256,uint8) p) external payable returns (address)",
+    "function launchTokenMulti((string,string,string,bytes32,tuple(address,uint16)[],address,address,uint8,uint256,uint256,uint256,uint8,address[],uint16[]) p) external payable returns (address)",
+  ];
+  const out = document.getElementById('out');
+  let lines = [];
+  for (const sig of candidates) {
+    try {
+      const iface = new ethers.Interface([sig]);
+      const frag = iface.fragments[0];
+      const sel = frag.selector;
+      lines.push(`${sel}  ${sel === target ? '<<< MATCH' : ''}  ${sig.slice(0,60)}`);
+    } catch (e) {
+      lines.push(`ERROR: ${e.message.slice(0,80)}  ${sig.slice(0,60)}`);
+    }
+  }
+  out.textContent = "target: " + target + "\n\n" + lines.join("\n");
+</script>

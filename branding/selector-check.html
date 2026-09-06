@@ -1,0 +1,16 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<div id="out" style="font-family:monospace;white-space:pre;padding:20px;font-size:16px;"></div>
+<script>
+  const iface = new ethers.Interface([
+    "function launchTokenMulti((string name, string symbol, string metadataURI, bytes32 metadataHash, tuple(address quoteToken, uint16 weightBps)[] allocations, address creatorFeeRecipient, address developerBuyRecipient, uint8 developerBuyPairIndex, uint256 developerTokenAmountOut, uint256 maxQuoteAmountIn, uint256 deadline) p) external payable returns (address)",
+    "function launchFeeWei() view returns (uint256)",
+    "function withdrawLaunchFees()",
+    "function setLaunchFee(uint256)"
+  ]);
+  const out = document.getElementById('out');
+  out.textContent =
+    "launchTokenMulti selector: " + iface.getFunction("launchTokenMulti").selector + "\n" +
+    "launchFeeWei selector: " + iface.getFunction("launchFeeWei").selector + "\n" +
+    "Target selector from real tx: 0xb802af88\n" +
+    "Matches launchTokenMulti: " + (iface.getFunction("launchTokenMulti").selector === "0xb802af88");
+</script>

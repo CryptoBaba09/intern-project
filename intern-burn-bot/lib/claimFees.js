@@ -38,7 +38,7 @@ const ERC20_ABI = ["function balanceOf(address account) view returns (uint256)"]
  * as-is).
  */
 async function claimFees({ wallet, config, dryRun }) {
-  const { positionId, quoteToken } = await getPoolInfo({ provider: wallet.provider, config });
+  const { positionId, quoteToken } = await getPoolInfo({ config });
   const locker = new ethers.Contract(config.feeClaimContractAddress, LOCKER_ABI, wallet);
 
   console.log(`[claimFees] Sweeping fees for locked position #${positionId}...`);

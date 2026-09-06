@@ -46,7 +46,7 @@ async function swapBeForIntern({ wallet, config, beAmount, dryRun }) {
     return 0n;
   }
 
-  const { poolKey } = await getPoolInfo({ provider: wallet.provider, config });
+  const { poolKey } = await getPoolInfo({ config });
 
   const beToken = new ethers.Contract(config.beTokenAddress, ERC20_ABI, wallet);
   const allowance = await beToken.allowance(wallet.address, config.routerAddress);
