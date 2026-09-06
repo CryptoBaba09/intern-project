@@ -25,11 +25,27 @@ function useTokenDecimals(address) {
   return data ?? 18;
 }
 
-function StatCard({ label, value, suffix }) {
+// Raw formatUnits() output is a full-precision decimal string ("1519071.9488818153...")
+// -- unreadable as a stat. This rounds for display only; every on-chain call still
+// uses the exact bigint values, never this formatted string.
+function formatToken(value, decimals, maxFractionDigits = 4) {
+  if (value === undefined) return "—";
+  return Number(formatUnits(value, decimals)).toLocaleString(undefined, {
+    maximumFractionDigits: maxFractionDigits,
+  });
+}
+
+function StatCard({ label, value, suffix, accent }) {
   return (
-    <div className="border border-[#1B1D1B] p-5">
+    <div
+      className={`rounded-2xl border p-5 bg-[#0F1113] ${
+        accent ? "border-[#D9A441]/30" : "border-[#1B1D1B]"
+      }`}
+    >
       <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-2">{label}</p>
-      <p className="font-mono text-2xl text-[#EDEEF0] truncate">
+      <p
+        className={`font-mono text-2xl truncate ${accent ? "text-[#D9A441]" : "text-[#EDEEF0]"}`}
+      >
         {value} {suffix && <span className="text-sm text-[#9BA1A6]">{suffix}</span>}
       </p>
     </div>
@@ -74,11 +90,71 @@ function ConnectPrompt() {
   );
 }
 
+function TxStatusBanner({ pendingLabel, txHash, isConfirming, isConfirmed, error }) {
+  if (!txHash && !error) return null;
+  return (
+    <div
+      className={`rounded-xl border px-4 py-3 mb-6 font-mono text-xs flex items-center justify-between gap-3 ${
+        error
+          ? "border-[#E5484D]/40 text-[#E5484D]"
+          : isConfirmed
+            ? "border-[#00C805]/40 text-[#00C805]"
+            : "border-[#D9A441]/40 text-[#D9A441]"
+      }`}
+    >
+      <span>
+        {error
+          ? error.shortMessage || error.message || "Transaction failed."
+          : isConfirmed
+            ? "Confirmed."
+            : isConfirming
+              ? `${pendingLabel} — confirming…`
+              : "Waiting for wallet confirmation…"}
+      </span>
+      {txHash && (
+        <a
+          href={`https://robinhoodchain.blockscout.com/tx/${txHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline shrink-0 opacity-80 hover:opacity-100"
+        >
+          View on Blockscout ↗
+        </a>
+      )}
+    </div>
+  );
+}
+
+function AmountInput({ value, onChange, onMax, disabled }) {
+  return (
+    <div className="relative mb-4">
+      <input
+        type="text"
+        inputMode="decimal"
+        placeholder="0.0"
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ""))}
+        disabled={disabled}
+        className="w-full bg-[#0B0C0B] border border-[#1B1D1B] rounded-xl pl-4 pr-16 py-3 font-mono text-lg outline-none focus:border-[#00C805]/50 disabled:opacity-50"
+      />
+      <button
+        type="button"
+        onClick={onMax}
+        disabled={disabled}
+        className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-medium text-[#00C805] border border-[#00C805]/30 rounded-lg px-2 py-1 hover:bg-[#00C805]/10 transition-colors disabled:opacity-50"
+      >
+        MAX
+      </button>
+    </div>
+  );
+}
+
 function StakeDashboard() {
   const { address } = useAccount();
   const internDecimals = useTokenDecimals(CONTRACTS.internToken);
   const beDecimals = useTokenDecimals(CONTRACTS.beToken);
 
+  const [mode, setMode] = useState("stake"); // "stake" | "unstake"
   const [stakeAmount, setStakeAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
@@ -120,13 +196,22 @@ function StakeDashboard() {
   const [walletBalance, allowance, staked, earned, totalStaked] =
     data?.map((d) => d.result) ?? [];
 
-  const { writeContract, data: txHash, isPending } = useWriteContract();
+  const { writeContract, data: txHash, isPending, error, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({ hash: txHash });
 
   useEffect(() => {
-    if (isConfirmed) refetch();
+    if (isConfirmed) {
+      refetch();
+      setStakeAmount("");
+      setWithdrawAmount("");
+    }
   }, [isConfirmed, refetch]);
+
+  function switchMode(next) {
+    setMode(next);
+    reset();
+  }
 
   const parsedStakeAmount = useMemo(() => {
     try {
@@ -218,75 +303,103 @@ function StakeDashboard() {
         <motion.div variants={fadeUp}>
           <StatCard
             label="YOUR $INTERN BALANCE"
-            value={
-              walletBalance !== undefined
-                ? formatUnits(walletBalance, internDecimals)
-                : "—"
-            }
+            value={formatToken(walletBalance, internDecimals)}
           />
         </motion.div>
         <motion.div variants={fadeUp}>
           <StatCard
             label="YOUR STAKED $INTERN"
-            value={staked !== undefined ? formatUnits(staked, internDecimals) : "—"}
+            value={formatToken(staked, internDecimals)}
           />
         </motion.div>
         <motion.div variants={fadeUp}>
           <StatCard
             label="YOUR CLAIMABLE BE"
-            value={earned !== undefined ? formatUnits(earned, beDecimals) : "—"}
+            value={formatToken(earned, beDecimals, 6)}
+            accent
           />
         </motion.div>
       </motion.div>
 
-      <div className="grid sm:grid-cols-2 gap-6">
-        <div className="border border-[#1B1D1B] p-6">
-          <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-4">STAKE</p>
-          <input
-            type="text"
-            inputMode="decimal"
-            placeholder="0.0"
-            value={stakeAmount}
-            onChange={(e) => setStakeAmount(e.target.value.replace(/[^0-9.]/g, ""))}
-            className="w-full bg-[#0B0C0B] border border-[#1B1D1B] rounded-xl px-4 py-3 font-mono text-lg outline-none focus:border-[#00C805]/50 mb-4"
-          />
-          {needsApproval ? (
+      <TxStatusBanner
+        pendingLabel={needsApproval ? "Approving" : mode === "stake" ? "Staking" : "Unstaking"}
+        txHash={txHash}
+        isConfirming={isConfirming}
+        isConfirmed={isConfirmed}
+        error={error}
+      />
+
+      <div className="rounded-2xl border border-[#1B1D1B] bg-[#0F1113] p-6">
+        <div className="flex gap-2 mb-5">
+          {["stake", "unstake"].map((m) => (
             <button
-              onClick={handleApprove}
-              disabled={busy || parsedStakeAmount === 0n}
-              className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40"
+              key={m}
+              onClick={() => switchMode(m)}
+              className={`flex-1 rounded-xl font-mono text-sm font-medium py-2.5 transition-colors ${
+                mode === m
+                  ? "bg-[#00C805] text-[#0B0C0B]"
+                  : "border border-[#1B1D1B] text-[#9BA1A6] hover:border-[#00C805]/50"
+              }`}
             >
-              {busy ? "CONFIRMING…" : "APPROVE $INTERN"}
+              {m.toUpperCase()}
             </button>
-          ) : (
-            <button
-              onClick={handleStake}
-              disabled={busy || parsedStakeAmount === 0n}
-              className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40"
-            >
-              {busy ? "CONFIRMING…" : "STAKE"}
-            </button>
-          )}
+          ))}
         </div>
 
-        <div className="border border-[#1B1D1B] p-6">
-          <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-4">UNSTAKE</p>
-          <input
-            type="text"
-            inputMode="decimal"
-            placeholder="0.0"
-            value={withdrawAmount}
-            onChange={(e) => setWithdrawAmount(e.target.value.replace(/[^0-9.]/g, ""))}
-            className="w-full bg-[#0B0C0B] border border-[#1B1D1B] rounded-xl px-4 py-3 font-mono text-lg outline-none focus:border-[#00C805]/50 mb-4"
-          />
-          <button
-            onClick={handleWithdraw}
-            disabled={busy || parsedWithdrawAmount === 0n}
-            className="w-full rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium py-3 hover:border-[#00C805]/50 transition-colors disabled:opacity-40"
-          >
-            {busy ? "CONFIRMING…" : "UNSTAKE"}
-          </button>
-        </div>
+        {mode === "stake" ? (
+          <>
+            <AmountInput
+              value={stakeAmount}
+              onChange={setStakeAmount}
+              onMax={() =>
+                walletBalance !== undefined &&
+                setStakeAmount(formatUnits(walletBalance, internDecimals))
+              }
+              disabled={busy}
+            />
+            {needsApproval ? (
+              <button
+                onClick={handleApprove}
+                disabled={busy || parsedStakeAmount === 0n}
+                className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40"
+              >
+                {busy ? "CONFIRMING…" : "APPROVE $INTERN"}
+              </button>
+            ) : (
+              <button
+                onClick={handleStake}
+                disabled={busy || parsedStakeAmount === 0n}
+                className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40"
+              >
+                {busy ? "CONFIRMING…" : "STAKE"}
+              </button>
+            )}
+            {needsApproval && (
+              <p className="font-mono text-[10px] text-[#4A4F54] mt-3 text-center">
+                One-time approval, then a separate STAKE transaction — standard for any
+                ERC-20, not two charges.
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <AmountInput
+              value={withdrawAmount}
+              onChange={setWithdrawAmount}
+              onMax={() =>
+                staked !== undefined && setWithdrawAmount(formatUnits(staked, internDecimals))
+              }
+              disabled={busy}
+            />
+            <button
+              onClick={handleWithdraw}
+              disabled={busy || parsedWithdrawAmount === 0n}
+              className="w-full rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium py-3 hover:border-[#00C805]/50 transition-colors disabled:opacity-40"
+            >
+              {busy ? "CONFIRMING…" : "UNSTAKE"}
+            </button>
+          </>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mt-6">
@@ -307,8 +420,7 @@ function StakeDashboard() {
       </div>
 
       <p className="font-mono text-[10px] text-[#4A4F54] mt-8 leading-relaxed max-w-2xl">
-        Total $INTERN staked across all wallets:{" "}
-        {totalStaked !== undefined ? formatUnits(totalStaked, internDecimals) : "—"}.
+        Total $INTERN staked across all wallets: {formatToken(totalStaked, internDecimals, 0)}.
         Staking is non-custodial — this contract only holds your $INTERN
         while staked, and only pays out BE it has actually received. It has
         NOT had a professional security audit; stake at your own risk.
