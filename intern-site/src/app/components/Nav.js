@@ -1,55 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { fadeUp, staggerContainer } from "./motion";
 import ConnectWalletButton from "./ConnectWalletButton";
 import Mascot from "./Mascot";
 
 const LINKS = [
-  { href: "/trade", label: "TRADE" },
-  { href: "/marketplace", label: "MARKETPLACE" },
-  { href: "/tokenomics", label: "TOKENOMICS" },
-  { href: "/stake", label: "STAKE" },
-  { href: "/roadmap", label: "ROADMAP" },
-  { href: "/docs", label: "DOCS" },
+  { href: "/trade", label: "Trade" },
+  { href: "/stake", label: "Stake" },
+  { href: "/marketplace", label: "Marketplace" },
+  { href: "/personas", label: "Personas" },
+  { href: "/tokenomics", label: "Tokenomics" },
+  { href: "/roadmap", label: "Roadmap" },
+  { href: "/docs", label: "Docs" },
 ];
 
 const EXTERNAL_LINKS = [
-  { href: "https://robinhoodchain.blockscout.com", label: "CONTRACT ↗" },
-  { href: "https://x.com/Internburn_xyz", label: "X ↗" },
+  { href: "https://robinhoodchain.blockscout.com/address/0x692f212e73aef5c81ee74e46867ffb139eb25555", label: "Contract" },
+  { href: "https://x.com/Internburn_xyz", label: "X" },
+  { href: "https://t.me/internburnxyz", label: "Telegram" },
 ];
 
-function NavLink({ href, children, active, onClick }) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={`relative pb-1 transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:origin-left after:bg-[#00C805] after:transition-transform after:duration-300 ${
-        active
-          ? "text-[#EDEEF0] after:scale-x-100"
-          : "text-[#9BA1A6] hover:text-[#EDEEF0] after:scale-x-0 hover:after:scale-x-100"
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
-
-function ExternalNavLink({ href, children }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="relative pb-1 text-[#9BA1A6] transition-colors hover:text-[#EDEEF0] after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#00C805] after:transition-transform after:duration-300 hover:after:scale-x-100"
-    >
-      {children}
-    </a>
-  );
-}
-
+// Deliberately not the old "logo + eight links jammed into the top bar"
+// layout. One quiet top bar -- logo, Connect, a single menu toggle -- on
+// every breakpoint, with everything else living in one expanding panel.
+// Restraint is the design decision here, not a missing feature.
 function MenuIcon({ open }) {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -71,6 +49,44 @@ function MenuIcon({ open }) {
   );
 }
 
+function PanelLink({ href, children, active, external, onClick }) {
+  const className =
+    "group flex items-baseline justify-between gap-4 py-3.5 border-b border-[#1B1D1B] transition-colors";
+  const labelClass = `font-mono text-2xl sm:text-3xl tracking-tight transition-colors ${
+    active ? "text-[#00C805]" : "text-[#EDEEF0] group-hover:text-[#00C805]"
+  }`;
+
+  if (external) {
+    return (
+      <motion.a
+        variants={fadeUp}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
+        <span className={labelClass}>{children}</span>
+        <span className="font-mono text-xs text-[#4A4F54] group-hover:text-[#9BA1A6] transition-colors shrink-0">
+          ↗
+        </span>
+      </motion.a>
+    );
+  }
+
+  return (
+    <motion.div variants={fadeUp}>
+      <Link href={href} onClick={onClick} className={className}>
+        <span className={labelClass}>{children}</span>
+        {active && (
+          <span className="font-mono text-[10px] text-[#00C805] tracking-widest shrink-0">
+            HERE
+          </span>
+        )}
+      </Link>
+    </motion.div>
+  );
+}
+
 export default function Nav() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -86,77 +102,119 @@ export default function Nav() {
     ["rgba(27,29,27,0)", "rgba(27,29,27,1)"]
   );
 
+  // Close the panel on route change so a link tap doesn't leave it open
+  // behind the new page.
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll while the panel is open -- it overlays real content
+  // rather than pushing it down, so a scrollable page behind it reads as
+  // a bug, not a feature.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [menuOpen]);
+
   return (
-    <motion.nav
-      style={{ backgroundColor: background, borderColor }}
-      className="sticky top-0 z-50 w-full border-b backdrop-blur-md"
-    >
-      <div className="px-6 py-4 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Mascot className="w-7 h-7" />
-          <span className="font-mono text-sm tracking-widest text-[#EDEEF0]">
-            $INTERN
-          </span>
-        </Link>
+    <>
+      <motion.nav
+        style={{ backgroundColor: background, borderColor }}
+        className="sticky top-0 z-50 w-full border-b backdrop-blur-md"
+      >
+        <div className="px-6 py-4 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <Mascot className="w-7 h-7" />
+            <span className="font-mono text-sm tracking-widest text-[#EDEEF0]">
+              $INTERN
+            </span>
+          </Link>
 
-        <div className="hidden md:flex items-center gap-6 font-mono text-xs">
-          {LINKS.map((link) => (
-            <NavLink key={link.href} href={link.href} active={pathname === link.href}>
-              {link.label}
-            </NavLink>
-          ))}
-          {EXTERNAL_LINKS.map((link) => (
-            <ExternalNavLink key={link.href} href={link.href}>
-              {link.label}
-            </ExternalNavLink>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="scale-90 origin-right">
-            <ConnectWalletButton />
+          <div className="flex items-center gap-3">
+            <div className="scale-90 origin-right">
+              <ConnectWalletButton />
+            </div>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Toggle menu"
+              aria-expanded={menuOpen}
+              className="text-[#EDEEF0] p-2 -mr-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+            >
+              <MenuIcon open={menuOpen} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Toggle menu"
-            aria-expanded={menuOpen}
-            className="md:hidden text-[#EDEEF0] p-1"
-          >
-            <MenuIcon open={menuOpen} />
-          </button>
         </div>
-      </div>
+      </motion.nav>
 
       <AnimatePresence>
         {menuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="md:hidden overflow-hidden border-t border-[#1B1D1B] bg-[#0B0C0B]"
-          >
-            <div className="px-6 py-5 flex flex-col gap-4 font-mono text-sm">
-              {LINKS.map((link) => (
-                <NavLink
-                  key={link.href}
-                  href={link.href}
-                  active={pathname === link.href}
-                  onClick={() => setMenuOpen(false)}
+          <>
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 z-40 bg-black/50"
+            />
+            <motion.div
+              key="panel"
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed top-[64px] inset-x-0 z-40 max-h-[calc(100vh-64px)] overflow-y-auto border-b border-[#1B1D1B] bg-[#0B0C0B]"
+            >
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+                className="px-6 py-8 max-w-2xl mx-auto w-full"
+              >
+                <div>
+                  {LINKS.map((link) => (
+                    <PanelLink
+                      key={link.href}
+                      href={link.href}
+                      active={pathname === link.href}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {link.label}
+                    </PanelLink>
+                  ))}
+                </div>
+
+                <motion.p
+                  variants={fadeUp}
+                  className="font-mono text-xs text-[#4A4F54] tracking-widest mt-8 mb-3"
                 >
-                  {link.label}
-                </NavLink>
-              ))}
-              {EXTERNAL_LINKS.map((link) => (
-                <ExternalNavLink key={link.href} href={link.href}>
-                  {link.label}
-                </ExternalNavLink>
-              ))}
-            </div>
-          </motion.div>
+                  ELSEWHERE
+                </motion.p>
+                <div className="flex flex-wrap gap-x-8 gap-y-1">
+                  {EXTERNAL_LINKS.map((link) => (
+                    <motion.a
+                      key={link.href}
+                      variants={fadeUp}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-sm text-[#9BA1A6] hover:text-[#00C805] transition-colors py-1"
+                    >
+                      {link.label} ↗
+                    </motion.a>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </>
   );
 }

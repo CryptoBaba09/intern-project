@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "intern-site",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "intern-site", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}
