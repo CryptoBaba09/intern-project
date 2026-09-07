@@ -11,6 +11,7 @@ import Mascot from "./Mascot";
 const LINKS = [
   { href: "/trade", label: "Trade" },
   { href: "/stake", label: "Stake" },
+  { href: "/burn-to-create", label: "Burn to Create" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/personas", label: "Personas" },
   { href: "/tokenomics", label: "Tokenomics" },

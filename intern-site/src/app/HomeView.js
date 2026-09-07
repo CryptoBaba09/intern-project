@@ -230,6 +230,26 @@ function Hero() {
   );
 }
 
+function CampaignBanner() {
+  return (
+    <Link href="/burn-to-create" className="block group">
+      <section className="px-6 py-4 border-y border-[#D9A441]/30 bg-[#D9A441]/[0.06] hover:bg-[#D9A441]/[0.1] transition-colors">
+        <div className="max-w-6xl mx-auto w-full flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
+          <span className="font-mono text-[10px] text-[#D9A441] tracking-widest border border-[#D9A441]/40 rounded-full px-2 py-0.5">
+            LIVE NOW · THRU SEP 21
+          </span>
+          <span className="text-sm text-[#EDEEF0]">
+            <strong className="font-semibold">Burn to Create</strong> — burn $INTERN, make real content with the credit, win a 5x match + Genesis whitelist.
+          </span>
+          <span className="font-mono text-xs text-[#D9A441] group-hover:underline shrink-0">
+            See the rules →
+          </span>
+        </div>
+      </section>
+    </Link>
+  );
+}
+
 function TrustStrip() {
   const items = [
     "1,000,000,000 FIXED SUPPLY",
@@ -460,6 +480,7 @@ export default function HomeView() {
   return (
     <>
       <Hero />
+      <CampaignBanner />
       <TrustStrip />
       <HowItWorks />
       <MeetTheInterns />
