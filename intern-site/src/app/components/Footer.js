@@ -9,7 +9,10 @@ export default function Footer() {
           advice. Staking involves smart contract risk. Verify every
           contract address on Blockscout before interacting with it.
         </p>
-        <p>Built by Ponsfamily</p>
+        <div className="text-left sm:text-right shrink-0">
+          <p>$INTERN Family</p>
+          <p>Built on pair.fund</p>
+        </div>
       </div>
     </footer>
   );
