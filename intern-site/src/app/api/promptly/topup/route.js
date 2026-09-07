@@ -73,8 +73,18 @@ export async function POST(req) {
     }
 
     // Verify the burn for real, from the receipt -- never trust a
-    // client-supplied amount.
-    const receipt = await publicClient.getTransactionReceipt({ hash: txHash });
+    // client-supplied amount. A hash that doesn't exist yet (typo, or a
+    // tx that hasn't confirmed) throws here rather than returning null --
+    // caught separately so it reads as a normal 400, not a scary 500.
+    let receipt;
+    try {
+      receipt = await publicClient.getTransactionReceipt({ hash: txHash });
+    } catch {
+      return Response.json(
+        { error: "Couldn't find that transaction on-chain yet. Make sure it's confirmed and try again." },
+        { status: 400 }
+      );
+    }
     if (!receipt || receipt.status !== "success") {
       return Response.json({ error: "That transaction isn't a confirmed success." }, { status: 400 });
     }
