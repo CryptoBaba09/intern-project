@@ -16,9 +16,9 @@ const INTERNS = [
   {
     name: "Rendo",
     role: "Media Intern",
-    status: "IN DESIGN",
-    body: "Your own digital $INTERN avatar for content creation. Staking unlocks a monthly allowance; need more than that, and each extra generation costs a per-video $INTERN fee — burned.",
-    fee: "Stake for an allowance, or pay per generation — burned",
+    status: "BETA LIVE",
+    body: "Real text-generation beta is live today, gated by your actual staked balance — captions, post ideas, scripts. The full AI video avatar vision is still in design, not live yet.",
+    fee: "Free within your tier's daily limit — no per-generation fee yet",
     href: "/personas",
   },
   {

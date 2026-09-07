@@ -27,8 +27,8 @@ function ManyHats() {
     {
       n: "04",
       title: "Content-creation key",
-      body: "Stake tiers unlock a digital $INTERN avatar for content creation.",
-      status: "IN DESIGN",
+      body: "Text-generation beta is live now, gated by real stake. Full video avatars still in design.",
+      status: "BETA LIVE",
     },
     {
       n: "05",
@@ -111,8 +111,8 @@ function Protocol() {
     },
     {
       title: "Digital $INTERN personas",
-      body: "Stake tiers unlock a personal AI avatar for content creation — a promotion ladder from Intern to Full-Time Offer.",
-      status: "IN DESIGN",
+      body: "Rendo's text-generation beta is live, gated by real stake tiers. Full AI video avatars still in design.",
+      status: "BETA LIVE",
       href: "/personas",
     },
     {

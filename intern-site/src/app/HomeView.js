@@ -212,8 +212,8 @@ function MeetTheInterns() {
     {
       name: "Rendo",
       role: "Media Intern",
-      status: "IN DESIGN",
-      body: "A personal AI avatar for content creation, unlocked by staking $INTERN.",
+      status: "BETA LIVE",
+      body: "Real text-generation beta, gated by your stake tier. Full AI video avatars still in design.",
     },
     {
       name: "Promptly",
