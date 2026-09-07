@@ -3,7 +3,7 @@ import InferenceCreditsView from "./InferenceCreditsView";
 export const metadata = {
   title: "Inference Credits",
   description:
-    "Preview: staked $INTERN would earn a pro-rata share of real LLM inference credit (Claude, GPT, Gemini via OpenRouter), burning an equal dollar of $INTERN per credit issued. Not live yet.",
+    "Burn $INTERN for a real, spend-capped OpenRouter credit top-up — live today. Staked $INTERN earning a pro-rata share of a treasury-funded credit pool is still in design.",
 };
 
 export default function InferenceCreditsPage() {

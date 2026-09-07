@@ -24,9 +24,9 @@ const INTERNS = [
   {
     name: "Promptly",
     role: "Inference Intern",
-    status: "IN DESIGN",
-    body: "Routes real LLM inference credit (Claude, GPT, Gemini via OpenRouter) to stakers, funded by treasury fees. Need credit now? Pay $INTERN directly for an instant top-up — burned on the spot.",
-    fee: "Free via staking, or pay $INTERN for an instant top-up — burned",
+    status: "TOP-UP LIVE",
+    body: "The instant top-up is real and live today: burn $INTERN at the live price, get a real spend-capped OpenRouter key — Claude, GPT, Gemini and more. Routing staked $INTERN into a treasury-funded credit pool is still in design; it needs real fee revenue flowing first.",
+    fee: "Burn $INTERN for an instant top-up (live) — free via staking (not live yet)",
     href: "/inference-credits",
   },
   {
@@ -40,9 +40,9 @@ const INTERNS = [
   {
     name: "Div",
     role: "Dividends Intern",
-    status: "EXPLORING",
-    body: "Robinhood Chain stock tokens (BE included) accrue dividends silently. Div points your claimed BE at DRIP — a live third-party protocol — to route that value out. We don't charge on top of DRIP's own fees.",
-    fee: "Free — DRIP charges its own fees, we don't add ours",
+    status: "BLOCKED",
+    body: "The idea: point your claimed BE at DRIP — a real, live protocol on Robinhood Chain — to route out any hidden dividend value. Checked against reality (2026-09-07): BE doesn't pay a real-world dividend today, and DRIP doesn't list it as a supported asset. There's nothing for Div to route yet. Not a build queue item — blocked on Bloom Energy actually paying a dividend first, not on us.",
+    fee: "N/A — blocked on a real-world precondition, not an engineering one",
     href: "https://dripswap.tech",
     external: true,
   },

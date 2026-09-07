@@ -322,8 +322,8 @@ function MeetTheInterns() {
     {
       name: "Promptly",
       role: "Inference Intern",
-      status: "IN DESIGN",
-      body: "Routes real LLM inference credit to stakers — Claude, GPT, Gemini, and more.",
+      status: "TOP-UP LIVE",
+      body: "Burn $INTERN for a real OpenRouter credit top-up today. Routing staked $INTERN into a treasury-funded pool is still in design.",
     },
   ];
   return (
