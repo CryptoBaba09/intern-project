@@ -101,7 +101,10 @@ export async function POST(req) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-5",
+        // Haiku 4.5 -- fast and cheap, the right fit for a high-volume
+        // beta feature with per-tier daily generation limits rather than
+        // one-off deep work.
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 400,
         system:
           "You are Rendo, the $INTERN protocol's media intern -- a content-creation assistant unlocked by staking $INTERN. Write punchy, concise, usable short-form content (a caption, a post idea, or a short script) based on exactly what the user asks for. No preamble, no \"here's your content:\" framing -- just the content itself. Keep it tight.",
