@@ -6,24 +6,24 @@ import { motion } from "framer-motion";
 import { useAccount, useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
+import Mascot from "../components/Mascot";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { CONTRACTS, isStakingLive } from "../lib/chain";
 import { ERC20_ABI, STAKING_REWARDS_ABI } from "../lib/abis";
 
+// Rendo's color, same trick as the Genesis trait previews and the crew
+// card: a CSS hue-rotate over the same base Blaze artwork rather than a
+// second hand-authored character -- keeps the "family" visually
+// consistent and honest about not having commissioned separate art yet.
 function AvatarMock({ gradient, label }) {
   return (
     <div
-      className={`aspect-[3/4] rounded-2xl ${gradient} relative overflow-hidden border border-[#1B1D1B] flex items-end p-4`}
+      className={`aspect-[3/4] rounded-2xl ${gradient} relative overflow-hidden border border-[#1B1D1B] flex items-end justify-center p-4`}
     >
-      <svg
-        viewBox="0 0 100 100"
-        className="absolute inset-0 w-full h-full opacity-[0.15]"
-        aria-hidden
-      >
-        <circle cx="50" cy="38" r="18" fill="#EDEEF0" />
-        <path d="M14 100 C14 70 30 58 50 58 C70 58 86 70 86 100 Z" fill="#EDEEF0" />
-      </svg>
-      <span className="font-mono text-[9px] tracking-widest text-[#EDEEF0]/70 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10">
+      <div className="absolute inset-0 flex items-center justify-center" style={{ filter: "hue-rotate(80deg) saturate(1.15)" }}>
+        <Mascot className="w-3/4 h-3/4" />
+      </div>
+      <span className="relative font-mono text-[9px] tracking-widest text-[#EDEEF0]/70 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10">
         {label}
       </span>
     </div>
@@ -282,7 +282,7 @@ export default function PersonasView() {
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
               className="border border-[#1B1D1B] p-5"
             >
-              <AvatarMock gradient={tier.gradient} label="MOCKUP" />
+              <AvatarMock gradient={tier.gradient} label="RENDO · ILLUSTRATIVE" />
               <div className="mt-4">
                 <h3 className="text-lg font-medium mb-1">{tier.name}</h3>
                 <p className="font-mono text-xs text-[#D9A441] mb-4">
