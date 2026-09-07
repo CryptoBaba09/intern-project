@@ -46,9 +46,9 @@ const NETWORK_ROWS = [
 ];
 
 const CONTRACT_ROWS = [
-  ["$INTERN token", "Set at launch on PAIR — not live yet, see /roadmap"],
+  ["$INTERN token", "0x692f212e73aef5c81ee74e46867ffb139eb25555"],
   ["BE (pairing asset)", "0x822cC93fFD030293E9842C30bBD678f530701867"],
-  ["InternStakingRewards", "Deployed once $INTERN is live — see /stake"],
+  ["InternStakingRewards", "0xe7804319Ea528CfED8C7908A4197EdE0ae44895a"],
   ["PAIR Launchpad (V5)", "0x8660A7F019C7943b0b0A91B8E39AFf3b6DB6Ae62"],
   ["PairV4Locker (fee claims)", "0xeFcF476E8870fB3eb8680f039414fdcCE6C2a117"],
   ["PairV5MultiPoolAggregator (swaps)", "0x9d7741776098aFA315e4D576ede4F2c67a21d8Ce"],
@@ -96,10 +96,10 @@ export default function DocsView() {
           Deployed addresses
         </Reveal>
         <Reveal as="p" delay={0.1} className="text-[#9BA1A6] text-sm leading-relaxed mb-6 max-w-2xl">
-          PAIR's protocol contracts already exist on-chain — they're
-          protocol-wide, not specific to $INTERN, so they're real today
-          even before $INTERN itself launches. Only $INTERN's own token
-          address and its staking contract wait on launch.
+          $INTERN is live — every address below is real and deployed. The
+          PAIR contracts are protocol-wide, not specific to $INTERN, so
+          they'd have been real even before launch; the token and staking
+          contract are $INTERN's own.
         </Reveal>
         <Reveal>
           <InfoTable rows={CONTRACT_ROWS} />
@@ -181,19 +181,21 @@ const [staked, earned, totalStaked] = await Promise.all([
 
           <motion.div variants={fadeUp}>
             <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-3">
-              CURRENT $INTERN SUPPLY (BURN-ADJUSTED)
+              REAL CUMULATIVE BURNS (NOT totalSupply())
             </p>
-            <CodeBlock>{`const supplyAbi = parseAbi(["function totalSupply() view returns (uint256)"]);
+            <CodeBlock>{`const balanceAbi = parseAbi(["function balanceOf(address account) view returns (uint256)"]);
+const DEAD_ADDRESS = "0x000000000000000000000000000000000000dEaD";
 
-const currentSupply = await client.readContract({
+// $INTERN's burn bot sends tokens to the dead address via a plain
+// transfer(), not a real burn() call -- so totalSupply() NEVER changes
+// and can't be used to measure burns. This address's own balance is
+// the real, cumulative burn total. Verify it yourself on Blockscout.
+const burned = await client.readContract({
   address: INTERN_TOKEN_ADDRESS,
-  abi: supplyAbi,
-  functionName: "totalSupply",
-});
-
-// Standard ERC20 totalSupply() already reflects every burn to the dead
-// address as a real transfer -- no separate "burned" tracker needed.
-const burned = 1_000_000_000n * 10n ** 18n - currentSupply;`}</CodeBlock>
+  abi: balanceAbi,
+  functionName: "balanceOf",
+  args: [DEAD_ADDRESS],
+});`}</CodeBlock>
           </motion.div>
         </motion.div>
       </section>
