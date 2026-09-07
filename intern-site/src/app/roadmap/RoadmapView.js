@@ -39,8 +39,8 @@ function ManyHats() {
     {
       n: "06",
       title: "Inference credit key",
-      body: "Staked $INTERN earns a share of real LLM inference credit — spend it on Claude, GPT, Gemini, and more.",
-      status: "IN DESIGN",
+      body: "Burn $INTERN for an instant OpenRouter credit top-up — live now. Staking into a shared credit pool is still in design.",
+      status: "TOP-UP LIVE",
     },
     {
       n: "07",
@@ -117,8 +117,8 @@ function Protocol() {
     },
     {
       title: "Inference credits",
-      body: "Staked $INTERN earns a pro-rata share of real LLM inference credit — spend it on Claude, GPT, Gemini, and more. Every dollar issued burns an equal dollar of $INTERN.",
-      status: "IN DESIGN",
+      body: "Burn $INTERN for an instant OpenRouter credit top-up — live today. Staked $INTERN earning a pro-rata share of a treasury-funded credit pool is still in design.",
+      status: "TOP-UP LIVE",
       href: "/inference-credits",
     },
     {
@@ -189,7 +189,9 @@ function Protocol() {
               </div>
               <p className="text-sm text-[#9BA1A6] leading-relaxed">{item.body}</p>
               {item.href && (
-                <p className="font-mono text-xs text-[#00C805] mt-3">See preview →</p>
+                <p className="font-mono text-xs text-[#00C805] mt-3">
+                  {item.status.includes("LIVE") ? "Try it live →" : "See preview →"}
+                </p>
               )}
             </>
           );
