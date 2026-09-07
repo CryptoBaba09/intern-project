@@ -1,14 +1,137 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useReadContract } from "wagmi";
+import { formatUnits } from "viem";
 import ParticleField from "./components/ParticleField";
 import BuyCta from "./components/BuyCta";
 import Mascot from "./components/Mascot";
+import AnimatedNumber from "./components/AnimatedNumber";
 import { Reveal, fadeUp, staggerContainer } from "./components/motion";
 import { formatNumber } from "./lib/format";
+import { CONTRACTS, DEAD_ADDRESS, isStakingLive, isTradingLive } from "./lib/chain";
+import { ERC20_ABI, STAKING_REWARDS_ABI } from "./lib/abis";
 
 const LAUNCH_SUPPLY = 1_000_000_000;
+
+// Real, live numbers pulled from chain + PAIR's own market API -- the same
+// proof-of-traction pattern PARE's homepage uses (a small live stat row
+// right under the hero CTAs), but every figure here is $INTERN's own,
+// read the same way the tokenomics/stake pages already read it (see
+// LiveBurnTicker in TokenomicsView.js and totalStaked in StakeView.js).
+function useLiveStats() {
+  const { data: burnedRaw } = useReadContract({
+    address: CONTRACTS.internToken,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [DEAD_ADDRESS],
+    query: { enabled: isTradingLive(), refetchInterval: 15000 },
+  });
+  const { data: decimals } = useReadContract({
+    address: CONTRACTS.internToken,
+    abi: ERC20_ABI,
+    functionName: "decimals",
+    query: { enabled: isTradingLive() },
+  });
+  const { data: totalStakedRaw } = useReadContract({
+    address: CONTRACTS.distributor,
+    abi: STAKING_REWARDS_ABI,
+    functionName: "totalStaked",
+    query: { enabled: isStakingLive(), refetchInterval: 15000 },
+  });
+
+  const [volumeUsd, setVolumeUsd] = useState(null);
+  useEffect(() => {
+    if (!isTradingLive()) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/genesis-progress");
+        const data = await res.json();
+        if (!cancelled && typeof data.volumeUsd === "number") setVolumeUsd(data.volumeUsd);
+      } catch {
+        // Rolling-window volume is a nice-to-have on the homepage, not
+        // critical -- fail quiet and just keep showing the last value.
+      }
+    }
+    load();
+    const id = setInterval(load, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  const burned = burnedRaw !== undefined ? Number(formatUnits(burnedRaw, decimals ?? 18)) : null;
+  const staked = totalStakedRaw !== undefined ? Number(formatUnits(totalStakedRaw, decimals ?? 18)) : null;
+
+  return { burned, staked, volumeUsd };
+}
+
+function LiveStatStrip() {
+  const { burned, staked, volumeUsd } = useLiveStats();
+
+  if (!isTradingLive()) {
+    return (
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="flex gap-4 font-mono text-xs text-[#9BA1A6]"
+      >
+        <div>
+          <p className="text-[#EDEEF0] text-sm">{formatNumber(LAUNCH_SUPPLY)}</p>
+          <p>FIXED SUPPLY</p>
+        </div>
+        <div className="w-px bg-[#1B1D1B]" />
+        <div>
+          <p className="text-[#EDEEF0] text-sm">70/20/10</p>
+          <p>BURN / STAKE / TREASURY</p>
+        </div>
+        <div className="w-px bg-[#1B1D1B]" />
+        <div>
+          <p className="text-[#EDEEF0] text-sm">0%</p>
+          <p>MINT FUNCTION</p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <p className="font-mono text-[10px] text-[#00C805] tracking-widest mb-3 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#00C805] ember-pulse" />
+        LIVE · READ DIRECTLY FROM CHAIN
+      </p>
+      <div className="flex flex-wrap gap-x-6 gap-y-4 font-mono text-xs text-[#9BA1A6]">
+        <div>
+          <p className="text-[#EDEEF0] text-sm tabular-nums">
+            {burned === null ? "—" : <AnimatedNumber value={Math.round(burned)} />}
+          </p>
+          <p>$INTERN BURNED</p>
+        </div>
+        <div className="w-px bg-[#1B1D1B]" />
+        <div>
+          <p className="text-[#EDEEF0] text-sm tabular-nums">
+            {staked === null ? "—" : <AnimatedNumber value={Math.round(staked)} />}
+          </p>
+          <p>$INTERN STAKED</p>
+        </div>
+        <div className="w-px bg-[#1B1D1B]" />
+        <div>
+          <p className="text-[#EDEEF0] text-sm tabular-nums">
+            {volumeUsd === null ? "—" : `$${formatNumber(Math.round(volumeUsd))}`}
+          </p>
+          <p>24H VOLUME</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 function Hero() {
   return (
@@ -74,26 +197,7 @@ function Hero() {
               STAKE FOR BE
             </Link>
           </motion.div>
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="flex gap-4 font-mono text-xs text-[#9BA1A6]"
-          >
-            <div>
-              <p className="text-[#EDEEF0] text-sm">{formatNumber(LAUNCH_SUPPLY)}</p>
-              <p>FIXED SUPPLY</p>
-            </div>
-            <div className="w-px bg-[#1B1D1B]" />
-            <div>
-              <p className="text-[#EDEEF0] text-sm">70/20/10</p>
-              <p>BURN / STAKE / TREASURY</p>
-            </div>
-            <div className="w-px bg-[#1B1D1B]" />
-            <div>
-              <p className="text-[#EDEEF0] text-sm">0%</p>
-              <p>MINT FUNCTION</p>
-            </div>
-          </motion.div>
+          <LiveStatStrip />
         </motion.div>
 
         <motion.div
