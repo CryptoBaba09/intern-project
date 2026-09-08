@@ -64,8 +64,16 @@ export function randomPersona() {
 // Keyword -> topic gif map for passive meme triggers. Checked in order;
 // first match wins. Deliberately narrow keywords so the bot doesn't fire
 // on every message that contains "the" or "and".
+//
+// Deliberately NOT using x-gif-burn-ticker.gif here (or anywhere the bot
+// sends live data) -- it's a static promotional asset with a specific
+// burn count rendered into the image itself, frozen at generation time.
+// It goes stale the moment the real burn total moves, which is the
+// opposite of what this bot is supposed to guarantee. x-gif-blaze.gif is
+// just the character, no numbers baked in -- the real number only ever
+// comes from the live chain read in the caption/text.
 export const TOPIC_GIFS = [
-  { keywords: ["burn", "burned", "burning", "dead wallet", "deflation"], gif: "/bot-assets/x-gif-burn-ticker.gif", caption: "live, read straight off the dead address 🔥" },
+  { keywords: ["burn", "burned", "burning", "dead wallet", "deflation"], gif: "/bot-assets/x-gif-blaze.gif", caption: "live, read straight off the dead address 🔥 (try /burn for the exact number)" },
   { keywords: ["stake", "staking", "staked", "apr", "rewards"], gif: "/bot-assets/x-gif-stake.gif", caption: "stake it, don't just hold it." },
   { keywords: ["trade", "chart", "price", "pump", "dump", "buy", "sell"], gif: "/bot-assets/x-gif-trade.gif", caption: "checked live, not vibes." },
   { keywords: ["credit", "credits", "inference", "openrouter", "promptly", "ai key"], gif: "/bot-assets/x-gif-promptly.gif", caption: "burn $INTERN, walk away with a real API key." },

@@ -168,7 +168,12 @@ async function handleCommand(cmd, chatId, messageId) {
         burned !== null
           ? `${Math.round(burned).toLocaleString()} $INTERN burned, permanently. Read straight off the dead address, live.`
           : "Couldn't read the burn total right now -- try again in a bit.";
-      return sendAnimation(chatId, "/bot-assets/x-gif-burn-ticker.gif", text, messageId);
+      // x-gif-burn-ticker.gif is deliberately not used here -- it's a
+      // static asset with a specific count baked into the image, so it
+      // goes stale the moment the real total moves. x-gif-blaze.gif has
+      // no numbers in it; the real number only ever comes from the text
+      // above, read live from the dead address on every call.
+      return sendAnimation(chatId, "/bot-assets/x-gif-blaze.gif", text, messageId);
     }
     case "/price": {
       const price = await getLivePrice();
