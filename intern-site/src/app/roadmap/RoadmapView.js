@@ -52,7 +52,7 @@ function ManyHats() {
 
   return (
     <section className="px-6 pt-16 pb-20 max-w-6xl mx-auto w-full">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         MANY HATS
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-2">
@@ -61,7 +61,7 @@ function ManyHats() {
       <Reveal
         as="p"
         delay={0.1}
-        className="text-[#9BA1A6] text-base leading-relaxed max-w-2xl mb-10"
+        className="text-[var(--color-muted)] text-base leading-relaxed max-w-2xl mb-10"
       >
         The future of work runs on agents, not headcount. In crypto, an
         intern is never just one thing either — $INTERN is built to stay
@@ -80,16 +80,16 @@ function ManyHats() {
             variants={fadeUp}
             whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="border border-[#1B1D1B] p-6"
+            className="border border-[var(--color-line)] p-6"
           >
             <div className="flex items-center justify-between mb-4">
-              <p className="font-mono text-xs text-[#4A4F54]">{h.n}</p>
-              <span className="font-mono text-[10px] text-[#9BA1A6] border border-[#1B1D1B] rounded-full px-2 py-0.5">
+              <p className="font-mono text-xs text-[var(--color-muted-2)]">{h.n}</p>
+              <span className="font-mono text-[10px] text-[var(--color-muted)] border border-[var(--color-line)] rounded-full px-2 py-0.5">
                 {h.status}
               </span>
             </div>
             <h3 className="text-lg font-medium mb-2">{h.title}</h3>
-            <p className="text-sm text-[#9BA1A6] leading-relaxed">{h.body}</p>
+            <p className="text-sm text-[var(--color-muted)] leading-relaxed">{h.body}</p>
           </motion.div>
         ))}
       </motion.div>
@@ -157,7 +157,7 @@ function Protocol() {
 
   return (
     <section className="px-6 py-20 max-w-6xl mx-auto w-full">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         PROTOCOL
       </Reveal>
       <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-2">
@@ -166,7 +166,7 @@ function Protocol() {
       <Reveal
         as="p"
         delay={0.1}
-        className="text-[#9BA1A6] text-base leading-relaxed max-w-2xl mb-10"
+        className="text-[var(--color-muted)] text-base leading-relaxed max-w-2xl mb-10"
       >
         $INTERN is the settlement layer for a growing set of things you can
         do with it — starting with hiring an AI agent, and going from there.
@@ -176,20 +176,20 @@ function Protocol() {
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         variants={staggerContainer}
-        className="grid sm:grid-cols-2 gap-px bg-[#1B1D1B] border border-[#1B1D1B]"
+        className="grid sm:grid-cols-2 gap-px bg-[var(--color-line)] border border-[var(--color-line)]"
       >
         {items.map((item) => {
           const content = (
             <>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-base font-medium">{item.title}</h3>
-                <span className="font-mono text-[10px] text-[#9BA1A6] border border-[#1B1D1B] rounded-full px-2 py-0.5 shrink-0 ml-3">
+                <span className="font-mono text-[10px] text-[var(--color-muted)] border border-[var(--color-line)] rounded-full px-2 py-0.5 shrink-0 ml-3">
                   {item.status}
                 </span>
               </div>
-              <p className="text-sm text-[#9BA1A6] leading-relaxed">{item.body}</p>
+              <p className="text-sm text-[var(--color-muted)] leading-relaxed">{item.body}</p>
               {item.href && (
-                <p className="font-mono text-xs text-[#00C805] mt-3">
+                <p className="font-mono text-xs text-[var(--color-accent)] mt-3">
                   {item.status.includes("LIVE") ? "Try it live →" : "See preview →"}
                 </p>
               )}
@@ -201,7 +201,7 @@ function Protocol() {
               key={item.title}
               variants={fadeUp}
               whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
-              className="bg-[#0B0C0B] p-6"
+              className="bg-[var(--color-bg)] p-6"
             >
               {item.href ? (
                 <Link href={item.href} className="block">

@@ -58,7 +58,7 @@ const INTERNS = [
 
 function StatusBadge({ status }) {
   return (
-    <span className="font-mono text-[10px] text-[#9BA1A6] border border-[#1B1D1B] rounded-full px-2 py-0.5 shrink-0">
+    <span className="font-mono text-[10px] text-[var(--color-muted)] border border-[var(--color-line)] rounded-full px-2 py-0.5 shrink-0">
       {status}
     </span>
   );
@@ -70,16 +70,16 @@ function InternCard({ intern }) {
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <h3 className="text-xl font-semibold">{intern.name}</h3>
-          <p className="font-mono text-xs text-[#D9A441] mt-0.5">{intern.role}</p>
+          <p className="font-mono text-xs text-[var(--color-ember)] mt-0.5">{intern.role}</p>
         </div>
         <StatusBadge status={intern.status} />
       </div>
-      <p className="text-sm text-[#9BA1A6] leading-relaxed mb-4">{intern.body}</p>
-      <p className="font-mono text-[10px] text-[#00C805] border-t border-[#1B1D1B] pt-3">
+      <p className="text-sm text-[var(--color-muted)] leading-relaxed mb-4">{intern.body}</p>
+      <p className="font-mono text-[10px] text-[var(--color-accent)] border-t border-[var(--color-line)] pt-3">
         {intern.fee}
       </p>
       {intern.href && (
-        <p className="font-mono text-xs text-[#EDEEF0] mt-4">
+        <p className="font-mono text-xs text-[var(--color-fg)] mt-4">
           {intern.external ? "Visit DRIP ↗" : "See details →"}
         </p>
       )}
@@ -87,7 +87,7 @@ function InternCard({ intern }) {
   );
 
   const cardClass =
-    "border border-[#1B1D1B] p-6 h-full transition-colors hover:bg-white/[0.03]";
+    "border border-[var(--color-line)] p-6 h-full transition-colors hover:bg-white/[0.03]";
 
   if (intern.external) {
     return (
@@ -110,7 +110,7 @@ export default function MarketplaceView() {
   return (
     <>
       <section className="px-6 pt-16 pb-12 max-w-6xl mx-auto w-full">
-        <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+        <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
           MARKETPLACE
         </Reveal>
         <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6 max-w-2xl">
@@ -119,7 +119,7 @@ export default function MarketplaceView() {
         <Reveal
           as="p"
           delay={0.1}
-          className="text-[#9BA1A6] text-lg leading-relaxed max-w-2xl"
+          className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl"
         >
           The goal isn&apos;t one token you hold and hope. It&apos;s a place
           people come to actually build and run agents — where every real
@@ -147,18 +147,18 @@ export default function MarketplaceView() {
       </section>
 
       <section className="px-6 pb-24 max-w-6xl mx-auto w-full">
-        <Reveal className="border border-[#1B1D1B] rounded-2xl p-10 text-center bg-[#0F1113]">
-          <p className="font-mono text-xs text-[#D9A441] tracking-widest mb-3">
+        <Reveal className="border border-[var(--color-line)] rounded-2xl p-10 text-center bg-[var(--color-surface)]">
+          <p className="font-mono text-xs text-[var(--color-ember)] tracking-widest mb-3">
             MORE UTILITY-DRIVEN INTERNS, COMING
           </p>
-          <p className="text-[#EDEEF0] text-lg max-w-xl mx-auto mb-6">
+          <p className="text-[var(--color-fg)] text-lg max-w-xl mx-auto mb-6">
             The roster grows as fast as real demand justifies it — not
             faster. Every new hire gets the same rule: real utility, a
             real $INTERN fee, or it doesn&apos;t launch.
           </p>
           <Link
             href="/roadmap"
-            className="inline-block rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
+            className="inline-block rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
           >
             SEE THE FULL ROADMAP →
           </Link>

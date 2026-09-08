@@ -38,13 +38,13 @@ function useTokenDecimals(address) {
 function ComingSoon() {
   return (
     <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full text-center">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         TRADE
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-4">
         Trading opens at launch
       </Reveal>
-      <Reveal as="p" delay={0.1} className="text-[#9BA1A6] text-base leading-relaxed">
+      <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-base leading-relaxed">
         Comes online the moment $INTERN is live on PAIR.
       </Reveal>
     </section>
@@ -54,7 +54,7 @@ function ComingSoon() {
 function ConnectPrompt() {
   return (
     <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full text-center">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         TRADE
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-8">
@@ -218,7 +218,7 @@ function TradeDashboard() {
 
   return (
     <section className="px-6 pt-16 pb-24 max-w-2xl mx-auto w-full">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         TRADE
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-2">
@@ -227,7 +227,7 @@ function TradeDashboard() {
       <Reveal
         as="p"
         delay={0.1}
-        className="text-[#9BA1A6] text-base leading-relaxed max-w-xl mb-10"
+        className="text-[var(--color-muted)] text-base leading-relaxed max-w-xl mb-10"
       >
         Executes directly against PAIR's locked Uniswap V4 pools on
         Robinhood Chain, through PAIR's own public aggregator contract —
@@ -238,7 +238,7 @@ function TradeDashboard() {
         initial="hidden"
         animate="show"
         variants={staggerContainer}
-        className="border border-[#1B1D1B] p-6"
+        className="border border-[var(--color-line)] p-6"
       >
         <motion.div variants={fadeUp} className="flex gap-2 mb-5">
           {["buy", "sell"].map((s) => (
@@ -247,8 +247,8 @@ function TradeDashboard() {
               onClick={() => setSide(s)}
               className={`flex-1 rounded-xl font-mono text-sm font-medium py-2.5 transition-colors ${
                 side === s
-                  ? "bg-[#00C805] text-[#0B0C0B]"
-                  : "border border-[#1B1D1B] text-[#9BA1A6] hover:border-[#00C805]/50"
+                  ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
+                  : "border border-[var(--color-line)] text-[var(--color-muted)] hover:border-[var(--color-accent)]/50"
               }`}
             >
               {s.toUpperCase()}
@@ -257,7 +257,7 @@ function TradeDashboard() {
         </motion.div>
 
         <motion.div variants={fadeUp} className="mb-4">
-          <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-2">
+          <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-2">
             {side === "buy" ? "PAY WITH" : "RECEIVE"}
           </p>
           <div className="flex gap-2">
@@ -267,8 +267,8 @@ function TradeDashboard() {
                 onClick={() => setQuoteKey(k)}
                 className={`flex-1 rounded-xl font-mono text-sm py-2 transition-colors ${
                   quoteKey === k
-                    ? "border border-[#00C805] text-[#EDEEF0]"
-                    : "border border-[#1B1D1B] text-[#9BA1A6] hover:border-[#00C805]/50"
+                    ? "border border-[var(--color-accent)] text-[var(--color-fg)]"
+                    : "border border-[var(--color-line)] text-[var(--color-muted)] hover:border-[var(--color-accent)]/50"
                 }`}
               >
                 {k}
@@ -278,7 +278,7 @@ function TradeDashboard() {
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-2">
+          <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-2">
             {inputSymbol} IN
           </p>
           <input
@@ -287,18 +287,18 @@ function TradeDashboard() {
             placeholder="0.0"
             value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
-            className="w-full bg-[#0B0C0B] border border-[#1B1D1B] rounded-xl px-4 py-3 font-mono text-lg outline-none focus:border-[#00C805]/50 mb-1"
+            className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 font-mono text-lg outline-none focus:border-[var(--color-accent)]/50 mb-1"
           />
-          <p className="font-mono text-[10px] text-[#4A4F54] mb-4">
+          <p className="font-mono text-[10px] text-[var(--color-muted-2)] mb-4">
             Balance: {walletBalance !== undefined ? formatUnits(walletBalance, inputDecimals) : "—"}{" "}
             {inputSymbol}
           </p>
 
-          <div className="border border-[#1B1D1B] rounded-xl px-4 py-3 mb-5 flex items-center justify-between">
-            <span className="font-mono text-xs text-[#9BA1A6]">
+          <div className="border border-[var(--color-line)] rounded-xl px-4 py-3 mb-5 flex items-center justify-between">
+            <span className="font-mono text-xs text-[var(--color-muted)]">
               {outputSymbol} OUT {quoting && "(quoting…)"}
             </span>
-            <span className="font-mono text-sm text-[#EDEEF0]">
+            <span className="font-mono text-sm text-[var(--color-fg)]">
               {quotedOut !== undefined && parsedAmount > 0n
                 ? Number(formatUnits(quotedOut, outputDecimals)).toLocaleString(undefined, {
                     maximumFractionDigits: 6,
@@ -311,7 +311,7 @@ function TradeDashboard() {
             <button
               onClick={handleApprove}
               disabled={busy || parsedAmount === 0n}
-              className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40"
+              className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40"
             >
               {busy ? "CONFIRMING…" : `APPROVE ${inputSymbol}`}
             </button>
@@ -319,19 +319,19 @@ function TradeDashboard() {
             <button
               onClick={handleSubmit}
               disabled={busy || parsedAmount === 0n}
-              className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40"
+              className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40"
             >
               {busy ? "CONFIRMING…" : side.toUpperCase()}
             </button>
           )}
 
           {error && (
-            <p className="font-mono text-xs text-[#E5484D] mt-3 leading-relaxed">{error}</p>
+            <p className="font-mono text-xs text-[var(--color-danger)] mt-3 leading-relaxed">{error}</p>
           )}
         </motion.div>
       </motion.div>
 
-      <p className="font-mono text-[10px] text-[#4A4F54] mt-8 leading-relaxed max-w-xl">
+      <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-8 leading-relaxed max-w-xl">
         This pool is brand new with thin liquidity — a 5% slippage
         tolerance is applied automatically, and larger trades will move the
         price a lot. Start small. This widget calls PAIR's public,
@@ -339,7 +339,7 @@ function TradeDashboard() {
         NOT had a professional security audit. You can always trade the
         exact same locked liquidity on{" "}
         {PAIR_POOL_URL ? (
-          <a href={PAIR_POOL_URL} target="_blank" rel="noopener noreferrer" className="text-[#00C805] hover:underline">
+          <a href={PAIR_POOL_URL} target="_blank" rel="noopener noreferrer" className="text-[var(--color-accent)] hover:underline">
             pair.fund
           </a>
         ) : (

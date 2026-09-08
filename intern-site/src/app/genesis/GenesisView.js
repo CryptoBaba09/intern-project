@@ -8,7 +8,7 @@ import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 
 function PreviewBadge() {
   return (
-    <span className="font-mono text-[10px] text-[#D9A441] border border-[#D9A441]/30 rounded-full px-2.5 py-1 tracking-widest">
+    <span className="font-mono text-[10px] text-[var(--color-ember)] border border-[var(--color-ember)]/30 rounded-full px-2.5 py-1 tracking-widest">
       ART PREVIEW · MINT NOT LIVE
     </span>
   );
@@ -58,7 +58,7 @@ export default function GenesisView() {
     <>
       <section className="px-6 pt-16 pb-16 max-w-5xl mx-auto w-full">
         <Reveal className="flex items-center gap-3 mb-4">
-          <p className="font-mono text-xs text-[#00C805] tracking-widest">
+          <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest">
             MEET THE GENESIS INTERNS
           </p>
           <PreviewBadge />
@@ -69,21 +69,21 @@ export default function GenesisView() {
         <Reveal
           as="p"
           delay={0.1}
-          className="text-[#9BA1A6] text-lg leading-relaxed max-w-2xl mb-4"
+          className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-4"
         >
           $INTERN is live and trading now — but minting doesn't open on day
           one. It opens the moment cumulative volume on PAIR crosses{" "}
-          <span className="text-[#EDEEF0]">$1,000,000</span>. Earned, not
+          <span className="text-[var(--color-fg)]">$1,000,000</span>. Earned, not
           day-one hype. Live progress toward that is below.
         </Reveal>
-        <Reveal as="p" delay={0.15} className="text-[#4A4F54] text-sm max-w-2xl">
+        <Reveal as="p" delay={0.15} className="text-[var(--color-muted-2)] text-sm max-w-2xl">
           The trait art on this page is illustrative and the collection
           doesn't exist on-chain yet. See the full{" "}
           <a
             href="https://github.com/CryptoBaba09/intern-project/blob/main/docs/genesis-nft-spec.md"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#00C805] hover:underline"
+            className="text-[var(--color-accent)] hover:underline"
           >
             design spec ↗
           </a>{" "}
@@ -92,10 +92,10 @@ export default function GenesisView() {
       </section>
 
       <section className="px-6 pb-4 max-w-5xl mx-auto w-full">
-        <Reveal className="border border-[#1B1D1B] rounded-2xl p-6 bg-[#0F1113]">
+        <Reveal className="border border-[var(--color-line)] rounded-2xl p-6 bg-[var(--color-surface)]">
           <div className="flex items-center justify-between mb-3 font-mono text-xs">
-            <span className="text-[#9BA1A6] tracking-wide">VOLUME TOWARD MINT UNLOCK</span>
-            <span className="text-[#00C805]">
+            <span className="text-[var(--color-muted)] tracking-wide">VOLUME TOWARD MINT UNLOCK</span>
+            <span className="text-[var(--color-accent)]">
               {progress
                 ? `${progress.progressPct.toFixed(3)}%`
                 : progressError
@@ -103,15 +103,15 @@ export default function GenesisView() {
                   : "LOADING…"}
             </span>
           </div>
-          <div className="h-2.5 rounded-full bg-[#1B1D1B] overflow-hidden mb-3">
+          <div className="h-2.5 rounded-full bg-[var(--color-line)] overflow-hidden mb-3">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: progress ? `${Math.max(progress.progressPct, 0.4)}%` : "0%" }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="h-full bg-[#00C805] rounded-full"
+              className="h-full bg-[var(--color-accent)] rounded-full"
             />
           </div>
-          <p className="font-mono text-xs text-[#9BA1A6]">
+          <p className="font-mono text-xs text-[var(--color-muted)]">
             {progress
               ? `$${formatUsd(progress.volumeUsd)} / $${formatUsd(progress.targetUsd)}`
               : progressError
@@ -119,7 +119,7 @@ export default function GenesisView() {
                 : "Fetching live volume from PAIR…"}
           </p>
           {progress?.isRolling24h && (
-            <p className="font-mono text-[10px] text-[#4A4F54] mt-2 leading-relaxed">
+            <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-2 leading-relaxed">
               Rolling 24h volume, not lifetime cumulative — equivalent for now since $INTERN
               is under a day old, but this will need to become a true running total once
               older volume starts aging out of that window.
@@ -142,23 +142,23 @@ export default function GenesisView() {
               variants={fadeUp}
               whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
-              className="border border-[#1B1D1B] rounded-2xl p-5 bg-[#0F1113]"
+              className="border border-[var(--color-line)] rounded-2xl p-5 bg-[var(--color-surface)]"
             >
               <div style={{ filter: t.filter }} className="aspect-square mb-3">
                 <Mascot className="w-full h-full" />
               </div>
-              <p className="font-mono text-[11px] text-[#9BA1A6] text-center">{t.name}</p>
+              <p className="font-mono text-[11px] text-[var(--color-muted)] text-center">{t.name}</p>
             </motion.div>
           ))}
         </motion.div>
-        <p className="font-mono text-[10px] text-[#4A4F54] mt-5 text-center max-w-md mx-auto leading-relaxed">
+        <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-5 text-center max-w-md mx-auto leading-relaxed">
           Illustrative recolors, not final trait art — the real 500 don't
           exist yet.
         </p>
       </section>
 
-      <section className="px-6 py-20 border-t border-[#1B1D1B] max-w-5xl mx-auto w-full">
-        <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <section className="px-6 py-20 border-t border-[var(--color-line)] max-w-5xl mx-auto w-full">
+        <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
           THE MECHANIC
         </Reveal>
         <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-10">
@@ -188,14 +188,14 @@ export default function GenesisView() {
               body: "Destroy it to claim what it's earned so far. Supply drops by one, and everyone still staked owns a bigger share of what's left.",
             },
           ].map((step) => (
-            <motion.div key={step.n} variants={fadeUp} className="border border-[#1B1D1B] p-6">
-              <p className="font-mono text-xs text-[#4A4F54] mb-4">{step.n}</p>
+            <motion.div key={step.n} variants={fadeUp} className="border border-[var(--color-line)] p-6">
+              <p className="font-mono text-xs text-[var(--color-muted-2)] mb-4">{step.n}</p>
               <h3 className="text-lg font-medium mb-2">{step.title}</h3>
-              <p className="text-sm text-[#9BA1A6] leading-relaxed">{step.body}</p>
+              <p className="text-sm text-[var(--color-muted)] leading-relaxed">{step.body}</p>
             </motion.div>
           ))}
         </motion.div>
-        <p className="font-mono text-[10px] text-[#4A4F54] mt-8 max-w-2xl leading-relaxed">
+        <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-8 max-w-2xl leading-relaxed">
           This isn&apos;t built yet, and won&apos;t be marketed as
           guaranteed income when it is — a real legal review of that
           framing happens before anything here touches real money.
@@ -203,11 +203,11 @@ export default function GenesisView() {
       </section>
 
       <section className="px-6 pb-24 max-w-5xl mx-auto w-full text-center">
-        <Reveal className="border border-[#1B1D1B] rounded-2xl p-10 bg-[#0F1113]">
-          <p className="font-mono text-xs text-[#9BA1A6] tracking-widest mb-3">
+        <Reveal className="border border-[var(--color-line)] rounded-2xl p-10 bg-[var(--color-surface)]">
+          <p className="font-mono text-xs text-[var(--color-muted)] tracking-widest mb-3">
             MINTING IS GATED, NOT SCHEDULED
           </p>
-          <p className="text-[#EDEEF0] text-lg mb-6 max-w-xl mx-auto">
+          <p className="text-[var(--color-fg)] text-lg mb-6 max-w-xl mx-auto">
             No date, no countdown timer — just the volume bar above. It
             unlocks the instant that number hits $1,000,000, whenever that
             is. Trade $INTERN to help get it there.
@@ -215,13 +215,13 @@ export default function GenesisView() {
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/trade"
-              className="inline-block rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
+              className="inline-block rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
             >
               TRADE $INTERN →
             </Link>
             <Link
               href="/tokenomics"
-              className="inline-block rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
+              className="inline-block rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
             >
               SEE THE TOKENOMICS →
             </Link>

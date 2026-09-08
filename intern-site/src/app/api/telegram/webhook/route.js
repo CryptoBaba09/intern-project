@@ -251,6 +251,19 @@ export async function POST(req) {
     return Response.json({ ok: true });
   }
 
+  // Passive replies are meant to read as the bot noticing real community
+  // conversation -- not as it reacting to the admin's own testing/admin
+  // messages. A message posted anonymously as the group itself (owner or
+  // another admin using "send anonymously") arrives with message.from set
+  // to Telegram's GroupAnonymousBot pseudo-user (is_bot: true) rather than
+  // a real member, and message.sender_chat set to the group. Skip passive
+  // replies for both that case and any other bot's message; explicit
+  // commands and @mentions still work for everyone, admin included --
+  // this only holds back the "we noticed you" ambient replies.
+  if (message.from?.is_bot || message.sender_chat) {
+    return Response.json({ ok: true });
+  }
+
   // Passive: reply to every on-topic message (burn/stake/trade/credits
   // keywords), gated only by a per-chat cooldown so a run of consecutive
   // on-topic messages doesn't get a reply each -- not by a coin flip that

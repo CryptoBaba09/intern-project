@@ -38,15 +38,15 @@ function formatToken(value, decimals, maxFractionDigits = 4) {
 function StatCard({ label, value, suffix, accent }) {
   return (
     <div
-      className={`rounded-2xl border p-5 bg-[#0F1113] ${
-        accent ? "border-[#D9A441]/30" : "border-[#1B1D1B]"
+      className={`rounded-2xl border p-5 bg-[var(--color-surface)] ${
+        accent ? "border-[var(--color-ember)]/30" : "border-[var(--color-line)]"
       }`}
     >
-      <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-2">{label}</p>
+      <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-2">{label}</p>
       <p
-        className={`font-mono text-2xl truncate ${accent ? "text-[#D9A441]" : "text-[#EDEEF0]"}`}
+        className={`font-mono text-2xl truncate ${accent ? "text-[var(--color-ember)]" : "text-[var(--color-fg)]"}`}
       >
-        {value} {suffix && <span className="text-sm text-[#9BA1A6]">{suffix}</span>}
+        {value} {suffix && <span className="text-sm text-[var(--color-muted)]">{suffix}</span>}
       </p>
     </div>
   );
@@ -55,15 +55,15 @@ function StatCard({ label, value, suffix, accent }) {
 function ComingSoon() {
   return (
     <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full text-center">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         STAKE
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-4">
         Staking opens at launch
       </Reveal>
-      <Reveal as="p" delay={0.1} className="text-[#9BA1A6] text-base leading-relaxed">
+      <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-base leading-relaxed">
         The staking contract is built and unit-tested — see the{" "}
-        <a href="/tokenomics" className="text-[#00C805] hover:underline">
+        <a href="/tokenomics" className="text-[var(--color-accent)] hover:underline">
           tokenomics page
         </a>{" "}
         for the full fee-split breakdown. It goes live once $INTERN is
@@ -77,7 +77,7 @@ function ComingSoon() {
 function ConnectPrompt() {
   return (
     <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full text-center">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         STAKE
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-8">
@@ -96,10 +96,10 @@ function TxStatusBanner({ pendingLabel, txHash, isConfirming, isConfirmed, error
     <div
       className={`rounded-xl border px-4 py-3 mb-6 font-mono text-xs flex items-center justify-between gap-3 ${
         error
-          ? "border-[#E5484D]/40 text-[#E5484D]"
+          ? "border-[var(--color-danger)]/40 text-[var(--color-danger)]"
           : isConfirmed
-            ? "border-[#00C805]/40 text-[#00C805]"
-            : "border-[#D9A441]/40 text-[#D9A441]"
+            ? "border-[var(--color-accent)]/40 text-[var(--color-accent)]"
+            : "border-[var(--color-ember)]/40 text-[var(--color-ember)]"
       }`}
     >
       <span>
@@ -135,13 +135,13 @@ function AmountInput({ value, onChange, onMax, disabled }) {
         value={value}
         onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ""))}
         disabled={disabled}
-        className="w-full bg-[#0B0C0B] border border-[#1B1D1B] rounded-xl pl-4 pr-16 py-3 font-mono text-lg outline-none focus:border-[#00C805]/50 disabled:opacity-50"
+        className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl pl-4 pr-16 py-3 font-mono text-lg outline-none focus:border-[var(--color-accent)]/50 disabled:opacity-50"
       />
       <button
         type="button"
         onClick={onMax}
         disabled={disabled}
-        className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-medium text-[#00C805] border border-[#00C805]/30 rounded-lg px-2 py-1 hover:bg-[#00C805]/10 transition-colors disabled:opacity-50"
+        className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-medium text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-lg px-2 py-1 hover:bg-[var(--color-accent)]/10 transition-colors disabled:opacity-50"
       >
         MAX
       </button>
@@ -278,7 +278,7 @@ function StakeDashboard() {
 
   return (
     <section className="px-6 pt-16 pb-24 max-w-4xl mx-auto w-full">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         STAKE
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-2">
@@ -287,7 +287,7 @@ function StakeDashboard() {
       <Reveal
         as="p"
         delay={0.1}
-        className="text-[#9BA1A6] text-base leading-relaxed max-w-2xl mb-10"
+        className="text-[var(--color-muted)] text-base leading-relaxed max-w-2xl mb-10"
       >
         Rewards stream continuously from every creator fee claim,
         time-weighted by how long you&apos;ve held your stake. Unstake any
@@ -329,7 +329,7 @@ function StakeDashboard() {
         error={error}
       />
 
-      <div className="rounded-2xl border border-[#1B1D1B] bg-[#0F1113] p-6">
+      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] p-6">
         <div className="flex gap-2 mb-5">
           {["stake", "unstake"].map((m) => (
             <button
@@ -337,8 +337,8 @@ function StakeDashboard() {
               onClick={() => switchMode(m)}
               className={`flex-1 rounded-xl font-mono text-sm font-medium py-2.5 transition-colors ${
                 mode === m
-                  ? "bg-[#00C805] text-[#0B0C0B]"
-                  : "border border-[#1B1D1B] text-[#9BA1A6] hover:border-[#00C805]/50"
+                  ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
+                  : "border border-[var(--color-line)] text-[var(--color-muted)] hover:border-[var(--color-accent)]/50"
               }`}
             >
               {m.toUpperCase()}
@@ -361,7 +361,7 @@ function StakeDashboard() {
               <button
                 onClick={handleApprove}
                 disabled={busy || parsedStakeAmount === 0n}
-                className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40"
+                className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40"
               >
                 {busy ? "CONFIRMING…" : "APPROVE $INTERN"}
               </button>
@@ -369,13 +369,13 @@ function StakeDashboard() {
               <button
                 onClick={handleStake}
                 disabled={busy || parsedStakeAmount === 0n}
-                className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40"
+                className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40"
               >
                 {busy ? "CONFIRMING…" : "STAKE"}
               </button>
             )}
             {needsApproval && (
-              <p className="font-mono text-[10px] text-[#4A4F54] mt-3 text-center">
+              <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-3 text-center">
                 One-time approval, then a separate STAKE transaction — standard for any
                 ERC-20, not two charges.
               </p>
@@ -394,7 +394,7 @@ function StakeDashboard() {
             <button
               onClick={handleWithdraw}
               disabled={busy || parsedWithdrawAmount === 0n}
-              className="w-full rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium py-3 hover:border-[#00C805]/50 transition-colors disabled:opacity-40"
+              className="w-full rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium py-3 hover:border-[var(--color-accent)]/50 transition-colors disabled:opacity-40"
             >
               {busy ? "CONFIRMING…" : "UNSTAKE"}
             </button>
@@ -406,20 +406,20 @@ function StakeDashboard() {
         <button
           onClick={handleClaim}
           disabled={busy || !earned}
-          className="flex-1 rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium py-3 hover:border-[#D9A441]/50 transition-colors disabled:opacity-40"
+          className="flex-1 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium py-3 hover:border-[var(--color-ember)]/50 transition-colors disabled:opacity-40"
         >
           CLAIM BE
         </button>
         <button
           onClick={handleExit}
           disabled={busy || !staked}
-          className="flex-1 rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium py-3 hover:border-[#9BA1A6] transition-colors disabled:opacity-40"
+          className="flex-1 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium py-3 hover:border-[var(--color-muted)] transition-colors disabled:opacity-40"
         >
           EXIT (UNSTAKE ALL + CLAIM)
         </button>
       </div>
 
-      <p className="font-mono text-[10px] text-[#4A4F54] mt-8 leading-relaxed max-w-2xl">
+      <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-8 leading-relaxed max-w-2xl">
         Total $INTERN staked across all wallets: {formatToken(totalStaked, internDecimals, 0)}.
         Staking is non-custodial — this contract only holds your $INTERN
         while staked, and only pays out BE it has actually received. It has

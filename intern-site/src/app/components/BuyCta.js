@@ -17,18 +17,18 @@ export default function BuyCta() {
     <motion.div
       whileHover={isLive ? { y: -4 } : undefined}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
-      className="w-full max-w-md border border-[#1B1D1B] rounded-2xl bg-[#0F1113] p-6 shadow-[0_0_0_rgba(0,200,5,0)] hover:shadow-[0_8px_40px_-8px_rgba(0,200,5,0.18)] transition-shadow duration-300"
+      className="w-full max-w-md border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6 shadow-[0_0_0_rgba(0,200,5,0)] hover:shadow-[0_8px_40px_-8px_rgba(0,200,5,0.18)] transition-shadow duration-300"
     >
       <div className="flex items-center justify-between mb-4">
-        <span className="font-mono text-xs text-[#9BA1A6] tracking-wide">
+        <span className="font-mono text-xs text-[var(--color-muted)] tracking-wide">
           TRADE $INTERN
         </span>
-        <span className="font-mono text-xs text-[#00C805]">
+        <span className="font-mono text-xs text-[var(--color-accent)]">
           {isLive ? "LIVE ON PAIR" : "LOCKED LIQUIDITY"}
         </span>
       </div>
 
-      <p className="text-sm text-[#9BA1A6] leading-relaxed mb-5">
+      <p className="text-sm text-[var(--color-muted)] leading-relaxed mb-5">
         $INTERN trades on Robinhood Chain against BE and USDG —
         permanently locked liquidity from block one, no bonding curve, no
         migration.
@@ -38,7 +38,7 @@ export default function BuyCta() {
         <div className="flex flex-col gap-2">
           <Link
             href="/trade"
-            className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors"
+            className="flex items-center justify-center gap-2 w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
           >
             BUY / SELL HERE
           </Link>
@@ -47,19 +47,19 @@ export default function BuyCta() {
               href={PAIR_POOL_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full rounded-xl border border-[#1B1D1B] text-[#9BA1A6] font-mono text-sm font-medium py-3 hover:border-[#00C805]/50 hover:text-[#EDEEF0] transition-colors"
+              className="flex items-center justify-center gap-2 w-full rounded-xl border border-[var(--color-line)] text-[var(--color-muted)] font-mono text-sm font-medium py-3 hover:border-[var(--color-accent)]/50 hover:text-[var(--color-fg)] transition-colors"
             >
               OR TRADE ON PAIR ↗
             </a>
           )}
         </div>
       ) : (
-        <div className="w-full rounded-xl border border-[#1B1D1B] text-[#4A4F54] font-mono text-sm font-medium py-3 text-center">
+        <div className="w-full rounded-xl border border-[var(--color-line)] text-[var(--color-muted-2)] font-mono text-sm font-medium py-3 text-center">
           TRADING OPENS AT LAUNCH
         </div>
       )}
 
-      <p className="mt-4 font-mono text-[10px] text-[#4A4F54] leading-relaxed">
+      <p className="mt-4 font-mono text-[10px] text-[var(--color-muted-2)] leading-relaxed">
         Both trade against the same locked pools. Always verify the
         contract address on Blockscout before connecting a wallet.
       </p>

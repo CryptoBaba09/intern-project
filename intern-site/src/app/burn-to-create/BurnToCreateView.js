@@ -30,13 +30,13 @@ function LiveBurnStrip() {
   const burned = burnedRaw !== undefined ? Number(formatUnits(burnedRaw, decimals ?? 18)) : null;
 
   return (
-    <p className="font-mono text-xs text-[#9BA1A6] flex items-center gap-2">
-      <span className="w-1.5 h-1.5 rounded-full bg-[#00C805] ember-pulse" />
+    <p className="font-mono text-xs text-[var(--color-muted)] flex items-center gap-2">
+      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
       {burned === null ? (
         "Reading live burn total…"
       ) : (
         <>
-          <span className="text-[#EDEEF0]">
+          <span className="text-[var(--color-fg)]">
             <AnimatedNumber value={Math.round(burned)} />
           </span>{" "}
           $INTERN burned so far, protocol-wide — this campaign adds to that real number, live.
@@ -48,10 +48,10 @@ function LiveBurnStrip() {
 
 function StepCard({ n, title, body }) {
   return (
-    <motion.div variants={fadeUp} className="border border-[#1B1D1B] p-6">
-      <p className="font-mono text-xs text-[#4A4F54] mb-4">{n}</p>
+    <motion.div variants={fadeUp} className="border border-[var(--color-line)] p-6">
+      <p className="font-mono text-xs text-[var(--color-muted-2)] mb-4">{n}</p>
       <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <p className="text-sm text-[#9BA1A6] leading-relaxed">{body}</p>
+      <p className="text-sm text-[var(--color-muted)] leading-relaxed">{body}</p>
     </motion.div>
   );
 }
@@ -62,12 +62,12 @@ function PrizeCard({ title, body, accent }) {
       variants={fadeUp}
       whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
-      className="border border-[#1B1D1B] p-6 bg-[#0F1113]"
+      className="border border-[var(--color-line)] p-6 bg-[var(--color-surface)]"
     >
-      <h3 className={`text-lg font-semibold mb-2 ${accent ? "text-[#D9A441]" : "text-[#EDEEF0]"}`}>
+      <h3 className={`text-lg font-semibold mb-2 ${accent ? "text-[var(--color-ember)]" : "text-[var(--color-fg)]"}`}>
         {title}
       </h3>
-      <p className="text-sm text-[#9BA1A6] leading-relaxed">{body}</p>
+      <p className="text-sm text-[var(--color-muted)] leading-relaxed">{body}</p>
     </motion.div>
   );
 }
@@ -76,13 +76,13 @@ export default function BurnToCreateView() {
   return (
     <>
       <section className="px-6 pt-16 pb-12 max-w-4xl mx-auto w-full">
-        <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+        <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
           LIMITED-TIME CAMPAIGN · {START_DATE} – {END_DATE}
         </Reveal>
         <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6">
           Burn to Create.
         </Reveal>
-        <Reveal as="p" delay={0.1} className="text-[#9BA1A6] text-lg leading-relaxed max-w-2xl mb-6">
+        <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-6">
           Burn $INTERN through Promptly, use the real AI credit you get to
           make something about $INTERN, and submit it. Every entry is a
           real burn — no wash trading, no fake engagement, just real usage
@@ -94,7 +94,7 @@ export default function BurnToCreateView() {
         <Reveal delay={0.2} className="flex flex-wrap gap-4 mt-8">
           <Link
             href="/inference-credits"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
           >
             BURN & START →
           </Link>
@@ -102,7 +102,7 @@ export default function BurnToCreateView() {
             href="https://x.com/Internburn_xyz"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
           >
             SUBMIT ON X ↗
           </a>
@@ -110,7 +110,7 @@ export default function BurnToCreateView() {
       </section>
 
       <section className="px-6 pb-16 max-w-4xl mx-auto w-full">
-        <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+        <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
           HOW IT WORKS
         </Reveal>
         <Reveal as="h2" delay={0.05} className="text-2xl font-semibold mb-8">
@@ -142,13 +142,13 @@ export default function BurnToCreateView() {
       </section>
 
       <section className="px-6 pb-16 max-w-4xl mx-auto w-full">
-        <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+        <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
           PRIZES
         </Reveal>
         <Reveal as="h2" delay={0.05} className="text-2xl font-semibold mb-3">
           Top 5 entries win three things.
         </Reveal>
-        <Reveal as="p" delay={0.08} className="text-[#9BA1A6] text-sm leading-relaxed mb-8 max-w-2xl">
+        <Reveal as="p" delay={0.08} className="text-[var(--color-muted)] text-sm leading-relaxed mb-8 max-w-2xl">
           Sent directly from the founder&apos;s wallet, on-chain, disclosed
           as such — not an automated treasury payout. At $INTERN&apos;s
           current price this isn&apos;t a life-changing cash prize, and we&apos;re
@@ -179,11 +179,11 @@ export default function BurnToCreateView() {
       </section>
 
       <section className="px-6 pb-24 max-w-4xl mx-auto w-full">
-        <Reveal className="border border-[#1B1D1B] rounded-2xl p-8 sm:p-10 bg-[#0F1113]">
-          <p className="font-mono text-xs text-[#00C805] tracking-widest mb-4">
+        <Reveal className="border border-[var(--color-line)] rounded-2xl p-8 sm:p-10 bg-[var(--color-surface)]">
+          <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-4">
             THE HONEST FINE PRINT
           </p>
-          <ul className="space-y-3 text-sm text-[#9BA1A6] leading-relaxed list-disc pl-5">
+          <ul className="space-y-3 text-sm text-[var(--color-muted)] leading-relaxed list-disc pl-5">
             <li>
               Judged by the team on creativity and quality, not entry
               volume — this is manual and subjective, not an algorithm,

@@ -78,20 +78,20 @@ function LiveStatStrip() {
       <motion.div
         variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="flex gap-4 font-mono text-xs text-[#9BA1A6]"
+        className="flex gap-4 font-mono text-xs text-[var(--color-muted)]"
       >
         <div>
-          <p className="text-[#EDEEF0] text-sm">{formatNumber(LAUNCH_SUPPLY)}</p>
+          <p className="text-[var(--color-fg)] text-sm">{formatNumber(LAUNCH_SUPPLY)}</p>
           <p>FIXED SUPPLY</p>
         </div>
-        <div className="w-px bg-[#1B1D1B]" />
+        <div className="w-px bg-[var(--color-line)]" />
         <div>
-          <p className="text-[#EDEEF0] text-sm">70/20/10</p>
+          <p className="text-[var(--color-fg)] text-sm">70/20/10</p>
           <p>BURN / STAKE / TREASURY</p>
         </div>
-        <div className="w-px bg-[#1B1D1B]" />
+        <div className="w-px bg-[var(--color-line)]" />
         <div>
-          <p className="text-[#EDEEF0] text-sm">0%</p>
+          <p className="text-[var(--color-fg)] text-sm">0%</p>
           <p>MINT FUNCTION</p>
         </div>
       </motion.div>
@@ -103,27 +103,27 @@ function LiveStatStrip() {
       variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <p className="font-mono text-[10px] text-[#00C805] tracking-widest mb-3 flex items-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#00C805] ember-pulse" />
+      <p className="font-mono text-[10px] text-[var(--color-accent)] tracking-widest mb-3 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
         LIVE · READ DIRECTLY FROM CHAIN
       </p>
-      <div className="flex flex-wrap gap-x-6 gap-y-4 font-mono text-xs text-[#9BA1A6]">
+      <div className="flex flex-wrap gap-x-6 gap-y-4 font-mono text-xs text-[var(--color-muted)]">
         <div>
-          <p className="text-[#EDEEF0] text-sm tabular-nums">
+          <p className="text-[var(--color-fg)] text-sm tabular-nums">
             {burned === null ? "—" : <AnimatedNumber value={Math.round(burned)} />}
           </p>
           <p>$INTERN BURNED</p>
         </div>
-        <div className="w-px bg-[#1B1D1B]" />
+        <div className="w-px bg-[var(--color-line)]" />
         <div>
-          <p className="text-[#EDEEF0] text-sm tabular-nums">
+          <p className="text-[var(--color-fg)] text-sm tabular-nums">
             {staked === null ? "—" : <AnimatedNumber value={Math.round(staked)} />}
           </p>
           <p>$INTERN STAKED</p>
         </div>
-        <div className="w-px bg-[#1B1D1B]" />
+        <div className="w-px bg-[var(--color-line)]" />
         <div>
-          <p className="text-[#EDEEF0] text-sm tabular-nums">
+          <p className="text-[var(--color-fg)] text-sm tabular-nums">
             {volumeUsd === null ? "—" : `$${formatNumber(Math.round(volumeUsd))}`}
           </p>
           <p>24H VOLUME</p>
@@ -151,7 +151,7 @@ function Hero() {
           {[
             <p
               key="eyebrow"
-              className="font-mono text-xs text-[#00C805] tracking-widest mb-4"
+              className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-4"
             >
               ROBINHOOD CHAIN · PAIR · QUOTED IN BE + USDG
             </p>,
@@ -161,9 +161,9 @@ function Hero() {
             >
               Interns run on power.
               <br />
-              <span className="text-[#D9A441] ember-glow">Supply</span> runs down.
+              <span className="text-[var(--color-ember)] ember-glow">Supply</span> runs down.
             </h1>,
-            <p key="p" className="text-[#9BA1A6] text-lg leading-relaxed mb-8">
+            <p key="p" className="text-[var(--color-muted)] text-lg leading-relaxed mb-8">
               Every AI agent needs real compute, and real compute needs real
               power. $INTERN is quoted directly against tokenized Bloom Energy
               (BE) — the fuel-cell company behind a growing share of AI data
@@ -186,13 +186,13 @@ function Hero() {
           >
             <a
               href="#trade"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
             >
               TRADE $INTERN →
             </a>
             <Link
               href="/stake"
-              className="inline-flex items-center gap-2 rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
             >
               STAKE FOR BE
             </Link>
@@ -233,15 +233,15 @@ function Hero() {
 function CampaignBanner() {
   return (
     <Link href="/burn-to-create" className="block group">
-      <section className="px-6 py-4 border-y border-[#D9A441]/30 bg-[#D9A441]/[0.06] hover:bg-[#D9A441]/[0.1] transition-colors">
+      <section className="px-6 py-4 border-y border-[var(--color-ember)]/30 bg-[var(--color-ember)]/[0.06] hover:bg-[var(--color-ember)]/[0.1] transition-colors">
         <div className="max-w-6xl mx-auto w-full flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
-          <span className="font-mono text-[10px] text-[#D9A441] tracking-widest border border-[#D9A441]/40 rounded-full px-2 py-0.5">
+          <span className="font-mono text-[10px] text-[var(--color-ember)] tracking-widest border border-[var(--color-ember)]/40 rounded-full px-2 py-0.5">
             LIVE NOW · THRU SEP 21
           </span>
-          <span className="text-sm text-[#EDEEF0]">
+          <span className="text-sm text-[var(--color-fg)]">
             <strong className="font-semibold">Burn to Create</strong> — burn $INTERN, make real content with the credit, win a 5x match + Genesis whitelist.
           </span>
-          <span className="font-mono text-xs text-[#D9A441] group-hover:underline shrink-0">
+          <span className="font-mono text-xs text-[var(--color-ember)] group-hover:underline shrink-0">
             See the rules →
           </span>
         </div>
@@ -258,14 +258,14 @@ function TrustStrip() {
     "OPEN-SOURCE CONTRACTS ON GITHUB",
   ];
   return (
-    <section className="px-6 py-8 border-y border-[#1B1D1B] bg-[#0F1113]">
+    <section className="px-6 py-8 border-y border-[var(--color-line)] bg-[var(--color-surface)]">
       <div className="max-w-6xl mx-auto w-full flex flex-wrap justify-center gap-x-10 gap-y-3">
         {items.map((item) => (
           <span
             key={item}
-            className="font-mono text-[11px] text-[#9BA1A6] tracking-wide flex items-center gap-2"
+            className="font-mono text-[11px] text-[var(--color-muted)] tracking-wide flex items-center gap-2"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00C805]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
             {item}
           </span>
         ))}
@@ -294,7 +294,7 @@ function HowItWorks() {
   ];
   return (
     <section className="px-6 py-20 max-w-6xl mx-auto w-full">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         THE MECHANIC
       </Reveal>
       <Reveal as="h2" delay={0.05} className="text-3xl sm:text-4xl font-semibold mb-10 max-w-xl">
@@ -313,11 +313,11 @@ function HowItWorks() {
             variants={fadeUp}
             whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="border border-[#1B1D1B] p-6"
+            className="border border-[var(--color-line)] p-6"
           >
-            <p className="font-mono text-xs text-[#4A4F54] mb-4">{s.n}</p>
+            <p className="font-mono text-xs text-[var(--color-muted-2)] mb-4">{s.n}</p>
             <h3 className="text-lg font-medium mb-2">{s.title}</h3>
-            <p className="text-sm text-[#9BA1A6] leading-relaxed">{s.body}</p>
+            <p className="text-sm text-[var(--color-muted)] leading-relaxed">{s.body}</p>
           </motion.div>
         ))}
       </motion.div>
@@ -350,7 +350,7 @@ function MeetTheInterns() {
     <section className="px-6 py-20 max-w-6xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
         <div>
-          <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+          <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
             THE MARKETPLACE
           </Reveal>
           <Reveal as="h2" delay={0.05} className="text-3xl sm:text-4xl font-semibold max-w-xl">
@@ -360,7 +360,7 @@ function MeetTheInterns() {
         <Reveal delay={0.1}>
           <Link
             href="/marketplace"
-            className="font-mono text-sm text-[#00C805] hover:underline whitespace-nowrap"
+            className="font-mono text-sm text-[var(--color-accent)] hover:underline whitespace-nowrap"
           >
             SEE THE FULL ROSTER →
           </Link>
@@ -379,16 +379,16 @@ function MeetTheInterns() {
             variants={fadeUp}
             whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="border border-[#1B1D1B] p-6 bg-[#0F1113]"
+            className="border border-[var(--color-line)] p-6 bg-[var(--color-surface)]"
           >
             <div className="flex items-start justify-between mb-4">
               <h3 className="text-xl font-semibold">{it.name}</h3>
-              <span className="font-mono text-[10px] text-[#9BA1A6] border border-[#1B1D1B] rounded-full px-2 py-0.5 shrink-0">
+              <span className="font-mono text-[10px] text-[var(--color-muted)] border border-[var(--color-line)] rounded-full px-2 py-0.5 shrink-0">
                 {it.status}
               </span>
             </div>
-            <p className="font-mono text-xs text-[#D9A441] mb-3">{it.role}</p>
-            <p className="text-sm text-[#9BA1A6] leading-relaxed">{it.body}</p>
+            <p className="font-mono text-xs text-[var(--color-ember)] mb-3">{it.role}</p>
+            <p className="text-sm text-[var(--color-muted)] leading-relaxed">{it.body}</p>
           </motion.div>
         ))}
       </motion.div>
@@ -428,15 +428,15 @@ function QuickLinks() {
             <motion.div
               whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
-              className="border border-[#1B1D1B] p-6 h-full"
+              className="border border-[var(--color-line)] p-6 h-full"
             >
               <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
                 {l.title}
-                <span className="text-[#00C805] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity">
                   →
                 </span>
               </h3>
-              <p className="text-sm text-[#9BA1A6] leading-relaxed">{l.body}</p>
+              <p className="text-sm text-[var(--color-muted)] leading-relaxed">{l.body}</p>
             </motion.div>
           </Link>
         ))}
@@ -448,9 +448,9 @@ function QuickLinks() {
 function FinalCta() {
   return (
     <section className="px-6 pb-24 max-w-6xl mx-auto w-full">
-      <Reveal className="border border-[#1B1D1B] rounded-2xl p-10 sm:p-14 bg-[#0F1113] text-center relative overflow-hidden">
+      <Reveal className="border border-[var(--color-line)] rounded-2xl p-10 sm:p-14 bg-[var(--color-surface)] text-center relative overflow-hidden">
         <div className="relative">
-          <p className="font-mono text-xs text-[#D9A441] tracking-widest mb-4">
+          <p className="font-mono text-xs text-[var(--color-ember)] tracking-widest mb-4">
             READY WHEN YOU ARE
           </p>
           <h2 className="text-3xl sm:text-4xl font-semibold mb-6 max-w-2xl mx-auto">
@@ -459,13 +459,13 @@ function FinalCta() {
           <div className="flex flex-wrap gap-4 justify-center">
             <a
               href="#trade"
-              className="inline-block rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
+              className="inline-block rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
             >
               TRADE $INTERN →
             </a>
             <Link
               href="/marketplace"
-              className="inline-block rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
+              className="inline-block rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
             >
               MEET THE INTERNS →
             </Link>

@@ -49,7 +49,7 @@ function SimpleConnectButton() {
   }, [open]);
 
   const buttonClass =
-    "font-mono text-sm font-medium px-4 py-2 rounded-xl bg-[#00C805] text-[#0B0C0B] hover:bg-[#00b304] transition-colors disabled:opacity-60";
+    "font-mono text-sm font-medium px-4 py-2 rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-60";
 
   if (isConnected && address) {
     return (
@@ -91,14 +91,14 @@ function SimpleConnectButton() {
       </button>
 
       {open && connectors.length > 1 && (
-        <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-[#1B1D1B] bg-[#0F1113] shadow-lg py-1.5 z-50">
+        <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] shadow-lg py-1.5 z-50">
           {connectors.map((connector) => (
             <button
               key={connector.uid}
               type="button"
               onClick={() => handleConnect(connector)}
               disabled={isPending}
-              className="w-full text-left font-mono text-xs px-3.5 py-2.5 text-[#EDEEF0] hover:bg-white/[0.06] transition-colors disabled:opacity-60"
+              className="w-full text-left font-mono text-xs px-3.5 py-2.5 text-[var(--color-fg)] hover:bg-white/[0.06] transition-colors disabled:opacity-60"
             >
               {isPending && variables?.connector === connector ? "Confirm in wallet…" : connector.name}
             </button>
@@ -107,7 +107,7 @@ function SimpleConnectButton() {
       )}
 
       {error && (
-        <p className="absolute right-0 top-full mt-1 font-mono text-[10px] text-[#E5484D] w-48 text-right leading-snug">
+        <p className="absolute right-0 top-full mt-1 font-mono text-[10px] text-[var(--color-danger)] w-48 text-right leading-snug">
           {error.shortMessage || error.message}
         </p>
       )}

@@ -5,7 +5,9 @@ import {
   connectorsForWallets,
   RainbowKitProvider,
   darkTheme,
+  lightTheme,
 } from "@rainbow-me/rainbowkit";
+import { useTheme } from "./ThemeProvider";
 import {
   metaMaskWallet,
   rabbyWallet,
@@ -69,17 +71,24 @@ const config = projectId
 const queryClient = new QueryClient();
 
 export default function Web3Provider({ children }) {
+  // The wallet-connect modal is RainbowKit's own portal, styled
+  // independently of our page CSS -- it needs an explicit light/dark
+  // preset, not just CSS variables, to actually follow the site toggle.
+  const { theme } = useTheme();
+  const themeConfig = {
+    accentColor: "var(--color-accent)",
+    // Fixed dark, same as the site's own accent-background buttons (see
+    // --color-accent-foreground in globals.css) -- contrast is against
+    // the green accent, not the page background, so it doesn't flip.
+    accentColorForeground: "var(--color-accent-foreground)",
+    borderRadius: "medium",
+    fontStack: "system",
+  };
+
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider
-          theme={darkTheme({
-            accentColor: "#00C805",
-            accentColorForeground: "#0B0C0B",
-            borderRadius: "medium",
-            fontStack: "system",
-          })}
-        >
+        <RainbowKitProvider theme={theme === "light" ? lightTheme(themeConfig) : darkTheme(themeConfig)}>
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>

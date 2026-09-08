@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 function SectionLabel({ children }) {
   return (
-    <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+    <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
       {children}
     </Reveal>
   );
@@ -13,7 +13,7 @@ function SectionLabel({ children }) {
 
 function CodeBlock({ children }) {
   return (
-    <pre className="bg-[#0B0C0B] border border-[#1B1D1B] rounded-xl p-4 overflow-x-auto font-mono text-xs text-[#9BA1A6] leading-relaxed">
+    <pre className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl p-4 overflow-x-auto font-mono text-xs text-[var(--color-muted)] leading-relaxed">
       {children}
     </pre>
   );
@@ -21,16 +21,16 @@ function CodeBlock({ children }) {
 
 function InfoTable({ rows }) {
   return (
-    <div className="border border-[#1B1D1B] border-collapse overflow-hidden overflow-x-auto">
+    <div className="border border-[var(--color-line)] border-collapse overflow-hidden overflow-x-auto">
       {rows.map(([label, value], i) => (
         <div
           key={label}
           className={`flex flex-col sm:flex-row sm:items-start justify-between gap-1 sm:gap-6 px-6 py-4 font-mono text-sm ${
-            i !== rows.length - 1 ? "border-b border-[#1B1D1B]" : ""
+            i !== rows.length - 1 ? "border-b border-[var(--color-line)]" : ""
           }`}
         >
-          <span className="text-[#9BA1A6] shrink-0">{label}</span>
-          <span className="text-[#EDEEF0] sm:text-right break-all">{value}</span>
+          <span className="text-[var(--color-muted)] shrink-0">{label}</span>
+          <span className="text-[var(--color-fg)] sm:text-right break-all">{value}</span>
         </div>
       ))}
     </div>
@@ -72,7 +72,7 @@ export default function DocsView() {
         <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6">
           Everything, verifiable on-chain.
         </Reveal>
-        <Reveal as="p" delay={0.1} className="text-[#9BA1A6] text-lg leading-relaxed max-w-2xl">
+        <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl">
           $INTERN never asks you to trust a claim you can't check yourself.
           Every address below is a real, verified contract on Robinhood
           Chain — click through to Blockscout and read the source before
@@ -95,7 +95,7 @@ export default function DocsView() {
         <Reveal as="h2" delay={0.05} className="text-2xl font-semibold mb-2">
           Deployed addresses
         </Reveal>
-        <Reveal as="p" delay={0.1} className="text-[#9BA1A6] text-sm leading-relaxed mb-6 max-w-2xl">
+        <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-sm leading-relaxed mb-6 max-w-2xl">
           $INTERN is live — every address below is real and deployed. The
           PAIR contracts are protocol-wide, not specific to $INTERN, so
           they'd have been real even before launch; the token and staking
@@ -115,9 +115,9 @@ export default function DocsView() {
           <InfoTable rows={TOKENOMICS_ROWS} />
         </Reveal>
         <Reveal delay={0.1} className="mt-4">
-          <p className="font-mono text-xs text-[#4A4F54]">
+          <p className="font-mono text-xs text-[var(--color-muted-2)]">
             Full breakdown, including the live fee-split visual, on the{" "}
-            <a href="/tokenomics" className="text-[#00C805] hover:underline">
+            <a href="/tokenomics" className="text-[var(--color-accent)] hover:underline">
               tokenomics page
             </a>
             .
@@ -130,13 +130,13 @@ export default function DocsView() {
         <Reveal as="h2" delay={0.05} className="text-2xl font-semibold mb-2">
           Reading state directly
         </Reveal>
-        <Reveal as="p" delay={0.1} className="text-[#9BA1A6] text-sm leading-relaxed mb-6 max-w-2xl">
+        <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-sm leading-relaxed mb-6 max-w-2xl">
           Everything below reads straight off the contracts with{" "}
           <a
             href="https://viem.sh"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#00C805] hover:underline"
+            className="text-[var(--color-accent)] hover:underline"
           >
             viem
           </a>{" "}
@@ -151,7 +151,7 @@ export default function DocsView() {
           className="space-y-8"
         >
           <motion.div variants={fadeUp}>
-            <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-3">
+            <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-3">
               A STAKER'S POSITION
             </p>
             <CodeBlock>{`import { createPublicClient, http, parseAbi } from "viem";
@@ -180,7 +180,7 @@ const [staked, earned, totalStaked] = await Promise.all([
           </motion.div>
 
           <motion.div variants={fadeUp}>
-            <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-3">
+            <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-3">
               REAL CUMULATIVE BURNS (NOT totalSupply())
             </p>
             <CodeBlock>{`const balanceAbi = parseAbi(["function balanceOf(address account) view returns (uint256)"]);
@@ -206,15 +206,15 @@ const burned = await client.readContract({
           Don't take our word for it
         </Reveal>
         <Reveal>
-          <div className="grid sm:grid-cols-2 gap-px bg-[#1B1D1B] border border-[#1B1D1B]">
+          <div className="grid sm:grid-cols-2 gap-px bg-[var(--color-line)] border border-[var(--color-line)]">
             <a
               href="https://robinhoodchain.blockscout.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-[#0B0C0B] p-6 hover:bg-white/[0.03] transition-colors"
+              className="bg-[var(--color-bg)] p-6 hover:bg-white/[0.03] transition-colors"
             >
               <h3 className="text-base font-medium mb-2">Block explorer ↗</h3>
-              <p className="text-sm text-[#9BA1A6] leading-relaxed">
+              <p className="text-sm text-[var(--color-muted)] leading-relaxed">
                 Read every contract's verified source directly on
                 Blockscout.
               </p>
@@ -223,10 +223,10 @@ const burned = await client.readContract({
               href="https://github.com/CryptoBaba09/intern-project"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-[#0B0C0B] p-6 hover:bg-white/[0.03] transition-colors"
+              className="bg-[var(--color-bg)] p-6 hover:bg-white/[0.03] transition-colors"
             >
               <h3 className="text-base font-medium mb-2">Source code ↗</h3>
-              <p className="text-sm text-[#9BA1A6] leading-relaxed">
+              <p className="text-sm text-[var(--color-muted)] leading-relaxed">
                 This entire project — contract, bot, and site — is public
                 on GitHub.
               </p>
@@ -234,7 +234,7 @@ const burned = await client.readContract({
           </div>
         </Reveal>
         <Reveal delay={0.1} className="mt-8">
-          <p className="font-mono text-[10px] text-[#4A4F54] leading-relaxed max-w-2xl">
+          <p className="font-mono text-[10px] text-[var(--color-muted-2)] leading-relaxed max-w-2xl">
             $INTERN is a fixed-supply utility token on Robinhood Chain.
             This page is informational only and is not investment,
             financial, or legal advice. Staking involves smart contract

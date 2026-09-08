@@ -1,20 +1,55 @@
 @import "tailwindcss";
 
+/* Dark is the default, deliberate brand identity -- not inferred from the
+   visitor's system setting. Light is an explicit opt-in via the toggle in
+   Nav.js, which stamps data-theme="light" on <html> and persists it to
+   localStorage (see components/ThemeInit.js and ThemeToggle.js). */
 :root {
   --color-bg: #0B0C0B;
+  --color-surface: #0F1113;
   --color-fg: #EDEEF0;
-  --color-accent: #00C805;
-  --color-ember: #D9A441;
+  --color-muted: #9BA1A6;
+  --color-muted-2: #4A4F54;
   --color-line: #1B1D1B;
+  --color-accent: #00C805;
+  --color-accent-hover: #00b304;
+  /* Text/icons drawn on top of the bright accent green (buttons, active
+     pills). Fixed near-black in both themes on purpose -- it's picked for
+     contrast against --color-accent, not as a page-background echo, so it
+     must NOT reuse --color-bg (which flips to near-white in light mode
+     and would leave near-white text on a mid-green button). */
+  --color-accent-foreground: #0B0C0B;
+  --color-ember: #D9A441;
+  --color-danger: #E5484D;
+}
+
+[data-theme="light"] {
+  --color-bg: #F7F8F6;
+  --color-surface: #FFFFFF;
+  --color-fg: #101210;
+  --color-muted: #5B6168;
+  --color-muted-2: #8A9096;
+  --color-line: #E2E5E2;
+  --color-accent: #00A604;
+  --color-accent-hover: #009104;
+  --color-accent-foreground: #0B0C0B;
+  --color-ember: #B9740E;
+  --color-danger: #C4342D;
 }
 
 @theme inline {
   --font-display: var(--font-display);
   --font-mono: var(--font-mono);
   --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
   --color-fg: var(--color-fg);
+  --color-muted: var(--color-muted);
+  --color-muted-2: var(--color-muted-2);
   --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-foreground: var(--color-accent-foreground);
   --color-ember: var(--color-ember);
+  --color-danger: var(--color-danger);
   --color-line: var(--color-line);
 }
 
@@ -22,6 +57,7 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-display), sans-serif;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

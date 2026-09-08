@@ -25,7 +25,7 @@ function Tokenomics() {
 
   return (
     <section id="tokenomics" className="px-6 pt-16 pb-20 max-w-6xl mx-auto w-full">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         TOKENOMICS
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-2">
@@ -34,7 +34,7 @@ function Tokenomics() {
       <Reveal
         as="p"
         delay={0.1}
-        className="text-[#9BA1A6] text-base leading-relaxed max-w-2xl mb-10"
+        className="text-[var(--color-muted)] text-base leading-relaxed max-w-2xl mb-10"
       >
         No off-chain promises — every number below is either enforced by a
         contract today or clearly marked as not live yet.
@@ -44,18 +44,18 @@ function Tokenomics() {
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         variants={staggerContainer}
-        className="border border-[#1B1D1B] border-collapse overflow-hidden"
+        className="border border-[var(--color-line)] border-collapse overflow-hidden"
       >
         {rows.map(([label, value], i) => (
           <motion.div
             key={label}
             variants={fadeUp}
             className={`flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-6 px-6 py-4 font-mono text-sm transition-colors hover:bg-white/[0.03] ${
-              i !== rows.length - 1 ? "border-b border-[#1B1D1B]" : ""
+              i !== rows.length - 1 ? "border-b border-[var(--color-line)]" : ""
             }`}
           >
-            <span className="text-[#9BA1A6] shrink-0">{label}</span>
-            <span className="text-[#EDEEF0] sm:text-right">{value}</span>
+            <span className="text-[var(--color-muted)] shrink-0">{label}</span>
+            <span className="text-[var(--color-fg)] sm:text-right">{value}</span>
           </motion.div>
         ))}
       </motion.div>
@@ -69,29 +69,29 @@ function FeeSplitBar() {
     {
       label: "BURN",
       pct: 70,
-      color: "#00C805",
+      color: "var(--color-accent)",
       note: "Swapped for $INTERN on the open market, then sent to the dead address",
     },
     {
       label: "DISTRIBUTION",
       pct: 20,
-      color: "#D9A441",
+      color: "var(--color-ember)",
       note: "Streamed in BE to everyone staking $INTERN, pro-rata and time-weighted",
     },
     {
       label: "TREASURY",
       pct: 10,
-      color: "#9BA1A6",
+      color: "var(--color-muted)",
       note: "Ops, marketing, and expansion — sent directly, no swap",
     },
   ];
 
   return (
     <Reveal delay={0.15} className="mt-6">
-      <p className="font-mono text-xs text-[#4A4F54] tracking-widest mb-3">
+      <p className="font-mono text-xs text-[var(--color-muted-2)] tracking-widest mb-3">
         EVERY CREATOR FEE CLAIM, SPLIT ON-CHAIN
       </p>
-      <div className="flex w-full h-3 rounded-full overflow-hidden bg-[#0F1113] border border-[#1B1D1B]">
+      <div className="flex w-full h-3 rounded-full overflow-hidden bg-[var(--color-surface)] border border-[var(--color-line)]">
         {segments.map((s, i) => (
           <motion.div
             key={s.label}
@@ -111,15 +111,15 @@ function FeeSplitBar() {
               style={{ backgroundColor: s.color }}
             />
             <div>
-              <p className="font-mono text-xs text-[#EDEEF0] tracking-wide">
-                {s.pct}% <span className="text-[#9BA1A6]">{s.label}</span>
+              <p className="font-mono text-xs text-[var(--color-fg)] tracking-wide">
+                {s.pct}% <span className="text-[var(--color-muted)]">{s.label}</span>
               </p>
-              <p className="text-xs text-[#9BA1A6] leading-relaxed mt-0.5">{s.note}</p>
+              <p className="text-xs text-[var(--color-muted)] leading-relaxed mt-0.5">{s.note}</p>
             </div>
           </div>
         ))}
       </div>
-      <p className="font-mono text-[10px] text-[#4A4F54] mt-5 leading-relaxed">
+      <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-5 leading-relaxed">
         Distributions require staking $INTERN — unstake any time, no
         lockup. This isn&apos;t a dividend, equity, or a guaranteed return;
         it&apos;s a share of on-chain protocol fees, paid only to $INTERN
@@ -148,20 +148,20 @@ function IllustrativeBurnTicker() {
   return (
     <section
       id="burn"
-      className="px-6 py-24 border-y border-[#1B1D1B] bg-[#0F1113]"
+      className="px-6 py-24 border-y border-[var(--color-line)] bg-[var(--color-surface)]"
     >
       <Reveal className="max-w-3xl mx-auto text-center">
-        <p className="font-mono text-xs text-[#D9A441] tracking-widest mb-4 flex items-center justify-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D9A441] ember-pulse" />
+        <p className="font-mono text-xs text-[var(--color-ember)] tracking-widest mb-4 flex items-center justify-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-ember)] ember-pulse" />
           SUPPLY PREVIEW
         </p>
-        <p className="font-mono text-6xl sm:text-7xl font-bold text-[#D9A441] ember-glow tabular-nums">
+        <p className="font-mono text-6xl sm:text-7xl font-bold text-[var(--color-ember)] ember-glow tabular-nums">
           <AnimatedNumber value={supply} />
         </p>
-        <p className="font-mono text-sm text-[#9BA1A6] mt-4">
+        <p className="font-mono text-sm text-[var(--color-muted)] mt-4">
           {formatNumber(burned)} INTERN burned so far ({pctBurned}%)
         </p>
-        <p className="font-mono text-[10px] text-[#4A4F54] mt-6 max-w-md mx-auto leading-relaxed">
+        <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-6 max-w-md mx-auto leading-relaxed">
           This counter is illustrative — there is no live $INTERN contract
           to read yet. Once launched, this becomes a real on-chain read of
           the dead address's balance.
@@ -196,27 +196,27 @@ function LiveBurnTicker() {
   return (
     <section
       id="burn"
-      className="px-6 py-24 border-y border-[#1B1D1B] bg-[#0F1113]"
+      className="px-6 py-24 border-y border-[var(--color-line)] bg-[var(--color-surface)]"
     >
       <Reveal className="max-w-3xl mx-auto text-center">
-        <p className="font-mono text-xs text-[#00C805] tracking-widest mb-4 flex items-center justify-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00C805] ember-pulse" />
+        <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-4 flex items-center justify-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
           LIVE SUPPLY · READ DIRECTLY FROM THE DEAD ADDRESS
         </p>
-        <p className="font-mono text-6xl sm:text-7xl font-bold text-[#D9A441] ember-glow tabular-nums">
+        <p className="font-mono text-6xl sm:text-7xl font-bold text-[var(--color-ember)] ember-glow tabular-nums">
           {burned === null ? (isLoading ? "…" : formatNumber(supply)) : <AnimatedNumber value={Math.round(supply)} />}
         </p>
-        <p className="font-mono text-sm text-[#9BA1A6] mt-4">
+        <p className="font-mono text-sm text-[var(--color-muted)] mt-4">
           {burned === null ? "—" : formatNumber(Math.round(burned))} INTERN burned so far ({pctBurned}%)
         </p>
-        <p className="font-mono text-[10px] text-[#4A4F54] mt-6 max-w-md mx-auto leading-relaxed">
+        <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-6 max-w-md mx-auto leading-relaxed">
           Not self-reported — this is {DEAD_ADDRESS}&apos;s real balance,
           refreshed every 10 seconds.{" "}
           <a
             href={`https://robinhoodchain.blockscout.com/address/${DEAD_ADDRESS}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#00C805] hover:underline"
+            className="text-[var(--color-accent)] hover:underline"
           >
             Verify on Blockscout ↗
           </a>
@@ -254,7 +254,7 @@ function HowItWorks() {
 
   return (
     <section className="px-6 py-20 max-w-6xl mx-auto w-full">
-      <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         MECHANICS
       </Reveal>
       <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-10">
@@ -273,18 +273,18 @@ function HowItWorks() {
             variants={fadeUp}
             whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="border border-[#1B1D1B] p-6"
+            className="border border-[var(--color-line)] p-6"
           >
             <div className="flex items-center justify-between mb-4">
-              <p className="font-mono text-xs text-[#4A4F54]">{s.n}</p>
+              <p className="font-mono text-xs text-[var(--color-muted-2)]">{s.n}</p>
               {s.status && (
-                <span className="font-mono text-[10px] text-[#9BA1A6] border border-[#1B1D1B] rounded-full px-2 py-0.5">
+                <span className="font-mono text-[10px] text-[var(--color-muted)] border border-[var(--color-line)] rounded-full px-2 py-0.5">
                   {s.status}
                 </span>
               )}
             </div>
             <h3 className="text-lg font-medium mb-2">{s.title}</h3>
-            <p className="text-sm text-[#9BA1A6] leading-relaxed">{s.body}</p>
+            <p className="text-sm text-[var(--color-muted)] leading-relaxed">{s.body}</p>
           </motion.div>
         ))}
       </motion.div>

@@ -7,6 +7,8 @@ import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion"
 import { fadeUp, staggerContainer } from "./motion";
 import ConnectWalletButton from "./ConnectWalletButton";
 import Mascot from "./Mascot";
+import ThemeToggle from "./ThemeToggle";
+import { useTheme } from "./ThemeProvider";
 
 const LINKS = [
   { href: "/trade", label: "Trade" },
@@ -52,9 +54,9 @@ function MenuIcon({ open }) {
 
 function PanelLink({ href, children, active, external, onClick }) {
   const className =
-    "group flex items-baseline justify-between gap-4 py-3.5 border-b border-[#1B1D1B] transition-colors";
+    "group flex items-baseline justify-between gap-4 py-3.5 border-b border-[var(--color-line)] transition-colors";
   const labelClass = `font-mono text-2xl sm:text-3xl tracking-tight transition-colors ${
-    active ? "text-[#00C805]" : "text-[#EDEEF0] group-hover:text-[#00C805]"
+    active ? "text-[var(--color-accent)]" : "text-[var(--color-fg)] group-hover:text-[var(--color-accent)]"
   }`;
 
   if (external) {
@@ -67,7 +69,7 @@ function PanelLink({ href, children, active, external, onClick }) {
         className={className}
       >
         <span className={labelClass}>{children}</span>
-        <span className="font-mono text-xs text-[#4A4F54] group-hover:text-[#9BA1A6] transition-colors shrink-0">
+        <span className="font-mono text-xs text-[var(--color-muted-2)] group-hover:text-[var(--color-muted)] transition-colors shrink-0">
           ↗
         </span>
       </motion.a>
@@ -79,7 +81,7 @@ function PanelLink({ href, children, active, external, onClick }) {
       <Link href={href} onClick={onClick} className={className}>
         <span className={labelClass}>{children}</span>
         {active && (
-          <span className="font-mono text-[10px] text-[#00C805] tracking-widest shrink-0">
+          <span className="font-mono text-[10px] text-[var(--color-accent)] tracking-widest shrink-0">
             HERE
           </span>
         )}
@@ -88,20 +90,26 @@ function PanelLink({ href, children, active, external, onClick }) {
   );
 }
 
+// Scroll-driven backdrop needs literal rgba strings for framer-motion's
+// interpolation (a CSS var can't be animated between two color stops this
+// way), so it has to know the theme explicitly rather than just reading
+// --color-bg. Kept in sync with the two token sets in globals.css.
+const SCROLL_BG = {
+  dark: ["rgba(11,12,11,0)", "rgba(11,12,11,0.85)"],
+  light: ["rgba(247,248,246,0)", "rgba(247,248,246,0.85)"],
+};
+const SCROLL_BORDER = {
+  dark: ["rgba(27,29,27,0)", "rgba(27,29,27,1)"],
+  light: ["rgba(226,229,226,0)", "rgba(226,229,226,1)"],
+};
+
 export default function Nav() {
   const pathname = usePathname();
+  const { theme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const { scrollY } = useScroll();
-  const background = useTransform(
-    scrollY,
-    [0, 80],
-    ["rgba(11,12,11,0)", "rgba(11,12,11,0.85)"]
-  );
-  const borderColor = useTransform(
-    scrollY,
-    [0, 80],
-    ["rgba(27,29,27,0)", "rgba(27,29,27,1)"]
-  );
+  const background = useTransform(scrollY, [0, 80], SCROLL_BG[theme]);
+  const borderColor = useTransform(scrollY, [0, 80], SCROLL_BORDER[theme]);
 
   // Close the panel on route change so a link tap doesn't leave it open
   // behind the new page.
@@ -130,21 +138,22 @@ export default function Nav() {
         <div className="px-6 py-4 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <Mascot className="w-7 h-7" />
-            <span className="font-mono text-sm tracking-widest text-[#EDEEF0]">
+            <span className="font-mono text-sm tracking-widest text-[var(--color-fg)]">
               $INTERN
             </span>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="scale-90 origin-right">
               <ConnectWalletButton />
             </div>
+            <ThemeToggle />
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
-              className="text-[#EDEEF0] p-2 -mr-2 rounded-lg hover:bg-white/[0.06] transition-colors"
+              className="text-[var(--color-fg)] p-2 -mr-2 rounded-lg hover:bg-[var(--color-fg)]/[0.06] transition-colors"
             >
               <MenuIcon open={menuOpen} />
             </button>
@@ -170,7 +179,7 @@ export default function Nav() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-[64px] inset-x-0 z-40 max-h-[calc(100vh-64px)] overflow-y-auto border-b border-[#1B1D1B] bg-[#0B0C0B]"
+              className="fixed top-[64px] inset-x-0 z-40 max-h-[calc(100vh-64px)] overflow-y-auto border-b border-[var(--color-line)] bg-[var(--color-bg)]"
             >
               <motion.div
                 variants={staggerContainer}
@@ -193,7 +202,7 @@ export default function Nav() {
 
                 <motion.p
                   variants={fadeUp}
-                  className="font-mono text-xs text-[#4A4F54] tracking-widest mt-8 mb-3"
+                  className="font-mono text-xs text-[var(--color-muted-2)] tracking-widest mt-8 mb-3"
                 >
                   ELSEWHERE
                 </motion.p>
@@ -205,7 +214,7 @@ export default function Nav() {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-sm text-[#9BA1A6] hover:text-[#00C805] transition-colors py-1"
+                      className="font-mono text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors py-1"
                     >
                       {link.label} ↗
                     </motion.a>

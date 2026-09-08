@@ -19,7 +19,7 @@ const MIN_CREDIT_USD = 0.1;
 
 function LiveBadge({ children }) {
   return (
-    <span className="font-mono text-[10px] text-[#00C805] border border-[#00C805]/30 rounded-full px-2.5 py-1 tracking-widest">
+    <span className="font-mono text-[10px] text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-full px-2.5 py-1 tracking-widest">
       {children}
     </span>
   );
@@ -27,7 +27,7 @@ function LiveBadge({ children }) {
 
 function PreviewBadge({ children }) {
   return (
-    <span className="font-mono text-[10px] text-[#D9A441] border border-[#D9A441]/30 rounded-full px-2.5 py-1 tracking-widest">
+    <span className="font-mono text-[10px] text-[var(--color-ember)] border border-[var(--color-ember)]/30 rounded-full px-2.5 py-1 tracking-widest">
       {children}
     </span>
   );
@@ -56,10 +56,10 @@ function TxStatusBanner({ pendingLabel, txHash, isConfirming, isConfirmed, error
     <div
       className={`rounded-xl border px-4 py-3 mb-4 font-mono text-xs flex items-center justify-between gap-3 ${
         error
-          ? "border-[#E5484D]/40 text-[#E5484D]"
+          ? "border-[var(--color-danger)]/40 text-[var(--color-danger)]"
           : isConfirmed
-            ? "border-[#00C805]/40 text-[#00C805]"
-            : "border-[#D9A441]/40 text-[#D9A441]"
+            ? "border-[var(--color-accent)]/40 text-[var(--color-accent)]"
+            : "border-[var(--color-ember)]/40 text-[var(--color-ember)]"
       }`}
     >
       <span>
@@ -89,7 +89,7 @@ function CopyableKey({ value }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="flex items-center gap-2">
-      <code className="flex-1 min-w-0 truncate bg-[#0B0C0B] border border-[#1B1D1B] rounded-lg px-3 py-2 font-mono text-xs text-[#EDEEF0]">
+      <code className="flex-1 min-w-0 truncate bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-2 font-mono text-xs text-[var(--color-fg)]">
         {value}
       </code>
       <button
@@ -99,7 +99,7 @@ function CopyableKey({ value }) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         }}
-        className="shrink-0 font-mono text-[10px] font-medium text-[#00C805] border border-[#00C805]/30 rounded-lg px-2.5 py-2 hover:bg-[#00C805]/10 transition-colors"
+        className="shrink-0 font-mono text-[10px] font-medium text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-lg px-2.5 py-2 hover:bg-[var(--color-accent)]/10 transition-colors"
       >
         {copied ? "COPIED" : "COPY"}
       </button>
@@ -201,8 +201,8 @@ function PromptlyTopUp() {
 
   if (!isConnected) {
     return (
-      <div className="w-full max-w-md border border-[#1B1D1B] rounded-2xl bg-[#0F1113] p-6 text-center">
-        <p className="font-mono text-xs text-[#9BA1A6] tracking-wide mb-5">
+      <div className="w-full max-w-md border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6 text-center">
+        <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-5">
           CONNECT TO BURN FOR CREDIT
         </p>
         <div className="flex justify-center">
@@ -213,12 +213,12 @@ function PromptlyTopUp() {
   }
 
   return (
-    <div className="w-full max-w-md border border-[#1B1D1B] rounded-2xl bg-[#0F1113] p-6">
+    <div className="w-full max-w-md border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6">
       <div className="flex items-center justify-between mb-5">
-        <span className="font-mono text-xs text-[#9BA1A6] tracking-wide">YOUR $INTERN BALANCE</span>
+        <span className="font-mono text-xs text-[var(--color-muted)] tracking-wide">YOUR $INTERN BALANCE</span>
         <LiveBadge>LIVE</LiveBadge>
       </div>
-      <p className="font-mono text-3xl text-[#EDEEF0] mb-6">{formatToken(balance, decimals, 2)}</p>
+      <p className="font-mono text-3xl text-[var(--color-fg)] mb-6">{formatToken(balance, decimals, 2)}</p>
 
       <TxStatusBanner
         pendingLabel="Burning"
@@ -230,11 +230,11 @@ function PromptlyTopUp() {
 
       {result ? (
         <div className="space-y-3">
-          <p className="font-mono text-xs text-[#00C805]">
+          <p className="font-mono text-xs text-[var(--color-accent)]">
             {result.status === "created" ? "Key created." : "Key topped up."} {result.message}
           </p>
           {result.key && <CopyableKey value={result.key} />}
-          <p className="font-mono text-[10px] text-[#9BA1A6]">
+          <p className="font-mono text-[10px] text-[var(--color-muted)]">
             Burned {result.amountBurned.toLocaleString(undefined, { maximumFractionDigits: 2 })}{" "}
             $INTERN at ${result.priceUsdAtBurn.toFixed(8)} → $
             {(result.creditUsd ?? result.creditAddedUsd).toFixed(4)} credit
@@ -251,33 +251,33 @@ function PromptlyTopUp() {
               value={amount}
               onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
               disabled={isPending || isConfirming || redeeming}
-              className="w-full bg-[#0B0C0B] border border-[#1B1D1B] rounded-xl pl-4 pr-16 py-3 font-mono text-lg outline-none focus:border-[#00C805]/50 disabled:opacity-50"
+              className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl pl-4 pr-16 py-3 font-mono text-lg outline-none focus:border-[var(--color-accent)]/50 disabled:opacity-50"
             />
             <button
               type="button"
               onClick={() => balance && setAmount(formatUnits(balance, decimals))}
               disabled={isPending || isConfirming || redeeming || !balance}
-              className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-medium text-[#00C805] border border-[#00C805]/30 rounded-lg px-2 py-1 hover:bg-[#00C805]/10 transition-colors disabled:opacity-50"
+              className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-medium text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-lg px-2 py-1 hover:bg-[var(--color-accent)]/10 transition-colors disabled:opacity-50"
             >
               MAX
             </button>
           </div>
 
-          <p className="font-mono text-[10px] text-[#9BA1A6] mb-5 leading-relaxed">
+          <p className="font-mono text-[10px] text-[var(--color-muted)] mb-5 leading-relaxed">
             {priceUsd
               ? `≈ $${estimatedCreditUsd?.toFixed(4) ?? "0.0000"} credit at the live price ($${priceUsd.toFixed(8)}/token). Minimum burn: ${minAmountNeeded ? Math.ceil(minAmountNeeded).toLocaleString() : "—"} $INTERN (≈ $${MIN_CREDIT_USD.toFixed(2)}).`
               : "Fetching live $INTERN price…"}
           </p>
 
           {apiError && (
-            <p className="font-mono text-[10px] text-[#E5484D] mb-4 leading-relaxed">{apiError}</p>
+            <p className="font-mono text-[10px] text-[var(--color-danger)] mb-4 leading-relaxed">{apiError}</p>
           )}
 
           <button
             type="button"
             onClick={handleBurn}
             disabled={!parsedAmount || parsedAmount <= 0n || isPending || isConfirming || redeeming}
-            className="w-full rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium py-3 hover:bg-[#00b304] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isPending
               ? "CONFIRM IN WALLET…"
@@ -287,7 +287,7 @@ function PromptlyTopUp() {
                   ? "CREDITING…"
                   : "BURN & GET CREDIT"}
           </button>
-          <p className="mt-4 font-mono text-[10px] text-[#4A4F54] leading-relaxed">
+          <p className="mt-4 font-mono text-[10px] text-[var(--color-muted-2)] leading-relaxed">
             Sends a real, irreversible transfer to the dead address, then provisions a real,
             spend-capped OpenRouter key — no wrapper, nothing to install.
           </p>
@@ -306,7 +306,7 @@ export default function InferenceCreditsView() {
     <>
       <section className="px-6 pt-16 pb-16 max-w-5xl mx-auto w-full">
         <Reveal className="flex flex-wrap items-center gap-3 mb-4">
-          <p className="font-mono text-xs text-[#00C805] tracking-widest">
+          <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest">
             MEET PROMPTLY · INFERENCE INTERN
           </p>
           <LiveBadge>DIRECT TOP-UP · LIVE</LiveBadge>
@@ -318,7 +318,7 @@ export default function InferenceCreditsView() {
         <Reveal
           as="p"
           delay={0.1}
-          className="text-[#9BA1A6] text-lg leading-relaxed max-w-2xl mb-4"
+          className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-4"
         >
           The instant top-up is live today: burn $INTERN at the live price, get a real,
           spend-capped OpenRouter key back — spendable on Claude, GPT, Gemini, and hundreds of
@@ -326,13 +326,13 @@ export default function InferenceCreditsView() {
           treasury-funded credit automatically — isn&apos;t live yet, because there&apos;s no real
           treasury fee revenue flowing to fund it yet.
         </Reveal>
-        <Reveal as="p" delay={0.15} className="text-[#4A4F54] text-sm max-w-2xl">
+        <Reveal as="p" delay={0.15} className="text-[var(--color-muted-2)] text-sm max-w-2xl">
           See the full{" "}
           <a
             href="https://github.com/CryptoBaba09/intern-project/blob/main/docs/inference-credits-spec.md"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#00C805] hover:underline"
+            className="text-[var(--color-accent)] hover:underline"
           >
             design spec ↗
           </a>{" "}
@@ -344,39 +344,39 @@ export default function InferenceCreditsView() {
         {live ? (
           <PromptlyTopUp />
         ) : (
-          <div className="w-full max-w-md border border-[#1B1D1B] rounded-2xl bg-[#0F1113] p-6 text-center">
-            <p className="font-mono text-sm text-[#9BA1A6]">$INTERN isn&apos;t live yet.</p>
+          <div className="w-full max-w-md border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6 text-center">
+            <p className="font-mono text-sm text-[var(--color-muted)]">$INTERN isn&apos;t live yet.</p>
           </div>
         )}
         <div className="flex-1">
-          <p className="font-mono text-xs text-[#9BA1A6] tracking-widest mb-4">
+          <p className="font-mono text-xs text-[var(--color-muted)] tracking-widest mb-4">
             WORKS WITH
           </p>
           <div className="flex flex-wrap gap-2">
             {MODELS.map((m) => (
               <span
                 key={m}
-                className="font-mono text-xs text-[#EDEEF0] border border-[#1B1D1B] rounded-full px-3 py-1.5"
+                className="font-mono text-xs text-[var(--color-fg)] border border-[var(--color-line)] rounded-full px-3 py-1.5"
               >
                 {m}
               </span>
             ))}
           </div>
-          <p className="text-sm text-[#9BA1A6] leading-relaxed mt-6 max-w-md">
+          <p className="text-sm text-[var(--color-muted)] leading-relaxed mt-6 max-w-md">
             The key you get is a plain OpenRouter API key with a spend cap — whatever already
             works with OpenRouter works unchanged, no proprietary SDK.
           </p>
         </div>
       </section>
 
-      <section className="px-6 py-20 border-t border-[#1B1D1B] max-w-5xl mx-auto w-full">
-        <Reveal as="p" className="font-mono text-xs text-[#00C805] tracking-widest mb-3">
+      <section className="px-6 py-20 border-t border-[var(--color-line)] max-w-5xl mx-auto w-full">
+        <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
           HOW THE STAKING POOL WOULD WORK
         </Reveal>
         <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-2">
           Fees in, inference out.
         </Reveal>
-        <Reveal as="p" delay={0.08} className="text-[#9BA1A6] text-sm mb-10 max-w-xl">
+        <Reveal as="p" delay={0.08} className="text-[var(--color-muted)] text-sm mb-10 max-w-xl">
           Not live yet — this is the plan for the treasury-funded half, separate from the
           direct top-up above.
         </Reveal>
@@ -404,23 +404,23 @@ export default function InferenceCreditsView() {
               body: "Every dollar converted to credit also buys and burns an equal dollar of $INTERN — a second burn trigger alongside the deploy fee.",
             },
           ].map((step) => (
-            <motion.div key={step.n} variants={fadeUp} className="border border-[#1B1D1B] p-6">
-              <p className="font-mono text-xs text-[#4A4F54] mb-4">{step.n}</p>
+            <motion.div key={step.n} variants={fadeUp} className="border border-[var(--color-line)] p-6">
+              <p className="font-mono text-xs text-[var(--color-muted-2)] mb-4">{step.n}</p>
               <h3 className="text-lg font-medium mb-2">{step.title}</h3>
-              <p className="text-sm text-[#9BA1A6] leading-relaxed">{step.body}</p>
+              <p className="text-sm text-[var(--color-muted)] leading-relaxed">{step.body}</p>
             </motion.div>
           ))}
         </motion.div>
       </section>
 
       <section className="px-6 pb-24 max-w-5xl mx-auto w-full text-center">
-        <Reveal className="border border-[#1B1D1B] rounded-2xl p-10 bg-[#0F1113]">
-          <p className="font-mono text-xs text-[#9BA1A6] tracking-widest mb-3">
+        <Reveal className="border border-[var(--color-line)] rounded-2xl p-10 bg-[var(--color-surface)]">
+          <p className="font-mono text-xs text-[var(--color-muted)] tracking-widest mb-3">
             ONE HALF LIVE, ONE HALF PLANNED
           </p>
-          <p className="text-[#EDEEF0] text-lg mb-6 max-w-xl mx-auto">
+          <p className="text-[var(--color-fg)] text-lg mb-6 max-w-xl mx-auto">
             The staking pool ships after core staking is generating real fee revenue. Follow the{" "}
-            <Link href="/roadmap" className="text-[#00C805] hover:underline">
+            <Link href="/roadmap" className="text-[var(--color-accent)] hover:underline">
               roadmap
             </Link>{" "}
             for real status.
@@ -428,13 +428,13 @@ export default function InferenceCreditsView() {
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/stake"
-              className="inline-block rounded-xl bg-[#00C805] text-[#0B0C0B] font-mono text-sm font-medium px-6 py-3 hover:bg-[#00b304] transition-colors"
+              className="inline-block rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
             >
               GO TO STAKING →
             </Link>
             <Link
               href="/marketplace"
-              className="inline-block rounded-xl border border-[#1B1D1B] text-[#EDEEF0] font-mono text-sm font-medium px-6 py-3 hover:border-[#00C805]/50 transition-colors"
+              className="inline-block rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
             >
               MEET THE OTHER INTERNS →
             </Link>
