@@ -14,8 +14,11 @@ import { PERSONAS, PERSONA_LIST, randomPersona, findTopicGif } from "../../../li
 // across concurrent serverless instances. Fine for a single low-traffic
 // group; replace with a real store if this scales to many chats.
 const lastOrganicReply = new Map(); // chatId -> timestamp (ms)
-const ORGANIC_COOLDOWN_MS = 90_000;
-const ORGANIC_CHANCE = 0.12; // chance an eligible message gets a passive reply
+// Shortened from an earlier, sparser 90s/12%-chance version -- the bot was
+// going quiet for most of a busy chat. Now every on-topic message gets a
+// reply (gif or persona line), gated only by this cooldown so it doesn't
+// reply to five burn messages in a row.
+const ORGANIC_COOLDOWN_MS = 45_000;
 
 const publicClient = createPublicClient({ chain: robinhoodChain, transport: http() });
 
@@ -58,9 +61,12 @@ function sendAnimation(chatId, gifPath, caption, replyToMessageId) {
   });
 }
 
-async function generatePersonaLine(persona, triggerText) {
+async function generatePersonaLine(persona, triggerText, liveFactsLine) {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   try {
+    const userContent = liveFactsLine
+      ? `Chat message: "${triggerText.slice(0, 300)}"\n\nLive right now: ${liveFactsLine}`
+      : `Chat message: "${triggerText.slice(0, 300)}"`;
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -72,7 +78,7 @@ async function generatePersonaLine(persona, triggerText) {
         model: "claude-haiku-4-5-20251001",
         max_tokens: 80,
         system: persona.system,
-        messages: [{ role: "user", content: `Chat message: "${triggerText.slice(0, 300)}"` }],
+        messages: [{ role: "user", content: userContent }],
       }),
     });
     if (!res.ok) {
@@ -121,6 +127,19 @@ async function getLivePrice() {
     console.error("[telegram] getLivePrice error:", err);
     return null;
   }
+}
+
+// Pulls real live numbers (burn total, price) so persona replies can cite
+// them accurately instead of the model guessing or staying vague. Best
+// effort -- either piece can come back null if the read fails, and the
+// persona system prompt already says not to state a number it wasn't
+// given, so a partial/empty line here just means a less specific reply.
+async function getLiveFactsLine() {
+  const [burned, price] = await Promise.all([getLiveBurn(), getLivePrice()]);
+  const parts = [];
+  if (burned !== null) parts.push(`${Math.round(burned).toLocaleString()} $INTERN burned so far (permanent, read from the dead address)`);
+  if (price) parts.push(`price is $${Number(price).toFixed(8)}`);
+  return parts.length ? parts.join("; ") + "." : null;
 }
 
 async function handleCommand(cmd, chatId, messageId) {
@@ -221,19 +240,22 @@ export async function POST(req) {
 
   if (isMentioned || isReplyToBot) {
     const persona = randomPersona();
-    const line = await generatePersonaLine(persona, text);
+    const liveFactsLine = await getLiveFactsLine();
+    const line = await generatePersonaLine(persona, text, liveFactsLine);
     if (line) await sendText(chatId, line, messageId);
     return Response.json({ ok: true });
   }
 
-  // Passive: occasionally react to on-topic keywords, cooldown-limited so
-  // the bot doesn't spam a busy chat.
+  // Passive: reply to every on-topic message (burn/stake/trade/credits
+  // keywords), gated only by a per-chat cooldown so a run of consecutive
+  // on-topic messages doesn't get a reply each -- not by a coin flip that
+  // used to skip most of them.
   const now = Date.now();
   const last = lastOrganicReply.get(chatId) ?? 0;
   if (now - last < ORGANIC_COOLDOWN_MS) return Response.json({ ok: true });
 
   const topic = findTopicGif(text);
-  if (topic && Math.random() < ORGANIC_CHANCE) {
+  if (topic) {
     lastOrganicReply.set(chatId, now);
     // Coin flip between a meme gif and a persona one-liner so the chat
     // doesn't get the same reply shape every time.
@@ -241,7 +263,8 @@ export async function POST(req) {
       await sendAnimation(chatId, topic.gif, topic.caption, messageId);
     } else {
       const persona = randomPersona();
-      const line = await generatePersonaLine(persona, text);
+      const liveFactsLine = await getLiveFactsLine();
+      const line = await generatePersonaLine(persona, text, liveFactsLine);
       if (line) await sendText(chatId, line, messageId);
     }
   }
