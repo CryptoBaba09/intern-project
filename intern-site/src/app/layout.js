@@ -1,6 +1,7 @@
 import "./globals.css";
 import Web3Provider from "./components/Web3Provider";
 import ThemeProvider from "./components/ThemeProvider";
+import AnnouncementBar from "./components/AnnouncementBar";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import CursorGlow from "./components/CursorGlow";
@@ -121,6 +122,7 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <Web3Provider>
             <CursorGlow />
+            <AnnouncementBar />
             <Nav />
             {children}
             <Footer />

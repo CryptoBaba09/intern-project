@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
@@ -10,10 +10,13 @@ import Mascot from "./Mascot";
 import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "./ThemeProvider";
 
+// Burn to Create leads the list while it's the live, time-limited push --
+// see AnnouncementBar.js for the campaign dates. Move it back down once
+// the campaign ends and nothing else is actively running.
 const LINKS = [
+  { href: "/burn-to-create", label: "Burn to Create" },
   { href: "/trade", label: "Trade" },
   { href: "/stake", label: "Stake" },
-  { href: "/burn-to-create", label: "Burn to Create" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/personas", label: "Personas" },
   { href: "/tokenomics", label: "Tokenomics" },
@@ -111,6 +114,22 @@ export default function Nav() {
   const background = useTransform(scrollY, [0, 80], SCROLL_BG[theme]);
   const borderColor = useTransform(scrollY, [0, 80], SCROLL_BORDER[theme]);
 
+  // The dropdown panel needs to open right below this bar's actual
+  // bottom edge, not a hardcoded pixel guess -- AnnouncementBar.js sits
+  // above it with a height that varies by breakpoint (wraps to 2-3 lines
+  // on narrow screens) and by whether a campaign is even running, so any
+  // fixed constant here goes wrong the moment either changes.
+  const navRef = useRef(null);
+  const [panelTop, setPanelTop] = useState(64);
+
+  useEffect(() => {
+    if (!menuOpen || !navRef.current) return;
+    const measure = () => setPanelTop(navRef.current.getBoundingClientRect().bottom);
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [menuOpen]);
+
   // Close the panel on route change so a link tap doesn't leave it open
   // behind the new page.
   useEffect(() => {
@@ -132,6 +151,7 @@ export default function Nav() {
   return (
     <>
       <motion.nav
+        ref={navRef}
         style={{ backgroundColor: background, borderColor }}
         className="sticky top-0 z-50 w-full border-b backdrop-blur-md"
       >
@@ -179,7 +199,8 @@ export default function Nav() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-[64px] inset-x-0 z-40 max-h-[calc(100vh-64px)] overflow-y-auto border-b border-[var(--color-line)] bg-[var(--color-bg)]"
+              style={{ top: panelTop, maxHeight: `calc(100vh - ${panelTop}px)` }}
+              className="fixed inset-x-0 z-40 overflow-y-auto border-b border-[var(--color-line)] bg-[var(--color-bg)]"
             >
               <motion.div
                 variants={staggerContainer}
