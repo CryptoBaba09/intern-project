@@ -433,10 +433,10 @@ export default function InferenceCreditsView() {
               GO TO STAKING →
             </Link>
             <Link
-              href="/marketplace"
+              href="/video-credits"
               className="inline-block rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
             >
-              MEET THE OTHER INTERNS →
+              BURN FOR VIDEO INSTEAD →
             </Link>
           </div>
         </Reveal>

@@ -98,6 +98,12 @@ export default function BurnToCreateView() {
           >
             BURN & START →
           </Link>
+          <Link
+            href="/video-credits"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
+          >
+            OR BURN FOR VIDEO →
+          </Link>
           <a
             href="https://x.com/Internburn_xyz"
             target="_blank"
@@ -131,7 +137,7 @@ export default function BurnToCreateView() {
           <StepCard
             n="02"
             title="Create"
-            body="Spend that credit on Claude, GPT, Gemini, or whatever else OpenRouter connects to. Make a meme, a thread, a graphic, a script — anything about $INTERN."
+            body="Spend that credit on Claude, GPT, Gemini, or whatever else OpenRouter connects to — or burn for video credit instead and animate Blaze, Rendo, or Promptly directly via Runway or HeyGen."
           />
           <StepCard
             n="03"

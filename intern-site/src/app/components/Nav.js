@@ -15,6 +15,7 @@ import { useTheme } from "./ThemeProvider";
 // the campaign ends and nothing else is actively running.
 const LINKS = [
   { href: "/burn-to-create", label: "Burn to Create" },
+  { href: "/video-credits", label: "Video Credits" },
   { href: "/trade", label: "Trade" },
   { href: "/stake", label: "Stake" },
   { href: "/marketplace", label: "Marketplace" },

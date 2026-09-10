@@ -1,0 +1,226 @@
+import { isAddress } from "viem";
+import { getBalanceUsd, debitUsd } from "../../../lib/videoCredits";
+
+// Blaze v1: spends video credit (from api/blaze/topup) on a real
+// generation call to Runway or HeyGen, executed with THIS SITE's own
+// provider key -- never exposed to the client. This is the missing half
+// of the original vision (Rendo's route is deliberately text-only; see
+// its NatSpec) and the reason it stayed unbuilt until now: it needs
+// picking and paying for a real video provider, which this does.
+//
+// DISCLOSED LIMITATION, same honesty as the rest of this beta: the exact
+// request/response shape below is written against Runway's and HeyGen's
+// documented REST APIs as of this feature's build date, but has not been
+// exercised against a live provider key in this environment. Both provider
+// APIs evolve; if either changes shape, this route fails loudly (a 502
+// with the provider's own error body logged server-side) rather than
+// silently mis-charging credit -- but a maintainer should smoke-test both
+// paths against real keys before this leaves beta.
+
+// Flat cost per generation while there's no usage-based billing wired up
+// yet. Deliberately conservative relative to what these calls actually
+// cost the operator, so a single generation can't drain a burn's credit
+// in one accidental click. Revisit once real provider invoices exist to
+// calibrate against.
+const COST_USD = { runway: 1.5, heygen: 1.5 };
+
+const RUNWAY_BASE = "https://api.dev.runwayml.com";
+const RUNWAY_VERSION = "2024-11-06";
+const HEYGEN_BASE = "https://api.heygen.com";
+
+// The three locked reference stills, served from this site's own /public
+// so Runway's servers (which need a URL, not a local file) can fetch
+// them. Keeps every user generation anchored to the same approved face
+// design instead of trusting a client-supplied image.
+const PERSONA_SEED_PATH = {
+  blaze: "/personas/blaze.png",
+  rendo: "/personas/rendo.png",
+  promptly: "/personas/promptly.png",
+};
+
+// HeyGen avatar IDs are per-account (created via HeyGen's studio, not
+// derivable from anything in this repo) -- unset until an operator
+// creates real Blaze/Rendo/Promptly avatars in HeyGen and fills these in
+// via env vars. Missing ones fail with a clear "not configured" error
+// rather than a confusing provider-side 404.
+const HEYGEN_AVATAR_ID = {
+  blaze: process.env.HEYGEN_BLAZE_AVATAR_ID || "",
+  rendo: process.env.HEYGEN_RENDO_AVATAR_ID || "",
+  promptly: process.env.HEYGEN_PROMPTLY_AVATAR_ID || "",
+};
+
+function siteOrigin(req) {
+  // Prefer an explicit public site URL if set; falls back to deriving it
+  // from the incoming request so this also works correctly on Vercel
+  // preview deployments without extra config.
+  return process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
+}
+
+async function submitRunway(req, { persona, prompt }) {
+  if (!process.env.RUNWAYML_API_SECRET) {
+    throw Object.assign(new Error("Runway isn't configured yet — missing API key server-side."), {
+      status: 503,
+    });
+  }
+  const promptImage = `${siteOrigin(req)}${PERSONA_SEED_PATH[persona]}`;
+
+  const res = await fetch(`${RUNWAY_BASE}/v1/image_to_video`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.RUNWAYML_API_SECRET}`,
+      "X-Runway-Version": RUNWAY_VERSION,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      promptImage,
+      promptText: prompt,
+      model: "gen4_turbo",
+      ratio: "1280:720",
+      duration: 5,
+    }),
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    console.error("[blaze] Runway submit error:", res.status, detail);
+    throw Object.assign(new Error("Runway rejected that generation request."), { status: 502 });
+  }
+  const data = await res.json();
+  return { engine: "runway", taskId: data.id };
+}
+
+async function submitHeygen({ persona, prompt }) {
+  if (!process.env.HEYGEN_API_KEY) {
+    throw Object.assign(new Error("HeyGen isn't configured yet — missing API key server-side."), {
+      status: 503,
+    });
+  }
+  const avatarId = HEYGEN_AVATAR_ID[persona];
+  if (!avatarId) {
+    throw Object.assign(
+      new Error(`No HeyGen avatar configured for ${persona} yet — Runway is available in the meantime.`),
+      { status: 503 }
+    );
+  }
+
+  const res = await fetch(`${HEYGEN_BASE}/v2/video/generate`, {
+    method: "POST",
+    headers: {
+      "X-Api-Key": process.env.HEYGEN_API_KEY,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      video_inputs: [
+        {
+          character: { type: "avatar", avatar_id: avatarId, avatar_style: "normal" },
+          voice: { type: "text", input_text: prompt, voice_id: process.env.HEYGEN_VOICE_ID || "" },
+        },
+      ],
+      dimension: { width: 1280, height: 720 },
+    }),
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    console.error("[blaze] HeyGen submit error:", res.status, detail);
+    throw Object.assign(new Error("HeyGen rejected that generation request."), { status: 502 });
+  }
+  const data = await res.json();
+  const videoId = data.data?.video_id ?? data.video_id;
+  if (!videoId) {
+    console.error("[blaze] Unexpected HeyGen response shape:", JSON.stringify(data));
+    throw Object.assign(new Error("Unexpected response from HeyGen."), { status: 502 });
+  }
+  return { engine: "heygen", taskId: videoId };
+}
+
+export async function POST(req) {
+  try {
+    const { address, engine, persona, prompt } = await req.json();
+
+    if (!address || !isAddress(address)) {
+      return Response.json({ error: "A connected wallet address is required." }, { status: 400 });
+    }
+    if (engine !== "runway" && engine !== "heygen") {
+      return Response.json({ error: "engine must be 'runway' or 'heygen'." }, { status: 400 });
+    }
+    if (!persona || !PERSONA_SEED_PATH[persona]) {
+      return Response.json({ error: "persona must be 'blaze', 'rendo', or 'promptly'." }, { status: 400 });
+    }
+    if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
+      return Response.json(
+        { error: engine === "heygen" ? "Tell the persona what to say." : "Describe the motion you want." },
+        { status: 400 }
+      );
+    }
+    if (prompt.length > 500) {
+      return Response.json({ error: "Keep the prompt under 500 characters." }, { status: 400 });
+    }
+
+    const cost = COST_USD[engine];
+    if (getBalanceUsd(address) < cost) {
+      return Response.json(
+        {
+          error: `This generation costs $${cost.toFixed(2)} of video credit; your balance is $${getBalanceUsd(
+            address
+          ).toFixed(2)}. Burn more $INTERN on the video-credits page first.`,
+        },
+        { status: 402 }
+      );
+    }
+
+    // Debited at submission, not confirmed success -- see
+    // REFUND_ON_FAILURE_IMPLEMENTED in videoCredits.js for the known gap.
+    const newBalanceUsd = debitUsd(address, cost);
+
+    const submitted =
+      engine === "runway"
+        ? await submitRunway(req, { persona, prompt: prompt.trim() })
+        : await submitHeygen({ persona, prompt: prompt.trim() });
+
+    return Response.json({ ...submitted, costUsd: cost, newBalanceUsd });
+  } catch (err) {
+    console.error("[blaze] generate error:", err);
+    const status = err.status || 500;
+    return Response.json({ error: err.message || "Something went wrong starting that generation." }, { status });
+  }
+}
+
+// Polls the provider server-side so the raw Runway/HeyGen key never
+// reaches the client -- the browser only ever sees this route's own
+// normalized { status, videoUrl } shape.
+export async function GET(req) {
+  const params = new URL(req.url).searchParams;
+  const engine = params.get("engine");
+  const taskId = params.get("taskId");
+  if (!taskId || (engine !== "runway" && engine !== "heygen")) {
+    return Response.json({ error: "engine and taskId query params are required." }, { status: 400 });
+  }
+
+  try {
+    if (engine === "runway") {
+      const res = await fetch(`${RUNWAY_BASE}/v1/tasks/${taskId}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.RUNWAYML_API_SECRET}`,
+          "X-Runway-Version": RUNWAY_VERSION,
+        },
+      });
+      if (!res.ok) throw new Error(`Runway status check returned ${res.status}`);
+      const data = await res.json();
+      const status = { PENDING: "queued", RUNNING: "processing", SUCCEEDED: "ready", FAILED: "failed" }[
+        data.status
+      ] ?? "unknown";
+      return Response.json({ status, videoUrl: data.output?.[0] ?? null });
+    }
+
+    const res = await fetch(`${HEYGEN_BASE}/v1/video_status.get?video_id=${encodeURIComponent(taskId)}`, {
+      headers: { "X-Api-Key": process.env.HEYGEN_API_KEY },
+    });
+    if (!res.ok) throw new Error(`HeyGen status check returned ${res.status}`);
+    const data = await res.json();
+    const raw = data.data?.status ?? data.status;
+    const status = { pending: "queued", processing: "processing", completed: "ready", failed: "failed" }[raw] ?? "unknown";
+    return Response.json({ status, videoUrl: data.data?.video_url ?? null });
+  } catch (err) {
+    console.error("[blaze] status check error:", err);
+    return Response.json({ error: "Couldn't check generation status right now." }, { status: 502 });
+  }
+}
