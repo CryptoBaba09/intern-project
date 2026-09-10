@@ -10,12 +10,13 @@ import Mascot from "./Mascot";
 import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "./ThemeProvider";
 
-// Burn to Create leads the list while it's the live, time-limited push --
-// see AnnouncementBar.js for the campaign dates. Move it back down once
-// the campaign ends and nothing else is actively running.
+// Burn to Create's contest window closed (see AnnouncementBar.js) -- the
+// page itself now explains that plus the Pons migration, so it's still
+// worth a visible slot, just no longer the lead item. Video Credits is
+// the live, ongoing product push now.
 const LINKS = [
-  { href: "/burn-to-create", label: "Burn to Create" },
   { href: "/video-credits", label: "Video Credits" },
+  { href: "/burn-to-create", label: "Burn to Create" },
   { href: "/trade", label: "Trade" },
   { href: "/stake", label: "Stake" },
   { href: "/marketplace", label: "Marketplace" },
