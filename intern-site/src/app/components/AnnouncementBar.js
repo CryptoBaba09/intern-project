@@ -12,12 +12,14 @@ import Link from "next/link";
 // one live campaign at a time, so a config array is more machinery than
 // this needs right now.
 const CAMPAIGN = {
-  id: "burn-to-create-sep-2026",
+  id: "migrating-to-pons-sep-2026",
   href: "/burn-to-create",
-  start: "2026-09-07",
-  end: "2026-09-21",
-  label: "Burn to Create",
-  copy: "burn $INTERN, make real content with the credit, win a 5x match + Genesis whitelist.",
+  start: "2026-09-11",
+  end: "2026-10-11",
+  label: "Migrating to Pons",
+  copy: "Pair.fund's trading route has been broken for days. $INTERN is moving pools — burns and prizes from Burn to Create are still honored.",
+  // This banner isn't counting down a deadline -- see badge below.
+  noCountdown: true,
 };
 
 function daysLeft() {
@@ -58,7 +60,7 @@ export default function AnnouncementBar() {
       <div className="relative px-6 py-2.5 bg-[var(--color-ember)]/[0.08] border-b border-[var(--color-ember)]/25 hover:bg-[var(--color-ember)]/[0.13] transition-colors">
         <div className="max-w-6xl mx-auto w-full flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center pr-6">
           <span className="font-mono text-[10px] text-[var(--color-ember)] tracking-widest border border-[var(--color-ember)]/40 rounded-full px-2 py-0.5 shrink-0">
-            {left === 1 ? "LAST DAY" : `${left} DAYS LEFT`}
+            {CAMPAIGN.noCountdown ? "UPDATE" : left === 1 ? "LAST DAY" : `${left} DAYS LEFT`}
           </span>
           <span className="text-sm text-[var(--color-fg)]">
             <strong className="font-semibold">{CAMPAIGN.label}</strong> — {CAMPAIGN.copy}
