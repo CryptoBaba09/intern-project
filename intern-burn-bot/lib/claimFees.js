@@ -1,129 +1,108 @@
 const { ethers } = require("ethers");
-const { getPoolInfo } = require("./pairContracts");
+const { resolveLaunch, getCurve, getEscrow } = require("./ponsContracts");
 
-// Verified against PairV4Locker's ABI on Blockscout
-// (0xeFcF476E8870fB3eb8680f039414fdcCE6C2a117) — see https://pair.fund/docs.
+// Two-step process on Pons v2, different in shape from v1's PAIR flow
+// (which is why this file is a rewrite, not a patch): sweepFees() moves
+// a curve's accrued fees into the shared fee escrow, credited to the
+// launch's creatorFeeRecipient -- then claim() withdraws the CALLER's
+// own escrow balance. There is no "claim on behalf of another address"
+// path. See docs.ponsfamily.com/v2's "Claiming fees" section.
 //
-// Two things this corrects from an earlier placeholder version:
-// 1. Claiming is a two-step process — collectFees(tokenId) sweeps a locked
-//    position's accumulated fees into claimable balances (permissionless;
-//    PAIR's own keeper also does this, but we don't want to depend on its
-//    timing matching ours), then claim(asset) actually withdraws a balance.
-// 2. Fees accrue in BOTH assets a pool trades — the project token
-//    ($INTERN) and the quote token (BE) — as separate balances, not one
-//    combined "creator fee" paid only in BE.
-const LOCKER_ABI = [
-  "function claim(address asset) external returns (uint256 amount)",
-  // Blockscout's verified ABI has this taking two unnamed addresses; the
-  // parameter order (account, asset) below is inferred from convention,
-  // not confirmed from a named signature. If claimable() ever reads back
-  // 0 when you know a balance should exist, double check this order
-  // against https://pair.fund/api/fees/claimable/<wallet> (documented at
-  // pair.fund/docs) before assuming something else is wrong.
-  "function claimable(address account, address asset) view returns (uint256)",
-  "function collectFees(uint256 tokenId) external",
-];
-
-const ERC20_ABI = ["function balanceOf(address account) view returns (uint256)"];
-
-/**
- * Claims $INTERN's accumulated creator fees from PAIR — in both BE and
- * $INTERN, since a pool's swap fees land in whichever token was sold at
- * the time. Must be called from the wallet that launched $INTERN; PAIR
- * enforces creator-only claims on-chain.
- *
- * Returns { beClaimed, internClaimed } — the caller is responsible for
- * routing each separately (BE needs the 70/20/10 split and a swap for the
- * burn bucket; $INTERN claimed directly needs no swap, it can be burned
- * as-is).
- */
+// IMPORTANT, LOAD-BEARING CAVEAT: claim() only ever pays out to
+// msg.sender. If this bot's wallet (from PRIVATE_KEY) is not the same
+// address as the launch's creatorFeeRecipient, sweepFees() still works
+// (permissionless -- anyone can trigger it), but claim() has nothing to
+// withdraw for THIS wallet, even though real ETH is sitting in escrow
+// under the creator's balance. That's not a bug in this file; it's
+// Pons's access control working as designed. Two real fixes, neither of
+// which this bot can do for you:
+//   1. Run this bot with the creator wallet's own PRIVATE_KEY, or
+//   2. Have the creator call transferCreatorFeeRecipient(token, botWallet)
+//      once, redirecting future payouts to this bot's wallet.
+// claimFees() below detects this exact situation (escrow balance > 0
+// for the creator, but this wallet's own claim() reverts or claims 0)
+// and logs it loudly rather than silently reporting "nothing to claim."
 async function claimFees({ wallet, config, dryRun }) {
-  const { positionId, quoteToken } = await getPoolInfo({ config });
-  const locker = new ethers.Contract(config.feeClaimContractAddress, LOCKER_ABI, wallet);
+  const launch = await resolveLaunch({ provider: wallet.provider, config });
+  const curve = getCurve({ address: launch.curve, signerOrProvider: wallet });
+  const escrow = getEscrow({ config, signerOrProvider: wallet });
 
-  console.log(`[claimFees] Sweeping fees for locked position #${positionId}...`);
-  if (dryRun) {
-    console.log("[claimFees] DRY_RUN — skipping collectFees transaction.");
-  } else {
-    try {
-      const collectTx = await locker.collectFees(positionId);
-      console.log(`[claimFees] collectFees tx sent: ${collectTx.hash}`);
-      await collectTx.wait();
-      console.log("[claimFees] collectFees confirmed.");
-    } catch (err) {
-      // Permissionless, and PAIR's own keeper may have already swept this
-      // position this cycle — that's not a failure, just means there's
-      // nothing new to collect. Whatever is already claimable still gets
-      // claimed below either way.
-      console.log(
-        `[claimFees] collectFees skipped (${err.shortMessage || err.message}) — ` +
-          "continuing with whatever is already claimable."
-      );
-    }
-  }
+  const [quoteFeeBalance, creatorTaxBalance] = await Promise.all([
+    curve.quoteFeeBalance(),
+    curve.creatorTaxBalance(),
+  ]);
+  const pendingOnCurve = quoteFeeBalance + creatorTaxBalance;
+  console.log(
+    `[claimFees] Pending on curve before sweep: ${ethers.formatEther(pendingOnCurve)} ETH ` +
+      `(${ethers.formatEther(quoteFeeBalance)} base fee + ${ethers.formatEther(creatorTaxBalance)} creator tax)`
+  );
 
-  const assets = [
-    { label: "BE", address: quoteToken },
-    { label: "$INTERN", address: config.internTokenAddress },
-  ];
-
-  let beClaimed = 0n;
-  let internClaimed = 0n;
-
-  for (const asset of assets) {
-    const claimableAmount = await locker.claimable(wallet.address, asset.address);
-    console.log(`[claimFees] Claimable in ${asset.label}: ${ethers.formatEther(claimableAmount)}`);
-
-    if (claimableAmount === 0n) continue;
-
+  if (pendingOnCurve > 0n) {
+    console.log("[claimFees] Sweeping curve fees into the escrow...");
     if (dryRun) {
-      // Nothing to measure a real delta against in dry run — this snapshot
-      // is an estimate only, which is fine since no transaction runs.
-      console.log(`[claimFees] DRY_RUN — skipping claim of ${asset.label}.`);
-      if (asset.label === "BE") beClaimed = claimableAmount;
-      else internClaimed = claimableAmount;
-      continue;
-    }
-
-    // claim(asset) has no amount argument -- it withdraws whatever is
-    // claimable at execution time, not the `claimableAmount` snapshot above.
-    // collectFees is permissionless (PAIR's own keeper calls it too), so
-    // more could land between our read and this transaction confirming.
-    // Measuring the actual balance delta means bookkeeping always matches
-    // what was really received, never a stale pre-tx estimate.
-    //
-    // Each asset's claim is also independently try/caught: one asset
-    // reverting must not discard the other asset's already-confirmed
-    // claim by throwing out of the loop before it's recorded.
-    try {
-      const token = new ethers.Contract(asset.address, ERC20_ABI, wallet);
-      const balanceBefore = await token.balanceOf(wallet.address);
-
-      const tx = await locker.claim(asset.address);
-      console.log(`[claimFees] claim(${asset.label}) tx sent: ${tx.hash}`);
+      console.log("[claimFees] DRY_RUN — skipping sweepFees transaction.");
+    } else {
+      // buybackEnabled is false for this launch (verified on-chain), so
+      // minBuybackTokensOut is inert here -- 0 is correct, not a
+      // placeholder. If buyback is ever enabled for a future launch
+      // this bot also manages, this needs a real slippage-derived value.
+      const tx = await curve.sweepFees(0n);
+      console.log(`[claimFees] sweepFees tx sent: ${tx.hash}`);
       await tx.wait();
-
-      const balanceAfter = await token.balanceOf(wallet.address);
-      const actuallyClaimed = balanceAfter - balanceBefore;
-      console.log(
-        `[claimFees] claim(${asset.label}) confirmed — received ` +
-          `${ethers.formatEther(actuallyClaimed)} (pre-tx estimate was ` +
-          `${ethers.formatEther(claimableAmount)}).`
-      );
-
-      if (asset.label === "BE") beClaimed = actuallyClaimed;
-      else internClaimed = actuallyClaimed;
-    } catch (err) {
-      console.error(
-        `[claimFees] claim(${asset.label}) FAILED — ${err.shortMessage || err.message}. ` +
-          "Continuing to the next asset rather than aborting the whole cycle; " +
-          "if this asset's claim actually landed on-chain before failing here, " +
-          "verify the wallet's real balance manually."
-      );
+      console.log("[claimFees] sweepFees confirmed.");
     }
+  } else {
+    console.log("[claimFees] Nothing pending on the curve to sweep.");
   }
 
-  return { beClaimed, internClaimed };
+  const escrowBalanceForCreator = await escrow.balanceOf(launch.creatorFeeRecipient);
+  console.log(
+    `[claimFees] Escrow balance for creatorFeeRecipient (${launch.creatorFeeRecipient}): ` +
+      `${ethers.formatEther(escrowBalanceForCreator)} ETH`
+  );
+
+  const walletIsCreator = wallet.address.toLowerCase() === launch.creatorFeeRecipient.toLowerCase();
+  if (escrowBalanceForCreator > 0n && !walletIsCreator) {
+    console.warn(
+      "[claimFees] ⚠️  Real ETH is sitting in escrow for the creator wallet " +
+        `(${launch.creatorFeeRecipient}), but this bot is running as ${wallet.address} -- ` +
+        "a DIFFERENT address. claim() only pays the caller's own balance, so this bot " +
+        "cannot withdraw it. Either run this bot with the creator wallet's PRIVATE_KEY, " +
+        "or have the creator call transferCreatorFeeRecipient(token, thisBotWallet) once. " +
+        "Nothing was lost -- the ETH is safe in escrow -- but this cycle claims nothing."
+    );
+    return { ethClaimed: 0n };
+  }
+
+  const ownBalance = await escrow.balanceOf(wallet.address);
+  if (ownBalance === 0n) {
+    console.log("[claimFees] Nothing claimable for this wallet.");
+    return { ethClaimed: 0n };
+  }
+
+  console.log(`[claimFees] Claiming ${ethers.formatEther(ownBalance)} ETH from escrow...`);
+  if (dryRun) {
+    console.log("[claimFees] DRY_RUN — skipping claim transaction.");
+    return { ethClaimed: ownBalance };
+  }
+
+  const balanceBefore = await wallet.provider.getBalance(wallet.address);
+  const tx = await escrow.claim();
+  console.log(`[claimFees] claim tx sent: ${tx.hash}`);
+  const receipt = await tx.wait();
+  const balanceAfter = await wallet.provider.getBalance(wallet.address);
+  const gasCost = receipt.gasUsed * receipt.gasPrice;
+  // Measure the real delta (net of gas) rather than trusting the
+  // pre-claim escrow read, same discipline v1's claimFees.js used for
+  // ERC20 balances -- more could have been swept between the read above
+  // and this transaction confirming.
+  const actuallyClaimed = balanceAfter - balanceBefore + gasCost;
+  console.log(
+    `[claimFees] claim confirmed — received ${ethers.formatEther(actuallyClaimed)} ETH ` +
+      `(pre-tx estimate was ${ethers.formatEther(ownBalance)}).`
+  );
+
+  return { ethClaimed: actuallyClaimed };
 }
 
 module.exports = { claimFees };

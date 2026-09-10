@@ -12,55 +12,60 @@ const config = {
   rpcUrl: required("RPC_URL"),
   privateKey: required("PRIVATE_KEY"),
 
-  // Only INTERN_TOKEN_ADDRESS is genuinely unknowable before launch — it's
-  // created when $INTERN deploys. Everything else below is real, stable
-  // PAIR protocol infrastructure on Robinhood Chain (verified against
-  // https://pair.fund/docs and each contract's source on Blockscout), so
-  // it ships with real defaults and only needs overriding if PAIR upgrades
-  // to a new version. The bot still checks all of these before running for
-  // real (see index.js) — it will never silently operate on a blank address.
-  internTokenAddress: process.env.INTERN_TOKEN_ADDRESS || "",
-  // BE (Bloom Energy) is already a live, established PAIR quote asset used
-  // by 80+ other launches — its address doesn't depend on $INTERN's own
-  // launch at all.
-  beTokenAddress: process.env.BE_TOKEN_ADDRESS || "0x822cC93fFD030293E9842C30bBD678f530701867",
-  // PairV4Locker — holds every launch's locked position and creator/
-  // protocol claimable balances. One contract for the whole protocol, not
-  // per-token.
-  feeClaimContractAddress:
-    process.env.FEE_CLAIM_CONTRACT_ADDRESS || "0xeFcF476E8870fB3eb8680f039414fdcCE6C2a117",
-  // PairV5MultiPoolAggregator — PAIR's own integrator-facing swap contract
-  // (buyExactInput/sellExactInput). Deliberately NOT the raw Uniswap V4
-  // Universal Router: PAIR's docs warn the Robinhood-deployed router uses a
-  // non-standard struct field, and the aggregator exists specifically so
-  // integrators don't have to hand-encode that.
-  routerAddress: process.env.ROUTER_ADDRESS || "0x9d7741776098aFA315e4D576ede4F2c67a21d8Ce",
-  // PairLaunchpadV5Upgradeable (proxy) — used to read $INTERN's pool info
-  // (position id, fee tier, tick spacing, hook) at runtime rather than
-  // hardcoding it. See lib/pairContracts.js.
-  launchpadAddress: process.env.LAUNCHPAD_ADDRESS || "0x8660A7F019C7943b0b0A91B8E39AFf3b6DB6Ae62",
-  // V4Quoter — used to get a real pre-trade price quote for slippage
-  // protection instead of a hardcoded amountOutMinimum.
-  quoterAddress: process.env.QUOTER_ADDRESS || "0x8Dc178eFB8111BB0973Dd9d722ebeFF267c98F94",
-  // Ops/marketing/expansion wallet — receives the treasury cut of every
-  // claim, in BE, no swap involved.
+  // v2 $INTERN, live on Pons, migrated off Pair.fund 2026-09-10. Unlike
+  // v1's PAIR-specific infra, everything below except this address and
+  // DISTRIBUTOR_ADDRESS/TREASURY_ADDRESS is real, stable Pons v2
+  // protocol infrastructure (verified against docs.ponsfamily.com/v2
+  // and live eth_call reads on 2026-09-11, not guessed), so it ships
+  // with real defaults.
+  internTokenAddress:
+    process.env.INTERN_TOKEN_ADDRESS || "0x1293a4A3F090c091C7DA6dcca6a3bA9201B0E1C8",
+  // BE (Bloom Energy) -- the v1 staking-reward asset. NOT a Pons v2
+  // launch itself (verified: factory.getLaunchedToken(BE) returns
+  // exists=false), so there is no on-chain route from ETH to BE through
+  // Pons. See distribute.js for what that means for the 20% bucket.
+  beTokenAddress: process.env.BE_TOKEN_ADDRESS || "0x822CC93fFD030293E9842c30BBD678F530701867",
+  // Pons v2 launch factory. Used only to resolve the curve address per
+  // launch (see ponsContracts.js) -- never hardcode a curve address,
+  // Pons's own docs say to resolve it instead.
+  factoryAddress: process.env.PONS_FACTORY_ADDRESS || "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+  // Pons v2 fee escrow -- holds claimable creator/protocol balances
+  // after a curve's sweepFees() runs. One contract for the whole
+  // protocol, not per-token.
+  feeEscrowAddress: process.env.PONS_FEE_ESCROW_ADDRESS || "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e",
+  // Ops/marketing/expansion wallet -- receives the treasury cut of
+  // every claim, in plain ETH now (v1 paid this in BE; v2's fees accrue
+  // in ETH since $INTERN v2 is a native-ETH launch).
   treasuryAddress: process.env.TREASURY_ADDRESS || "",
-  // The deployed InternStakingRewards contract (see ../contracts). This
-  // bot deposits the distribution cut here via notifyRewardAmount(), which
-  // streams it to everyone staking $INTERN, pro-rata and time-weighted.
-  distributorAddress: process.env.DISTRIBUTOR_ADDRESS || "",
+  // The deployed InternStakingRewards contract for v2 (see
+  // ../contracts -- NOT the same address as v1's, which is tied to the
+  // old token and should not be reused). Deployed 2026-09-11, verified
+  // on-chain: stakingToken = v2 $INTERN, rewardToken = BE, owner = the
+  // creator wallet. totalStaked() reads 0 right now -- nobody has
+  // staked yet, so the distribution cut folds into the burn (see
+  // distribute.js) until that changes.
+  distributorAddress:
+    process.env.DISTRIBUTOR_ADDRESS || "0xd73a24D7bd311E36151344E233a7e6C73369E558",
 
-  deadAddress:
-    process.env.DEAD_ADDRESS || "0x000000000000000000000000000000000000dEaD",
-  minBeToSwap: parseFloat(process.env.MIN_BE_TO_SWAP || "0.05"),
-  maxSlippagePercent: parseFloat(process.env.MAX_SLIPPAGE_PERCENT || "3"),
+  deadAddress: process.env.DEAD_ADDRESS || "0x000000000000000000000000000000000000dEaD",
+  // Slippage tolerance for the curve buy that turns claimed ETH into
+  // $INTERN before burning -- see buyAndBurn.js. Same generosity
+  // rationale v1's MAX_SLIPPAGE_PERCENT had: a brand-new, thin-liquidity
+  // curve moves more per trade than an established pool, so a tight
+  // tolerance just means constant failed simulations.
+  maxSlippagePercent: parseFloat(process.env.MAX_SLIPPAGE_PERCENT || "5"),
+  // Below this, a curve buy isn't worth the gas -- accumulates in the
+  // wallet for next cycle instead (see buyAndBurn.js's carryover
+  // handling in index.js).
+  minEthToBuy: parseFloat(process.env.MIN_ETH_TO_BUY || "0.0005"),
   runIntervalMinutes: parseInt(process.env.RUN_INTERVAL_MINUTES || "60", 10),
   dryRun: (process.env.DRY_RUN || "true").toLowerCase() !== "false",
 
-  // How every claimed BE fee gets split, in whole percent. Must sum to 100
-  // (checked below). Burn keeps supply shrinking (the core mechanic);
-  // distribution accrues toward future $INTERN-holder payouts; treasury
-  // funds ops/marketing/expansion.
+  // How every claimed ETH fee gets split, in whole percent. Must sum to
+  // 100 (checked below). This is the BASE split when stakers exist;
+  // when distributor.totalStaked() reads zero (or the distributor isn't
+  // deployed yet), the distribution cut folds into the burn instead of
+  // sitting idle with nowhere to go -- see distribute.js.
   burnPercent: parseInt(process.env.BURN_PERCENT || "70", 10),
   distributionPercent: parseInt(process.env.DISTRIBUTION_PERCENT || "20", 10),
   treasuryPercent: parseInt(process.env.TREASURY_PERCENT || "10", 10),
@@ -77,13 +82,12 @@ if (config.burnPercent + config.distributionPercent + config.treasuryPercent !==
 function isLiveConfigured() {
   return Boolean(
     config.internTokenAddress &&
-      config.beTokenAddress &&
-      config.feeClaimContractAddress &&
-      config.routerAddress &&
-      config.launchpadAddress &&
-      config.quoterAddress &&
-      config.treasuryAddress &&
-      config.distributorAddress
+      config.factoryAddress &&
+      config.feeEscrowAddress &&
+      config.treasuryAddress
+    // distributorAddress deliberately NOT required here -- its absence
+    // is a normal, handled state (fold distribution into burn), not a
+    // missing-config error. See distribute.js.
   );
 }
 

@@ -50,3 +50,37 @@ Code: `intern-site/src/app/api/telegram/webhook/route.js` and
   soft-limit pattern as Rendo's daily usage tracker. Fine for one group at
   low-to-moderate volume.
 - Uses the same `ANTHROPIC_API_KEY` already configured for Rendo.
+
+## Sending announcements INTO the group (new, 2026-09-11)
+
+Separate from the webhook above (which only replies to incoming
+messages), `intern-site/src/app/api/telegram/announce/route.js` lets
+something outside Telegram push a message into the community group --
+e.g. mirroring an X post there with its link, for reach. It is a
+manual-trigger endpoint, not an autonomous poster: nothing calls it on
+a schedule, and it requires its own secret. Call it after an X post is
+confirmed live, not before, same "don't announce before it's real"
+discipline as everything else here.
+
+Setup:
+1. Find the group's chat id: send any message in the target group, then
+   check Vercel's function logs for `api/telegram/webhook` -- it now
+   logs `chat.id` on every incoming message specifically so this is easy
+   to find without touching Telegram's raw API.
+2. In Vercel -> Environment Variables, add:
+   - `TELEGRAM_CHAT_ID` = the id you just found
+   - `TELEGRAM_ANNOUNCE_SECRET` = a new random string (NOT the same value
+     as `TELEGRAM_WEBHOOK_SECRET` -- that one verifies Telegram calling
+     us, this one verifies us calling this route, a different direction)
+   Redeploy after adding these.
+3. Call it:
+
+   ```bash
+   curl -X POST "https://internburn.xyz/api/telegram/announce" \
+     -H "content-type: application/json" \
+     -H "x-announce-secret: <TELEGRAM_ANNOUNCE_SECRET>" \
+     -d '{"text": "Your announcement text, with the X post link in it."}'
+   ```
+
+   To include a video/gif/photo, add `"mediaUrl"` (a public URL) and
+   `"mediaType"` (`"photo"`, `"video"`, or `"animation"`) to the body.

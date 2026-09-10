@@ -35,7 +35,9 @@ export const CONTRACTS = {
   internToken:
     process.env.NEXT_PUBLIC_INTERN_TOKEN_ADDRESS ||
     "0x1293a4A3F090c091C7DA6dcca6a3bA9201B0E1C8",
-  distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR_ADDRESS || "",
+  distributor:
+    process.env.NEXT_PUBLIC_DISTRIBUTOR_ADDRESS ||
+    "0xd73a24D7bd311E36151344E233a7e6C73369E558",
 };
 
 // The burn bot sends $INTERN here via a plain transfer(), not a real

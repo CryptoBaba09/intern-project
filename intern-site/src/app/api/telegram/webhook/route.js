@@ -218,6 +218,12 @@ export async function POST(req) {
   const chatId = message.chat.id;
   const messageId = message.message_id;
 
+  // One-line, low-noise log so TELEGRAM_CHAT_ID (needed by
+  // api/telegram/announce/route.js -- see docs/telegram-bot.md) can be
+  // found in Vercel's function logs just by sending any message in the
+  // target group, rather than digging through Telegram's raw API.
+  console.log(`[telegram] message from chat.id=${chatId} title="${message.chat.title || message.chat.type}"`);
+
   // Welcome new members with a random persona.
   if (Array.isArray(message.new_chat_members) && message.new_chat_members.length) {
     const persona = randomPersona();

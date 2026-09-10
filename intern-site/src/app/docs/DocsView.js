@@ -50,7 +50,7 @@ const CONTRACT_ROWS = [
   ["$INTERN v1 token (migrating off)", "0x692f212e73aef5c81ee74e46867ffb139eb25555"],
   ["InternMigration (v1 → v2, 1:1)", "0x3bADCd1DeE2c0213EBdA77c3D243826ABFbeFa89"],
   ["InternStakingRewards (v1, paired with old token)", "0xe7804319Ea528CfED8C7908A4197EdE0ae44895a"],
-  ["InternStakingRewards (v2)", "Not deployed yet"],
+  ["InternStakingRewards (v2)", "0xd73a24D7bd311E36151344E233a7e6C73369E558 — deployed, not yet security-reviewed"],
   ["Dead / burn address", "0x000000000000000000000000000000000000dEaD"],
 ];
 
