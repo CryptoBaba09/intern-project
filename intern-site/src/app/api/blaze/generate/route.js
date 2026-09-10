@@ -56,6 +56,16 @@ function siteOrigin(req) {
   return process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
 }
 
+// Routed through a Runway Model Router config ("intern-video-credits",
+// cost-optimized, set up at dev.runwayml.com/organization/.../model-routers)
+// rather than a single hardcoded model. The router picks the cheapest
+// eligible model across providers (Runway/Alibaba/ByteDance/etc.) that
+// supports this request's inputs and tells the task which one it used --
+// meaningfully cuts the real per-generation cost this site pays out of
+// its own pocket versus always calling Gen-4 Turbo directly, with zero
+// change needed here if pricing shifts (the router re-evaluates live).
+const RUNWAY_ROUTER_CONFIG_ID = "intern-video-credits";
+
 async function submitRunway(req, { persona, prompt }) {
   if (!process.env.RUNWAYML_API_SECRET) {
     throw Object.assign(new Error("Runway isn't configured yet — missing API key server-side."), {
@@ -64,7 +74,7 @@ async function submitRunway(req, { persona, prompt }) {
   }
   const promptImage = `${siteOrigin(req)}${PERSONA_SEED_PATH[persona]}`;
 
-  const res = await fetch(`${RUNWAY_BASE}/v1/image_to_video`, {
+  const res = await fetch(`${RUNWAY_BASE}/v1/generate/video`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.RUNWAYML_API_SECRET}`,
@@ -72,11 +82,13 @@ async function submitRunway(req, { persona, prompt }) {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      promptImage,
-      promptText: prompt,
-      model: "gen4_turbo",
-      ratio: "1280:720",
-      duration: 5,
+      configId: RUNWAY_ROUTER_CONFIG_ID,
+      input: {
+        promptImage,
+        promptText: prompt,
+        ratio: "1280:720",
+        duration: 5,
+      },
     }),
   });
   if (!res.ok) {
