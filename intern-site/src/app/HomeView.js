@@ -119,7 +119,7 @@ function LiveStatStrip() {
           <p className="text-[var(--color-fg)] text-sm tabular-nums">
             {staked === null ? "—" : <AnimatedNumber value={Math.round(staked)} />}
           </p>
-          <p>$INTERN STAKED</p>
+          <p>$INTERN STAKED (V1)</p>
         </div>
         <div className="w-px bg-[var(--color-line)]" />
         <div>
@@ -153,7 +153,7 @@ function Hero() {
               key="eyebrow"
               className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-4"
             >
-              ROBINHOOD CHAIN · PAIR · QUOTED IN BE + USDG
+              ROBINHOOD CHAIN · PONS · QUOTED IN ETH
             </p>,
             <h1
               key="h1"
@@ -164,11 +164,11 @@ function Hero() {
               <span className="text-[var(--color-ember)] ember-glow">Supply</span> runs down.
             </h1>,
             <p key="p" className="text-[var(--color-muted)] text-lg leading-relaxed mb-8">
-              Every AI agent needs real compute, and real compute needs real
-              power. $INTERN is quoted directly against tokenized Bloom Energy
-              (BE) — the fuel-cell company behind a growing share of AI data
-              center power. Every intern hired burns $INTERN on the spot.
-              Fixed supply. No mint function, ever.
+              Every $INTERN needs real compute, and real compute runs on
+              real money. $INTERN is quoted against ETH — the OG currency
+              layer, still the one everything else gets built on top of.
+              Every intern hired burns $INTERN on the spot. Fixed supply.
+              No mint function, ever.
             </p>,
           ].map((el, i) => (
             <motion.div
@@ -259,17 +259,17 @@ function HowItWorks() {
     {
       n: "01",
       title: "Trade generates fees",
-      body: "Every trade on PAIR's locked $INTERN/BE and $INTERN/USDG pools pays a standard swap fee — no extra tax added.",
+      body: "Every trade on Pons pays a 2% total fee (1% base + creator tax) — disclosed here, not buried.",
     },
     {
       n: "02",
       title: "Blaze claims and burns",
-      body: "The protocol's always-on burn bot claims accumulated fees and burns 70% of them automatically. No deploy step, no vote, no button.",
+      body: "Claimed fees split 70/20/10: 70% buys back $INTERN and burns it, on-chain, verify it yourself.",
     },
     {
       n: "03",
-      title: "Stakers earn the rest",
-      body: "20% streams to everyone staking $INTERN, pro-rata and time-weighted. 10% funds treasury — ops, growth, and what comes next.",
+      title: "Stakers earn the rest, or it burns too",
+      body: "20% streams to whoever's staking $INTERN, in BE, pro-rata and time-weighted — or joins the burn if nobody's staked yet. 10% funds treasury.",
     },
   ];
   return (

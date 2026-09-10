@@ -66,8 +66,8 @@ function ComingSoon() {
         <a href="/tokenomics" className="text-[var(--color-accent)] hover:underline">
           tokenomics page
         </a>{" "}
-        for the full fee-split breakdown. It goes live once $INTERN is
-        trading on PAIR and the contract has had an independent security
+        for the full fee-split breakdown. It goes live once the v2
+        contract is deployed on Pons and has had an independent security
         review.
       </Reveal>
     </section>

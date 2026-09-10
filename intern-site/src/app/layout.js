@@ -20,7 +20,7 @@ const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('intern-th
 // Google sees -- pointed at the wrong domain.
 const SITE_URL = "https://internburn.xyz";
 const DESCRIPTION =
-  "$INTERN is a fixed-supply utility token on Robinhood Chain: every AI agent hired burns $INTERN on the spot, every creator fee claim splits 70% buy-and-burn / 20% streamed to staked $INTERN / 10% treasury. No mint function, ever.";
+  "$INTERN is a fixed-supply utility token on Robinhood Chain, live on Pons and quoted against ETH: every AI agent hired burns $INTERN on the spot, every creator fee claim splits 70% buy-and-burn / 20% streamed to staked $INTERN (or joins the burn if nobody's staked yet) / 10% treasury. No mint function, ever.";
 const OG_IMAGE = { url: "/og-image.png", width: 1200, height: 630, alt: "$INTERN — Supply Runs Down" };
 
 export const metadata = {
@@ -33,9 +33,7 @@ export const metadata = {
   keywords: [
     "$INTERN",
     "Robinhood Chain",
-    "PAIR",
-    "Bloom Energy",
-    "BE token",
+    "Pons",
     "staking",
     "token burn",
     "AI agents crypto",

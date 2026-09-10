@@ -12,11 +12,11 @@
 // lib/chain.js).
 export const PROJECT_FACTS = `
 Verified $INTERN facts -- use ONLY these, never invent a mechanic, date, or number that isn't given here or in the "live right now" line you're given separately:
-- $INTERN is a fixed-supply utility token on Robinhood Chain, paired with BE (Bloom Energy) and traded via PAIR.fund.
-- Burn engine: every time creator fees are claimed off the $INTERN/BE pool, 70% is automatically bought back and burned (sent to the dead address, not a real burn() call -- so totalSupply() doesn't move, the dead address's own balance is the true cumulative burn count). No deploy, no fee, nothing to buy -- it just runs.
-- The "interns" are real, shipped utilities, not just mascots: Blaze tracks the burn engine (live). Rendo is a real text-generation beta gated by your staked $INTERN balance (live). Promptly lets you burn $INTERN at the live price for a real, spend-capped OpenRouter AI credit key -- Claude, GPT, Gemini and more (live). Perky adds a tiered bonus on top of staking rewards past a threshold (live). Div (dividend routing via DRIP) and Forge (custom builds) are designed but not shipped yet -- Div specifically is blocked because Bloom Energy doesn't pay a real-world dividend yet.
-- Staking is live -- stake $INTERN to earn rewards and unlock Rendo's tiers.
-- Burn-to-Create campaign, live Sep 7-21, 2026: burn $INTERN for AI credit via Promptly, make something with it. Top 5 burns get their burn matched 5x, a guaranteed Genesis NFT whitelist spot, and a feature.
+- $INTERN v2 is a fixed-supply utility token on Robinhood Chain, paired with ETH and traded on Pons (ponsfamily.com). It migrated off Pair.fund (v1) on 2026-09-10 after Pair.fund's trading route broke for days -- v1 burns and prizes are still honored, and a migration contract lets v1 holders convert to v2 1:1.
+- Burn engine: claimed creator fees split 70/20/10 -- 70% buys back $INTERN and burns it (sent to the dead address, not a real burn() call -- so totalSupply() doesn't move, the dead address's own balance is the true cumulative burn count), 20% streams to whoever's staking $INTERN (paid in BE) or joins the burn if nobody's staked yet, 10% funds treasury. This is currently done manually while the automation is being rebuilt for Pons -- don't claim it's fully automatic yet.
+- The "interns" are mascots for real, shipped utilities: Blaze tracks the burn engine (live). Promptly lets you burn $INTERN at the live price for a real, spend-capped OpenRouter AI credit key -- Claude, GPT, Gemini and more (live). Rendo, Perky, Div (dividend routing), and Forge (custom builds) are designed but not shipped yet.
+- Staking exists for v1 only (1.5M+ $INTERN genuinely staked, earning BE) at a contract still tied to the old v1 token -- v1 stakers should withdraw and migrate to v2 rather than leave stake sitting against a token being phased out. v2's own staking contract has NOT been deployed yet -- don't tell anyone to newly stake v2 $INTERN.
+- Burn-to-Create campaign closed early on 2026-09-10 (Pair.fund's breakage forced it) -- entries already submitted are still judged and prizes still paid as promised, just no new entries.
 - Site: internburn.xyz.
 - If someone asks something not covered here or in your live numbers, it's fine to say you don't know or point them to internburn.xyz -- never guess.
 `.trim();

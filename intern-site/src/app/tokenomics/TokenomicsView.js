@@ -14,12 +14,12 @@ const LAUNCH_SUPPLY = 1_000_000_000;
 
 function Tokenomics() {
   const rows = [
-    ["Total supply", "Fixed at 1,000,000,000 $INTERN at launch on PAIR — no supply customization, no minting"],
-    ["Pairing assets", "Two live pools: $INTERN/BE (Bloom Energy, a tokenized real-world stock) and $INTERN/USDG — priced directly in each, not routed through ETH first"],
-    ["Liquidity", "Locked forever in Uniswap v4 pools from day one — no bonding curve, no migration to a separate pool later"],
+    ["Total supply", "Fixed at 1,000,000,000 $INTERN at launch — no supply customization, no minting"],
+    ["Pairing asset", "ETH — the one asset every wallet on this chain already holds, no detour to acquire something else first"],
+    ["Liquidity", "Trades on Pons's bonding curve pre-graduation, then a permanently locked Uniswap v4 pool once the curve raises 4.2 ETH"],
     ["Custom intern deploy fee", "10,000 $INTERN burned once, when a user launches their own custom intern from the marketplace"],
-    ["Swap fee", "PAIR's standard protocol fee only — $INTERN adds no extra trading tax on top"],
-    ["Creator fee split", "70% buy-and-burn · 20% streamed to staked $INTERN · 10% treasury — see the breakdown below"],
+    ["Swap fee", "2% total on Pons (1% base pool fee + 1% creator tax) — disclosed here, not hidden"],
+    ["Creator fee split", "70% buy-and-burn · 20% streamed to staked $INTERN, or joins the burn if nobody's staked yet · 10% treasury — see the breakdown below"],
     ["Mint function", "None, ever — total supply only ever goes down"],
   ];
 
@@ -235,7 +235,7 @@ function HowItWorks() {
     {
       n: "01",
       title: "Every trade pays a fee",
-      body: "PAIR's standard swap fee accrues on every $INTERN trade — no extra tax added on top.",
+      body: "Every $INTERN trade on Pons pays a 2% total fee (1% base + 1% creator tax) — same number as shown at the top of this page.",
       status: null,
     },
     {

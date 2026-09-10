@@ -19,26 +19,24 @@ export const robinhoodChain = defineChain({
   },
 });
 
-// Addresses that only exist once $INTERN is actually live on PAIR and
-// InternStakingRewards is deployed. Left unset (empty string) until then --
-// every page that uses these checks for that and shows a "not live yet"
+// internToken defaults to the real, live v2 $INTERN address (migrated to
+// Pons 2026-09-10) so the site is correct even if the env var override
+// below is never set -- see lib/pools.js for why. distributor stays
+// unset until InternStakingRewards is actually deployed for v2; every
+// page using isStakingLive() checks for that and shows a "not live yet"
 // state instead of calling contract methods against a garbage address.
+//
+// PAIR-specific trade infrastructure (aggregator/v4Quoter/beToken) is
+// gone -- v2 doesn't trade through a locked Uniswap V4 pool we can call
+// directly (see lib/pools.js), so there's nothing for those addresses
+// to point at anymore. /trade links out to Pons instead of executing
+// swaps in-house.
 export const CONTRACTS = {
-  internToken: process.env.NEXT_PUBLIC_INTERN_TOKEN_ADDRESS || "",
-  beToken: process.env.NEXT_PUBLIC_BE_TOKEN_ADDRESS || "",
+  internToken:
+    process.env.NEXT_PUBLIC_INTERN_TOKEN_ADDRESS ||
+    "0x1293a4A3F090c091C7DA6dcca6a3bA9201B0E1C8",
   distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR_ADDRESS || "",
-  // PAIR protocol infrastructure, not $INTERN-specific -- same aggregator
-  // and quoter every token on PAIR trades through. Addresses verified
-  // against pair.fund/docs and Blockscout's verified source on 2026-09-07.
-  aggregator:
-    process.env.NEXT_PUBLIC_PAIR_AGGREGATOR_ADDRESS ||
-    "0x9d7741776098aFA315e4D576ede4F2c67a21d8Ce",
-  v4Quoter:
-    process.env.NEXT_PUBLIC_PAIR_V4_QUOTER_ADDRESS ||
-    "0x8Dc178eFB8111BB0973Dd9d722ebeFF267c98F94",
 };
-
-export const PAIR_POOL_URL = process.env.NEXT_PUBLIC_PAIR_POOL_URL || "";
 
 // The burn bot sends $INTERN here via a plain transfer(), not a real
 // burn() call -- so totalSupply() never moves and can't be used to

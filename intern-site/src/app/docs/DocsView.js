@@ -46,22 +46,20 @@ const NETWORK_ROWS = [
 ];
 
 const CONTRACT_ROWS = [
-  ["$INTERN token", "0x692f212e73aef5c81ee74e46867ffb139eb25555"],
-  ["BE (pairing asset)", "0x822cC93fFD030293E9842C30bBD678f530701867"],
-  ["InternStakingRewards", "0xe7804319Ea528CfED8C7908A4197EdE0ae44895a"],
-  ["PAIR Launchpad (V5)", "0x8660A7F019C7943b0b0A91B8E39AFf3b6DB6Ae62"],
-  ["PairV4Locker (fee claims)", "0xeFcF476E8870fB3eb8680f039414fdcCE6C2a117"],
-  ["PairV5MultiPoolAggregator (swaps)", "0x9d7741776098aFA315e4D576ede4F2c67a21d8Ce"],
-  ["V4Quoter (price quotes)", "0x8Dc178eFB8111BB0973Dd9d722ebeFF267c98F94"],
+  ["$INTERN v2 token", "0x1293a4A3F090c091C7DA6dcca6a3bA9201B0E1C8"],
+  ["$INTERN v1 token (migrating off)", "0x692f212e73aef5c81ee74e46867ffb139eb25555"],
+  ["InternMigration (v1 → v2, 1:1)", "0x3bADCd1DeE2c0213EBdA77c3D243826ABFbeFa89"],
+  ["InternStakingRewards (v1, paired with old token)", "0xe7804319Ea528CfED8C7908A4197EdE0ae44895a"],
+  ["InternStakingRewards (v2)", "Not deployed yet"],
   ["Dead / burn address", "0x000000000000000000000000000000000000dEaD"],
 ];
 
 const TOKENOMICS_ROWS = [
-  ["Total supply", "1,000,000,000 $INTERN, fixed at launch — PAIR's standard launch size, no supply customization"],
+  ["Total supply", "1,000,000,000 $INTERN, fixed at launch, no supply customization"],
   ["Mint function", "None, ever"],
   ["Marketplace deploy fee", "10,000 $INTERN burned per intern deployed (0.001% of supply per deploy)"],
-  ["Creator fee split", "70% buy-and-burn · 20% streamed to staked $INTERN · 10% treasury"],
-  ["Swap fee", "PAIR's standard 1% pool fee only — no added creator trading tax"],
+  ["Creator fee split", "70% buy-and-burn · 20% streamed to staked $INTERN (or joins the burn if nobody's staked yet) · 10% treasury"],
+  ["Swap fee", "2% total on Pons (1% base pool fee + 1% creator tax) — disclosed here, not hidden"],
 ];
 
 export default function DocsView() {
@@ -96,10 +94,10 @@ export default function DocsView() {
           Deployed addresses
         </Reveal>
         <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-sm leading-relaxed mb-6 max-w-2xl">
-          $INTERN is live — every address below is real and deployed. The
-          PAIR contracts are protocol-wide, not specific to $INTERN, so
-          they'd have been real even before launch; the token and staking
-          contract are $INTERN's own.
+          $INTERN v2 is live on Pons, paired against ETH — migrated off
+          v1/Pair.fund on 2026-09-10 after Pair.fund's trading route broke
+          for days. Every address below is real; InternStakingRewards is
+          listed as not-yet-deployed rather than pointed at a guess.
         </Reveal>
         <Reveal>
           <InfoTable rows={CONTRACT_ROWS} />

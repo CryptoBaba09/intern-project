@@ -1,6 +1,7 @@
 import { createPublicClient, http, isAddress, formatUnits, getAddress } from "viem";
 import { robinhoodChain, CONTRACTS, DEAD_ADDRESS, isTradingLive } from "../../../lib/chain";
 import { ERC20_ABI } from "../../../lib/abis";
+import { fetchInternPriceUsd } from "../../../lib/ponsPrice";
 
 // Promptly v1: the real, self-contained half of the Inference Intern
 // vision ("pay $INTERN directly for an instant top-up" from the
@@ -38,16 +39,9 @@ const openRouterKeyByAddress = new Map(); // lowercase address -> { hash }
 
 const MIN_CREDIT_USD = 0.1;
 
-async function fetchInternPriceUsd() {
-  const res = await fetch(`https://pair.fund/api/tokens/${CONTRACTS.internToken}`, {
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`PAIR tokens API returned ${res.status}`);
-  const data = await res.json();
-  const price = Number(data.priceUsd ?? data.compositePriceUsd ?? 0);
-  if (!price || !Number.isFinite(price)) throw new Error("No live $INTERN price available");
-  return price;
-}
+// Live $INTERN/USD price, computed from Pons's own bonding-curve
+// reserves (see lib/ponsPrice.js) rather than the now-dead pair.fund
+// API this used to call.
 
 export async function POST(req) {
   try {

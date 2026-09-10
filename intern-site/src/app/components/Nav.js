@@ -27,7 +27,7 @@ const LINKS = [
 ];
 
 const EXTERNAL_LINKS = [
-  { href: "https://robinhoodchain.blockscout.com/address/0x692f212e73aef5c81ee74e46867ffb139eb25555", label: "Contract" },
+  { href: "https://robinhoodchain.blockscout.com/address/0x1293a4A3F090c091C7DA6dcca6a3bA9201B0E1C8", label: "Contract" },
   { href: "https://x.com/Internburn_xyz", label: "X" },
   { href: "https://t.me/internburnxyz", label: "Telegram" },
 ];

@@ -72,7 +72,7 @@ export default function GenesisView() {
           className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-4"
         >
           $INTERN is live and trading now — but minting doesn't open on day
-          one. It opens the moment cumulative volume on PAIR crosses{" "}
+          one. It opens the moment cumulative volume crosses{" "}
           <span className="text-[var(--color-fg)]">$1,000,000</span>. Earned, not
           day-one hype. Live progress toward that is below.
         </Reveal>
@@ -116,7 +116,7 @@ export default function GenesisView() {
               ? `$${formatUsd(progress.volumeUsd)} / $${formatUsd(progress.targetUsd)}`
               : progressError
                 ? "Couldn't load live volume right now — refresh to retry."
-                : "Fetching live volume from PAIR…"}
+                : "Fetching live volume…"}
           </p>
           {progress?.isRolling24h && (
             <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-2 leading-relaxed">

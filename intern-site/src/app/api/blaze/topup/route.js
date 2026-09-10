@@ -2,6 +2,7 @@ import { createPublicClient, http, isAddress, formatUnits, getAddress } from "vi
 import { robinhoodChain, CONTRACTS, DEAD_ADDRESS, isTradingLive } from "../../../lib/chain";
 import { ERC20_ABI } from "../../../lib/abis";
 import { isBurnRedeemed, markBurnRedeemed, creditUsd, getBalanceUsd } from "../../../lib/videoCredits";
+import { fetchInternPriceUsd } from "../../../lib/ponsPrice";
 
 // Blaze v1: "burn $INTERN -> real video credit" -- the video-generation
 // half of the same principle Promptly already ships for text
@@ -22,16 +23,9 @@ const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a
 // (see COST_USD in api/blaze/generate/route.js).
 const MIN_CREDIT_USD = 1;
 
-async function fetchInternPriceUsd() {
-  const res = await fetch(`https://pair.fund/api/tokens/${CONTRACTS.internToken}`, {
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`PAIR tokens API returned ${res.status}`);
-  const data = await res.json();
-  const price = Number(data.priceUsd ?? data.compositePriceUsd ?? 0);
-  if (!price || !Number.isFinite(price)) throw new Error("No live $INTERN price available");
-  return price;
-}
+// Live $INTERN/USD price, computed from Pons's own bonding-curve
+// reserves (see lib/ponsPrice.js) rather than the now-dead pair.fund
+// API this used to call. Replaces the old local fetchInternPriceUsd.
 
 export async function POST(req) {
   try {

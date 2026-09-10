@@ -116,6 +116,10 @@ async function getLiveBurn() {
   }
 }
 
+// BROKEN as of the 2026-09-10 migration off PAIR to Pons -- pair.fund's
+// API is dead, so this currently always returns null (fails gracefully;
+// see the comment on getLiveFactsLine below for why that's fine here,
+// unlike the crediting flows in api/blaze|promptly/topup/route.js).
 async function getLivePrice() {
   if (!CONTRACTS.internToken) return null;
   try {

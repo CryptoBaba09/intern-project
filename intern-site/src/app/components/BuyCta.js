@@ -2,14 +2,13 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { PAIR_POOL_URL, isTradingLive } from "../lib/chain";
+import { isTradingLive } from "../lib/chain";
+import { PONS_TRADE_URL } from "../lib/pools";
 
-// Trading now has two doors that hit the exact same locked liquidity:
-// /trade calls PAIR's own public PairV5MultiPoolAggregator contract
-// directly from this site (see lib/pools.js + trade/TradeView.js), and
-// pair.fund is the other, PAIR-hosted door onto the same pools. Neither
-// custodies funds or adds its own liquidity -- this is not a competing
-// swap implementation, it's the same router with our own front end on it.
+// v2 $INTERN trades on Pons, paired against ETH on Robinhood Chain --
+// see trade/TradeView.js for why this links out instead of running an
+// in-house swap widget (bonding curve pre-graduation, not a locked V4
+// pool we can call directly).
 export default function BuyCta() {
   const isLive = isTradingLive();
 
@@ -24,34 +23,31 @@ export default function BuyCta() {
           TRADE $INTERN
         </span>
         <span className="font-mono text-xs text-[var(--color-accent)]">
-          {isLive ? "LIVE ON PAIR" : "LOCKED LIQUIDITY"}
+          {isLive ? "LIVE ON PONS" : "NOT LIVE YET"}
         </span>
       </div>
 
       <p className="text-sm text-[var(--color-muted)] leading-relaxed mb-5">
-        $INTERN trades on Robinhood Chain against BE and USDG —
-        permanently locked liquidity from block one, no bonding curve, no
-        migration.
+        $INTERN trades on Robinhood Chain against ETH — fixed supply, no
+        mint function, live on Pons.
       </p>
 
       {isLive ? (
         <div className="flex flex-col gap-2">
-          <Link
-            href="/trade"
+          <a
+            href={PONS_TRADE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
           >
-            BUY / SELL HERE
+            TRADE ON PONS ↗
+          </a>
+          <Link
+            href="/trade"
+            className="flex items-center justify-center gap-2 w-full rounded-xl border border-[var(--color-line)] text-[var(--color-muted)] font-mono text-sm font-medium py-3 hover:border-[var(--color-accent)]/50 hover:text-[var(--color-fg)] transition-colors"
+          >
+            VERIFY THE CONTRACT FIRST
           </Link>
-          {PAIR_POOL_URL && (
-            <a
-              href={PAIR_POOL_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full rounded-xl border border-[var(--color-line)] text-[var(--color-muted)] font-mono text-sm font-medium py-3 hover:border-[var(--color-accent)]/50 hover:text-[var(--color-fg)] transition-colors"
-            >
-              OR TRADE ON PAIR ↗
-            </a>
-          )}
         </div>
       ) : (
         <div className="w-full rounded-xl border border-[var(--color-line)] text-[var(--color-muted-2)] font-mono text-sm font-medium py-3 text-center">
@@ -60,8 +56,8 @@ export default function BuyCta() {
       )}
 
       <p className="mt-4 font-mono text-[10px] text-[var(--color-muted-2)] leading-relaxed">
-        Both trade against the same locked pools. Always verify the
-        contract address on Blockscout before connecting a wallet.
+        Always verify the contract address on Blockscout before
+        connecting a wallet.
       </p>
     </motion.div>
   );
