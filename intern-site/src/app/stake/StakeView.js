@@ -19,6 +19,7 @@ import TierPath from "../components/TierPath";
 import Badges from "../components/Badges";
 import PerkyPreview from "../components/PerkyPreview";
 import StreakBadge from "../components/StreakTracker";
+import MigrationBox from "../components/MigrationBox";
 
 function useTokenDecimals(address) {
   const { data } = useReadContract({
@@ -310,6 +311,12 @@ function StakeDashboard() {
         time-weighted by how long you&apos;ve held your stake. Unstake any
         time — this is not a lockup.
       </Reveal>
+
+      {/* Self-hiding: only a wallet still holding or staking v1 sees
+          this at all -- see components/MigrationBox.js. */}
+      <div className="mb-10">
+        <MigrationBox />
+      </div>
 
       <motion.div
         initial="hidden"
