@@ -15,3 +15,16 @@ import { getAddress } from "viem";
 export const INTERN_ADDRESS = getAddress("0x1293a4a3f090c091c7da6dcca6a3ba9201b0e1c8");
 
 export const PONS_TRADE_URL = `https://www.ponsfamily.com/launchpad/${INTERN_ADDRESS}`;
+
+// GeckoTerminal indexes Robinhood Chain (DexScreener does not -- checked
+// 2026-09-11, "Token or Pair Not Found" there) and already has this pool
+// listed under Pons V2, complete with the project description we've
+// submitted there. Confirmed via GeckoTerminal's own "Embed Chart" share
+// dialog rather than guessed -- info=1 and swaps=1 match that dialog's
+// checked-by-default "Show Info"/"Show Swaps" options. This only shows
+// a live chart in-page; it still isn't a swap widget, same reasoning as
+// the rest of this file -- see TradeView.js for why we still send
+// people to Pons itself to actually trade.
+const GECKOTERMINAL_POOL_ADDRESS = "0x68da86af39b8d5347264d588f1ec6e8f31860400";
+export const GECKOTERMINAL_POOL_URL = `https://www.geckoterminal.com/robinhood/pools/${GECKOTERMINAL_POOL_ADDRESS}`;
+export const GECKOTERMINAL_EMBED_URL = `${GECKOTERMINAL_POOL_URL}?embed=1&info=1&swaps=1`;
