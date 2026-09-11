@@ -115,7 +115,7 @@ export default function GenesisView() {
             {progress
               ? `$${formatUsd(progress.volumeUsd)} / $${formatUsd(progress.targetUsd)}`
               : progressError
-                ? "Couldn't load live volume right now — refresh to retry."
+                ? "Live volume tracking is broken since the Pons migration (PAIR's API no longer covers this token) — refreshing won't fix it, see api/genesis-progress for the real fix needed."
                 : "Fetching live volume…"}
           </p>
           {progress?.isRolling24h && (

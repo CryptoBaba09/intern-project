@@ -27,8 +27,8 @@ function ManyHats() {
     {
       n: "04",
       title: "Content-creation key",
-      body: "Text-generation beta is live now, gated by real stake. Full video avatars still in design.",
-      status: "BETA LIVE",
+      body: "Text-generation beta is live, gated by real stake. Video generation is also live now — burn-based, not stake-gated, any of the 4 personas or a fully custom prompt.",
+      status: "LIVE",
     },
     {
       n: "05",
@@ -111,8 +111,8 @@ function Protocol() {
     },
     {
       title: "Digital $INTERN personas",
-      body: "Rendo's text-generation beta is live, gated by real stake tiers. Full AI video avatars still in design.",
-      status: "BETA LIVE",
+      body: "Rendo's text-generation beta is live, gated by real stake tiers. Real video generation is also live now (burn-based, all 4 personas, or a fully custom prompt) — see /video-credits.",
+      status: "LIVE",
       href: "/personas",
     },
     {
@@ -144,7 +144,7 @@ function Protocol() {
     },
     {
       title: "Genesis Interns (NFTs)",
-      body: "500 Blaze-based NFTs, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further. Live volume gauge on the preview page.",
+      body: "500 Blaze-based NFTs, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further. The live volume gauge on the preview page is currently broken (PAIR's API died in the Pons migration) — shows honestly, not silently.",
       status: "IN DESIGN",
       href: "/genesis",
     },

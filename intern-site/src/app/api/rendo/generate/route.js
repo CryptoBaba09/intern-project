@@ -4,10 +4,11 @@ import { ERC20_ABI, STAKING_REWARDS_ABI } from "../../../lib/abis";
 
 // Rendo v1 beta: text-only content generation (captions, post ideas, short
 // scripts), gated by REAL staked $INTERN read live on-chain -- not a
-// client-supplied number. The full "AI video avatar" vision on the
-// personas page is still planned/unbuilt; this is the first real slice of
-// it, scoped down to what's actually achievable without picking and
-// paying for a separate image/video generation provider first.
+// client-supplied number. Deliberately scoped down at the time to what
+// didn't require picking and paying for an image/video provider first.
+// That video half has since shipped too -- see api/blaze/generate/route.js
+// (burn-based, not stake-gated, covers all 4 personas including Rendo) --
+// as a separate route/mechanic rather than a rewrite of this one.
 const TIERS = [
   { name: "Full-Time Offer", minStaked: 1_000_000, dailyLimit: 20 },
   { name: "Senior Intern", minStaked: 100_000, dailyLimit: 8 },

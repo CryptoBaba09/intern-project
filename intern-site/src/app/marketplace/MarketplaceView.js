@@ -20,9 +20,9 @@ const INTERNS = [
     name: "Rendo",
     role: "Media Intern",
     icon: "/personas/rendo-icon.png",
-    status: "BETA LIVE",
-    body: "Real text-generation beta is live today, gated by your actual staked balance — captions, post ideas, scripts. The full AI video avatar vision is still in design, not live yet.",
-    fee: "Free within your tier's daily limit — no per-generation fee yet",
+    status: "LIVE",
+    body: "Text-generation beta is live, gated by your actual staked balance — captions, post ideas, scripts. Real video generation is also live now, burn-based (any of the 4 interns, or a fully custom prompt) rather than stake-gated — see video-credits.",
+    fee: "Text: free within your tier's daily limit. Video: $1.50 of burned $INTERN per generation.",
     href: "/personas",
   },
   {
@@ -40,7 +40,7 @@ const INTERNS = [
     icon: "/personas/synapse-icon.png",
     status: "NEW",
     body: "The newest hire. Maps burn history, staking flow, and (once there's an indexer) holder activity as a literal connectome — v1 is live now, real numbers, no fee.",
-    fee: "Free — the connectome view has no fee planned, and the video-credit avatar option is free within your tier",
+    fee: "Free — the connectome view has no fee planned. Its video-credit avatar option burns $1.50 of $INTERN per generation, same as every other persona.",
     href: "/synapse",
   },
   {
