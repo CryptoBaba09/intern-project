@@ -118,6 +118,41 @@ export const STAKING_REWARDS_ABI = [
   },
 ];
 
+// InternMigration -- swaps v1 $INTERN for v2 1:1 (contracts/contracts/
+// InternMigration.sol). Not verified on Blockscout, so this is
+// hand-written from the source, same convention as every other ABI in
+// this file rather than a special case.
+export const MIGRATION_ABI = [
+  {
+    type: "function",
+    name: "migrate",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "v1Amount", type: "uint256" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "previewMigrate",
+    stateMutability: "view",
+    inputs: [{ name: "v1Amount", type: "uint256" }],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "claimDeadline",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "totalV1Migrated",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+];
+
 // PairV5MultiPoolAggregator -- PAIR's own permissionless swap-execution
 // contract (the exact one their site's AUTO buy/sell uses), pulled verbatim
 // from Blockscout's verified ABI at 0x9d7741776098aFA315e4D576ede4F2c67a21d8Ce

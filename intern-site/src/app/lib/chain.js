@@ -38,7 +38,32 @@ export const CONTRACTS = {
   distributor:
     process.env.NEXT_PUBLIC_DISTRIBUTOR_ADDRESS ||
     "0xd73a24D7bd311E36151344E233a7e6C73369E558",
+  // v1 $INTERN, its now-retired staking contract, and the migration
+  // contract that swaps v1 -> v2 1:1 (burns v1 to the dead address, pays
+  // v2 from a pre-funded balance, atomically). See docs/DocsView.js's own
+  // "Deployed addresses" table -- all three are real, deployed 2026-09-10.
+  // The v1 staking contract has no page of its own on this site anymore
+  // (the live /stake page only talks to v2's `distributor` above) -- it's
+  // only read here so MigrationBox can prompt a wallet to exit() it
+  // before migrating, instead of leaving v1 stranded staked forever.
+  v1Token:
+    process.env.NEXT_PUBLIC_V1_INTERN_TOKEN_ADDRESS ||
+    "0x692f212e73Aef5c81eE74e46867Ffb139Eb25555",
+  v1Distributor:
+    process.env.NEXT_PUBLIC_V1_DISTRIBUTOR_ADDRESS ||
+    "0xe7804319Ea528CfED8C7908A4197EdE0ae44895a",
+  migration:
+    process.env.NEXT_PUBLIC_MIGRATION_ADDRESS ||
+    "0x3bADCd1DeE2c0213EBdA77c3D243826ABFbeFa89",
 };
+
+// Fallback only -- MigrationBox reads claimDeadline() live from the
+// contract itself. Recorded here as a sanity check: decoded 2026-09-11
+// straight from the migration contract's deployed bytecode (it isn't
+// verified on Blockscout, so there's no ABI to just call it normally --
+// this immutable is baked into the bytecode as a raw constant) as
+// 1790860124 = 2026-10-01 13:08:44 UTC.
+export const MIGRATION_CLAIM_DEADLINE_FALLBACK = 1790860124;
 
 // The burn bot sends $INTERN here via a plain transfer(), not a real
 // burn() call -- so totalSupply() never moves and can't be used to

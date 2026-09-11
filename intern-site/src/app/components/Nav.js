@@ -28,6 +28,7 @@ const CATEGORIES = [
       { href: "/personas", label: "Personas" },
       { href: "/video-credits", label: "Video Credits" },
       { href: "/burn-to-create", label: "Burn to Create" },
+      { href: "/migrate", label: "Migrate v1 → v2" },
     ],
   },
   {
