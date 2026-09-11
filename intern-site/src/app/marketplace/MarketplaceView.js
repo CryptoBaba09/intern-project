@@ -63,6 +63,7 @@ const INTERNS = [
   {
     name: "Forge",
     role: "Custom Build Intern",
+    icon: "/personas/forge-icon.png",
     status: "IN DESIGN",
     body: "Bring your own intern — payments, writing, automations, or anything else you can spec. A one-time $INTERN fee forges it; a minimum staked balance keeps it running. Drop below the minimum and it pauses until you top back up.",
     fee: "10,000 $INTERN one-time (burned) + 50,000 $INTERN staked, ongoing",
