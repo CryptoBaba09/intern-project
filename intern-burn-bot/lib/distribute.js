@@ -1,4 +1,5 @@
 const { ethers } = require("ethers");
+const { swapEthForBe } = require("./swapEthForBe");
 
 const DISTRIBUTOR_ABI = [
   "function totalStaked() view returns (uint256)",
@@ -66,35 +67,25 @@ async function computeSplit({ config, totalEth, distributor }) {
 
 /**
  * Sends the treasury cut (plain ETH, no swap needed) and, only when
- * stakers actually exist, converts the distribution cut to BE and
- * deposits it into the distributor.
+ * stakers actually exist, converts the distribution cut to BE via a
+ * verified Uniswap V3 route (lib/swapEthForBe.js -- a real WETH/BE pool
+ * with real liquidity, independent of Pons/Pair.fund, confirmed against
+ * live chain state on 2026-09-11) and deposits it into the distributor.
  *
- * LOAD-BEARING GAP: there is no verified on-chain route from ETH to BE
- * through Pons -- BE is not itself a Pons v2 launch (confirmed:
- * factory.getLaunchedToken(BE) returns exists=false), so this bot
- * cannot safely execute that swap without either (a) a confirmed BE
- * liquidity venue elsewhere on Robinhood Chain, or (b) accepting a
- * price it can't verify. Rather than guess a swap route with real
- * money, this throws a clear, actionable error if that path is ever
- * actually reached (distributionEth > 0). Today it never is --
- * totalStaked() reads 0 on the freshly-deployed v2 distributor, so
- * every real cycle right now takes the "fold into burn" path above and
- * never calls this function with a nonzero distributionEth. Revisit
- * once real staking activity makes this a live problem, not before.
+ * Treasury is sent first, same ordering as before: if the swap or the
+ * distributor deposit fails partway, only the distribution cut is left
+ * stranded in the wallet (as ETH, recoverable next cycle), not treasury
+ * too.
  */
 async function sendDistributionAndTreasury({ wallet, config, distributionEth, treasuryEth, dryRun }) {
-  if (distributionEth > 0n) {
-    throw new Error(
-      `Need to convert ${ethers.formatEther(distributionEth)} ETH to BE for the staking ` +
-        "distributor, but no verified ETH->BE route exists on Pons yet (BE isn't a Pons v2 " +
-        "launch itself). Refusing to guess a swap route with real funds -- see the comment " +
-        "on sendDistributionAndTreasury in distribute.js. This cycle's ENTIRE claim is left " +
-        "untouched in the wallet (see index.js's carryover handling) rather than partially " +
-        "processed, so nothing is lost or double-counted next run."
-    );
-  }
-
   await sendEth({ wallet, config, amount: treasuryEth, to: config.treasuryAddress, label: "treasury", dryRun });
+
+  if (distributionEth > 0n) {
+    const beReceived = await swapEthForBe({ wallet, config, ethAmount: distributionEth, dryRun });
+    await notifyDistributor({ wallet, config, beAmount: beReceived, dryRun });
+  } else {
+    console.log("[split] Nothing to swap/distribute this run.");
+  }
 }
 
 async function sendEth({ wallet, config, amount, to, label, dryRun }) {
@@ -118,10 +109,6 @@ async function sendEth({ wallet, config, amount, to, label, dryRun }) {
   console.log(`[split] Transfer to ${label} confirmed in block ${receipt.blockNumber}`);
 }
 
-// Kept separate from sendDistributionAndTreasury (unreachable today, see
-// its comment) so the day a real BE route exists, wiring it in is a
-// matter of implementing swapEthForBe and calling this, not redesigning
-// the split logic.
 async function notifyDistributor({ wallet, config, beAmount, dryRun }) {
   if (beAmount === 0n) {
     console.log("[split] Nothing to send to the staking distributor this run.");
