@@ -1,17 +1,10 @@
 import "./globals.css";
 import Web3Provider from "./components/Web3Provider";
-import ThemeProvider from "./components/ThemeProvider";
 import AnnouncementBar from "./components/AnnouncementBar";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import CursorGlow from "./components/CursorGlow";
-
-// Runs before paint, before React hydrates -- reads the persisted choice
-// and stamps data-theme on <html> synchronously so a light-mode visitor
-// never sees a flash of the dark default first. Wrapped in try/catch:
-// localStorage can throw in private-browsing/storage-blocked contexts,
-// and the dark default is a safe fallback either way.
-const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('intern-theme');if(t==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();`;
+import SpaceField from "./components/SpaceField";
 
 // Real bug found during an SEO/social-sharing audit (2026-09-07): this was
 // still the old Vercel preview URL from before internburn.xyz was live.
@@ -74,9 +67,8 @@ export const metadata = {
 export const viewport = {
   // Must be a literal color, not a CSS var -- this feeds the browser
   // chrome's <meta name="theme-color"> tag (mobile address bar tint),
-  // which is read outside the page's own CSS context. Matches the dark
-  // default; doesn't follow the in-page toggle, which is a minor,
-  // acceptable gap for now.
+  // which is read outside the page's own CSS context. The site has no
+  // light mode, so there's nothing else for this to match.
   themeColor: "#0B0C0B",
   width: "device-width",
   initialScale: 1,
@@ -97,35 +89,32 @@ const jsonLd = {
 
 export default function RootLayout({ children }) {
   return (
-    // suppressHydrationWarning: the THEME_INIT_SCRIPT below sets
-    // data-theme on this element before React hydrates, specifically so
-    // there's no flash of the wrong theme -- React would otherwise (only
-    // ever on this one attribute) warn about a mismatch it can't avoid.
-    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+    <html lang="en" className="h-full antialiased">
       <head>
-        <script
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
-        />
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
+      {/*
+        backgroundColor is the same literal SpaceField already paints, not
+        --color-bg -- this is the universe backdrop, mounted once here so
+        every page (not just the homepage hero) floats over the same
+        stars, with nothing left underneath it that could show a seam.
+      */}
       <body
-        className="min-h-full flex flex-col bg-[var(--color-bg)] text-[var(--color-fg)]"
-        style={{ fontFamily: "'Space Grotesk', 'Arial', sans-serif" }}
+        className="min-h-full flex flex-col text-[var(--color-fg)]"
+        style={{ fontFamily: "'Space Grotesk', 'Arial', sans-serif", backgroundColor: "#05060a" }}
       >
-        <ThemeProvider>
-          <Web3Provider>
-            <CursorGlow />
-            <AnnouncementBar />
-            <Nav />
-            {children}
-            <Footer />
-          </Web3Provider>
-        </ThemeProvider>
+        <SpaceField className="fixed inset-0 -z-10 w-screen h-screen" />
+        <Web3Provider>
+          <CursorGlow />
+          <AnnouncementBar />
+          <Nav />
+          {children}
+          <Footer />
+        </Web3Provider>
       </body>
     </html>
   );

@@ -7,7 +7,6 @@ import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion"
 import { fadeUp, staggerContainer } from "./motion";
 import ConnectWalletButton from "./ConnectWalletButton";
 import Mascot from "./Mascot";
-import ThemeToggle from "./ThemeToggle";
 
 // Two standalone actions people jump to directly, kept as plain tabs --
 // everything else groups under a dropdown so the bar reads as ~4 things,
@@ -298,7 +297,6 @@ export default function Nav() {
             <div className="scale-90 origin-right">
               <ConnectWalletButton />
             </div>
-            <ThemeToggle />
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}

@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
-/* Dark is the default, deliberate brand identity -- not inferred from the
-   visitor's system setting. Light is an explicit opt-in via the toggle in
-   Nav.js, which stamps data-theme="light" on <html> and persists it to
-   localStorage (see components/ThemeInit.js and ThemeToggle.js). */
+/* $INTERN is a permanently dark, space-themed site -- there is no light
+   mode. There used to be a toggle (data-theme="light" on <html>,
+   persisted to localStorage): it was dropped because making the
+   universe backdrop (see SpaceField.js + layout.js) show through every
+   page meant the page background could no longer be an opaque,
+   theme-flipping fill, and ~135 places across the site colored text
+   with these tokens directly against that background (not inside a
+   card) -- auditing every one of those for light-mode contrast was a
+   much bigger job than the site needs for a single brand identity.
+   One set of values, used everywhere, is what keeps that safe. */
 :root {
   --color-bg: #0B0C0B;
   --color-surface: #0F1113;
@@ -14,36 +20,17 @@
   --color-accent: #00C805;
   --color-accent-hover: #00b304;
   /* Text/icons drawn on top of the bright accent green (buttons, active
-     pills). Fixed near-black in both themes on purpose -- it's picked for
-     contrast against --color-accent, not as a page-background echo, so it
-     must NOT reuse --color-bg (which flips to near-white in light mode
-     and would leave near-white text on a mid-green button). */
+     pills). Named separately from --color-bg on purpose -- it's picked
+     for contrast against --color-accent, not as a page-background echo. */
   --color-accent-foreground: #0B0C0B;
   --color-ember: #D9A441;
   --color-danger: #E5484D;
-  /* Text drawn over SpaceField's canvas (Hero, InternFamilyScene) --
-     that canvas paints a literal near-black background unconditionally
-     in both themes (it's a "space window", not page chrome), so its
-     text needs the same fixed-regardless-of-theme treatment as
-     --color-accent-foreground above: it must NOT reuse --color-fg,
-     which flips to near-black in light mode and would go invisible on
-     top of that same canvas. */
+  /* Text drawn over SpaceField's canvas (Hero, InternFamilyScene, and now
+     the global backdrop in layout.js) -- kept as its own token rather
+     than merged into --color-fg since it documents *why* that text is
+     safe over a permanently-dark canvas, not because the value differs. */
   --color-space-fg: #EDEEF0;
   --color-space-muted: #9BA1A6;
-}
-
-[data-theme="light"] {
-  --color-bg: #F7F8F6;
-  --color-surface: #FFFFFF;
-  --color-fg: #101210;
-  --color-muted: #5B6168;
-  --color-muted-2: #8A9096;
-  --color-line: #E2E5E2;
-  --color-accent: #00A604;
-  --color-accent-hover: #009104;
-  --color-accent-foreground: #0B0C0B;
-  --color-ember: #B9740E;
-  --color-danger: #C4342D;
 }
 
 @theme inline {
