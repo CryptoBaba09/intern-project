@@ -20,7 +20,11 @@
 // in the margin, where the starfield itself is already visible, no
 // matter how wide the viewport is.
 const ITEMS = [
-  { src: "/personas/blaze-icon.png", top: "8%", side: "left", offset: 20, size: 44, duration: 22, delay: 0 },
+  // 16%, not 8%: the sticky Nav (~73px) plus the dismissible
+  // AnnouncementBar above it cover roughly the top ~90-140px of the
+  // screen in every scroll position -- 8% of a typical viewport height
+  // sat squarely behind that chrome, permanently hidden.
+  { src: "/personas/blaze-icon.png", top: "16%", side: "left", offset: 20, size: 44, duration: 22, delay: 0 },
   { src: "/personas/rendo-icon.png", top: "24%", side: "right", offset: 24, size: 40, duration: 26, delay: 4 },
   { src: "/personas/promptly-icon.png", top: "48%", side: "left", offset: 14, size: 36, duration: 24, delay: 8 },
   { src: "/personas/synapse-icon.png", top: "62%", side: "right", offset: 16, size: 42, duration: 28, delay: 2 },
