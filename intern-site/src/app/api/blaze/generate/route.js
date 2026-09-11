@@ -36,6 +36,7 @@ const PERSONA_SEED_PATH = {
   blaze: "/personas/blaze.png",
   rendo: "/personas/rendo.png",
   promptly: "/personas/promptly.png",
+  synapse: "/personas/synapse.png",
 };
 
 // HeyGen avatar IDs are per-account (created via HeyGen's studio, not
@@ -47,6 +48,7 @@ const HEYGEN_AVATAR_ID = {
   blaze: process.env.HEYGEN_BLAZE_AVATAR_ID || "",
   rendo: process.env.HEYGEN_RENDO_AVATAR_ID || "",
   promptly: process.env.HEYGEN_PROMPTLY_AVATAR_ID || "",
+  synapse: process.env.HEYGEN_SYNAPSE_AVATAR_ID || "",
 };
 
 function siteOrigin(req) {
@@ -155,7 +157,7 @@ export async function POST(req) {
       return Response.json({ error: "engine must be 'runway' or 'heygen'." }, { status: 400 });
     }
     if (!persona || !PERSONA_SEED_PATH[persona]) {
-      return Response.json({ error: "persona must be 'blaze', 'rendo', or 'promptly'." }, { status: 400 });
+      return Response.json({ error: "persona must be 'blaze', 'rendo', 'promptly', or 'synapse'." }, { status: 400 });
     }
     if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
       return Response.json(

@@ -22,6 +22,7 @@ const PERSONAS = [
   { id: "blaze", label: "Blaze", tagline: "Burn mechanism", img: "/personas/blaze.png" },
   { id: "rendo", label: "Rendo", tagline: "Content", img: "/personas/rendo.png" },
   { id: "promptly", label: "Promptly", tagline: "Prompts", img: "/personas/promptly.png" },
+  { id: "synapse", label: "Synapse", tagline: "Research", img: "/personas/synapse.png" },
 ];
 
 const ENGINES = [

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
@@ -8,6 +9,7 @@ const INTERNS = [
   {
     name: "Blaze",
     role: "Burn Tracker Intern",
+    icon: "/personas/blaze-icon.png",
     status: "LIVE",
     body: "The protocol's own burn engine — no deploy, no fee, nothing to buy. Every time creator fees are claimed off the $INTERN/BE pool, 70% is bought back and burned automatically, starting from $INTERN's first trade.",
     fee: "Autonomous — 70% of every fee claim burned, no user action needed",
@@ -16,6 +18,7 @@ const INTERNS = [
   {
     name: "Rendo",
     role: "Media Intern",
+    icon: "/personas/rendo-icon.png",
     status: "BETA LIVE",
     body: "Real text-generation beta is live today, gated by your actual staked balance — captions, post ideas, scripts. The full AI video avatar vision is still in design, not live yet.",
     fee: "Free within your tier's daily limit — no per-generation fee yet",
@@ -24,10 +27,20 @@ const INTERNS = [
   {
     name: "Promptly",
     role: "Inference Intern",
+    icon: "/personas/promptly-icon.png",
     status: "TOP-UP LIVE",
     body: "The instant top-up is real and live today: burn $INTERN at the live price, get a real spend-capped OpenRouter key — Claude, GPT, Gemini and more. Routing staked $INTERN into a treasury-funded credit pool is still in design; it needs real fee revenue flowing first.",
     fee: "Burn $INTERN for an instant top-up (live) — free via staking (not live yet)",
     href: "/inference-credits",
+  },
+  {
+    name: "Synapse",
+    role: "Research Intern",
+    icon: "/personas/synapse-icon.png",
+    status: "NEW",
+    body: "The newest hire. Maps things nobody asked it to map — burn history, staking flow, holder activity — as a literal connectome. The video-avatar option is live today via video credits; the live on-site data-connectome view is being built next.",
+    fee: "Free to use as a video-credit avatar today — the connectome dashboard has no fee planned",
+    href: "/video-credits",
   },
   {
     name: "Perky",
@@ -68,9 +81,20 @@ function InternCard({ intern }) {
   const content = (
     <>
       <div className="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <h3 className="text-xl font-semibold">{intern.name}</h3>
-          <p className="font-mono text-xs text-[var(--color-ember)] mt-0.5">{intern.role}</p>
+        <div className="flex items-center gap-3">
+          {intern.icon && (
+            <Image
+              src={intern.icon}
+              alt={`${intern.name} icon`}
+              width={44}
+              height={44}
+              className="rounded-full border border-[var(--color-line)] shrink-0"
+            />
+          )}
+          <div>
+            <h3 className="text-xl font-semibold">{intern.name}</h3>
+            <p className="font-mono text-xs text-[var(--color-ember)] mt-0.5">{intern.role}</p>
+          </div>
         </div>
         <StatusBadge status={intern.status} />
       </div>
