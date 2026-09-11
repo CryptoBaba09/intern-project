@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useReadContract } from "wagmi";
 import { formatUnits } from "viem";
-import SpaceField from "./components/SpaceField";
 import BuyCta from "./components/BuyCta";
 import Mascot from "./components/Mascot";
 import AnimatedNumber from "./components/AnimatedNumber";
@@ -136,15 +135,16 @@ function LiveStatStrip() {
 
 function Hero() {
   return (
-    // The starfield used to live *inside* the max-w-6xl column below, so
-    // on any screen wider than 1152px it was a boxed rectangle with plain
-    // page background on either side -- not "floating in the universe."
-    // Full-bleed section here, with the actual copy/CTA column nested
-    // inside its own max-w-6xl wrapper, so the stars span edge to edge
-    // while the text still lines up with the rest of the page.
+    // No local SpaceField here anymore -- layout.js mounts one global
+    // instance behind every page now. This section used to mount its
+    // own full-bleed copy on top of that, which meant two problems: a
+    // redundant second canvas + rAF loop, and -- the one that actually
+    // mattered -- its opaque paint sat at z:auto (same layer as real
+    // content), directly on top of FloatingMascots.js's fixed, z:-5
+    // crew icons, permanently covering whichever ones fell within the
+    // hero's height. Letting the global canvas show through this
+    // section's own (now transparent) background fixes both at once.
     <section className="relative overflow-hidden w-full">
-      <SpaceField className="absolute inset-0 w-full h-full" />
-
       <div className="relative px-6 pt-20 pb-24 max-w-6xl mx-auto w-full">
         <div className="relative flex flex-col lg:flex-row items-center gap-14">
         <motion.div
