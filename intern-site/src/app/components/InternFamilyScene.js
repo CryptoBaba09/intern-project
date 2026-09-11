@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import AnimatedNumber from "./AnimatedNumber";
+import SpaceField from "./SpaceField";
 import { formatNumber } from "../lib/format";
 import { CONTRACTS, DEAD_ADDRESS, isStakingLive, isTradingLive } from "../lib/chain";
 import { ERC20_ABI, STAKING_REWARDS_ABI } from "../lib/abis";
@@ -45,15 +46,18 @@ function useCrewStats() {
   return { burned, staked };
 }
 
+// Drifts gently in both axes -- not just a bob -- so each intern reads
+// as weightless/floating rather than bouncing, matching the space
+// backdrop behind them.
 function CrewMember({ member, isActive, onSelect }) {
   return (
     <motion.button
       type="button"
       onClick={() => onSelect(member.id)}
       className="relative flex flex-col items-center gap-3 outline-none"
-      animate={{ y: [0, -10, 0] }}
+      animate={{ y: [0, -12, 0, 8, 0], x: [0, 5, 0, -5, 0] }}
       transition={{
-        duration: 3.2 + member.floatOffset,
+        duration: 6 + member.floatOffset * 1.5,
         repeat: Infinity,
         ease: "easeInOut",
         delay: member.floatOffset,
@@ -63,10 +67,10 @@ function CrewMember({ member, isActive, onSelect }) {
     >
       <div
         className={`relative rounded-full transition-all ${
-          isActive ? "ring-2 ring-[var(--color-accent)]" : "ring-1 ring-white/10"
+          isActive ? "ring-2 ring-[var(--color-accent)]" : "ring-1 ring-white/20"
         }`}
         style={{
-          boxShadow: isActive ? `0 0 28px ${member.glow}` : `0 0 14px ${member.glow}55`,
+          boxShadow: isActive ? `0 0 32px ${member.glow}` : `0 0 20px ${member.glow}66`,
         }}
       >
         <Image
@@ -78,8 +82,8 @@ function CrewMember({ member, isActive, onSelect }) {
         />
       </div>
       <div className="text-center">
-        <p className="text-sm font-semibold text-[var(--color-fg)]">{member.name}</p>
-        <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-wide">{member.role}</p>
+        <p className="text-sm font-semibold text-white">{member.name}</p>
+        <p className="font-mono text-[10px] text-white/60 tracking-wide">{member.role}</p>
       </div>
     </motion.button>
   );
@@ -149,29 +153,31 @@ export default function InternFamilyScene({ title, subtitle, ctaHref, ctaLabel }
   const active = CREW.find((m) => m.id === activeId) ?? null;
 
   return (
-    <div className="border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] overflow-hidden">
-      {(title || subtitle) && (
-        <div className="px-6 sm:px-10 pt-8 pb-2 text-center">
-          {title && <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-2">{title}</p>}
-          {subtitle && <p className="text-[var(--color-muted)] text-sm max-w-md mx-auto">{subtitle}</p>}
-        </div>
-      )}
+    <div className="border border-[var(--color-line)] rounded-2xl overflow-hidden">
+      <div className="relative overflow-hidden">
+        <SpaceField className="absolute inset-0 w-full h-full" />
 
-      <div
-        className="relative px-6 sm:px-10 py-14 flex flex-wrap items-start justify-center gap-x-10 gap-y-10"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 30%, rgba(0,200,5,0.06), transparent 60%)",
-        }}
-      >
-        {CREW.map((member) => (
-          <CrewMember
-            key={member.id}
-            member={member}
-            isActive={activeId === member.id}
-            onSelect={(id) => setActiveId((cur) => (cur === id ? null : id))}
-          />
-        ))}
+        {(title || subtitle) && (
+          <div className="relative z-10 px-6 sm:px-10 pt-8 pb-2 text-center">
+            {title && <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-2">{title}</p>}
+            {subtitle && <p className="text-white/60 text-sm max-w-md mx-auto">{subtitle}</p>}
+          </div>
+        )}
+
+        <div className="relative z-10 px-6 sm:px-10 pt-10 pb-6 flex flex-wrap items-start justify-center gap-x-10 gap-y-10">
+          {CREW.map((member) => (
+            <CrewMember
+              key={member.id}
+              member={member}
+              isActive={activeId === member.id}
+              onSelect={(id) => setActiveId((cur) => (cur === id ? null : id))}
+            />
+          ))}
+        </div>
+        <p className="relative z-10 text-center font-mono text-[10px] tracking-[0.2em] text-white/50 pb-6">
+          $INTERN <span className="text-white/30">×</span> SPACE{" "}
+          <span className="text-white/30">×</span> COMPUTE
+        </p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -182,7 +188,7 @@ export default function InternFamilyScene({ title, subtitle, ctaHref, ctaLabel }
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="border-t border-[var(--color-line)] overflow-hidden"
+            className="border-t border-[var(--color-line)] bg-[var(--color-surface)] overflow-hidden"
           >
             <div className="px-6 sm:px-10 py-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
               <div>
@@ -211,7 +217,7 @@ export default function InternFamilyScene({ title, subtitle, ctaHref, ctaLabel }
       </AnimatePresence>
 
       {!active && ctaHref && (
-        <div className="border-t border-[var(--color-line)] px-6 sm:px-10 py-5 text-center">
+        <div className="border-t border-[var(--color-line)] bg-[var(--color-surface)] px-6 sm:px-10 py-5 text-center">
           <p className="font-mono text-[11px] text-[var(--color-muted-2)]">
             Tap a face above to see what they&apos;re up to, or{" "}
             <Link href={ctaHref} className="text-[var(--color-accent)] hover:underline">
