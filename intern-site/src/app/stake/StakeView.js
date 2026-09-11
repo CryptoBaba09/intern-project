@@ -17,6 +17,7 @@ import { ERC20_ABI, STAKING_REWARDS_ABI } from "../lib/abis";
 import Confetti from "../components/Confetti";
 import TierPath from "../components/TierPath";
 import Badges from "../components/Badges";
+import PerkyPreview from "../components/PerkyPreview";
 import StreakBadge from "../components/StreakTracker";
 
 function useTokenDecimals(address) {
@@ -337,9 +338,12 @@ function StakeDashboard() {
         </motion.div>
       </motion.div>
 
-      <div className="grid sm:grid-cols-2 gap-4 mb-10">
+      <div className="grid sm:grid-cols-2 gap-4 mb-4">
         <TierPath staked={stakedNum} />
         <Badges balance={balanceNum} staked={stakedNum} earned={earnedNum} />
+      </div>
+      <div className="mb-10">
+        <PerkyPreview staked={stakedNum} />
       </div>
 
       <TxStatusBanner

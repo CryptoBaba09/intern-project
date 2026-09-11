@@ -47,9 +47,9 @@ const INTERNS = [
     name: "Perky",
     role: "Rewards Intern",
     status: "IN DESIGN",
-    body: "Not a hire — a perk. Stake past a threshold and Perky adds a tiered bonus on top of your core BE distribution, funded separately from the treasury. No fee, because there's nothing to buy.",
+    body: "Not a hire — a perk. Stake past a threshold and Perky adds a tiered bonus on top of your core BE distribution, funded separately from the treasury. The contract exists and is unit-tested, but isn't deployed — needs InternStakingRewards' own security audit first. See your tier preview on the stake page.",
     fee: "No fee — a staking perk, not a paid service",
-    href: null,
+    href: "/stake",
   },
   {
     name: "Div",

@@ -1,10 +1,26 @@
-# $INTERN Tiered Loyalty Rewards — feature spec (v0, not built yet)
+# $INTERN Tiered Loyalty Rewards ("Perky") — spec + code, NOT deployed
 
 Idea: a recurring 5% cut of treasury BE revenue, distributed to stakers
 in tiers by staked amount — a growth/loyalty program layered on top of
 the existing 20% BE staking distribution, funded from the treasury
 bucket (framed as marketing/growth spend, not a change to the core
 70/20/10 protocol split).
+
+**Status as of 2026-09-11:** `contracts/contracts/InternLoyaltyRewards.sol`
+now exists, matching this spec's shape (reads staked balances from
+`InternStakingRewards` via a plain external view call, never holds
+$INTERN, streams BE the same Synthetix-style way as the core
+distribution) — with unit tests in
+`contracts/test/InternLoyaltyRewards.test.js`, including one that
+*demonstrates* the tier-gaming gap flagged below rather than just
+asserting it away. Tiers were aligned to the site-wide 10k/100k/1M
+thresholds (video-credits pricing, Rendo's daily limits, the stake
+page's TierPath) instead of this doc's original illustrative
+2,500/5,000/10,000 example. A non-payout preview of this (what tier a
+wallet would unlock, clearly marked NOT LIVE) is on the stake page —
+see `components/PerkyPreview.js`. **Still NOT deployed** — per
+"Suggested sequencing" below, this depends on `InternStakingRewards`
+having a professional security audit first, which hasn't happened.
 
 ## Relationship to the existing 20% distribution
 

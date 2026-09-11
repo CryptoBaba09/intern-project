@@ -1,4 +1,6 @@
-import { isAddress } from "viem";
+import { createPublicClient, http, isAddress, formatUnits } from "viem";
+import { robinhoodChain, CONTRACTS, videoCreditDiscountForStake } from "../../../lib/chain";
+import { STAKING_REWARDS_ABI, ERC20_ABI } from "../../../lib/abis";
 import {
   getBalanceUsd,
   debitUsd,
@@ -6,6 +8,41 @@ import {
   recordGenerationStart,
   updateGenerationStatus,
 } from "../../../lib/videoCredits";
+
+const publicClient = createPublicClient({ chain: robinhoodChain, transport: http() });
+
+// Discount, not a new payout: this reduces what this route charges its
+// OWN video-credit ledger, it doesn't move any $INTERN or mint anything
+// -- pure pricing, same risk class as a coupon code, not a new
+// fund-holding mechanism (contrast with Perky/InternLoyaltyRewards,
+// which is real BE payout and genuinely needs its own audit before
+// going live -- see docs/loyalty-rewards-spec.md). Tier table itself
+// lives in lib/chain.js, shared with the client-side price preview, so
+// the two can't drift apart.
+async function getStakedTierDiscount(address) {
+  if (!CONTRACTS.distributor) return 0;
+  try {
+    const [staked, decimals] = await Promise.all([
+      publicClient.readContract({
+        address: CONTRACTS.distributor,
+        abi: STAKING_REWARDS_ABI,
+        functionName: "balanceOf",
+        args: [address],
+      }),
+      publicClient.readContract({
+        address: CONTRACTS.internToken,
+        abi: ERC20_ABI,
+        functionName: "decimals",
+      }),
+    ]);
+    return videoCreditDiscountForStake(Number(formatUnits(staked, decimals)));
+  } catch (err) {
+    // Fails closed to 0% discount, not open to "free" -- a broken RPC
+    // read should never accidentally waive a real cost.
+    console.error("[blaze] stake-tier read failed, no discount applied:", err);
+    return 0;
+  }
+}
 
 // Blaze v1: spends video credit (from api/blaze/topup) on a real
 // generation call to Runway or HeyGen, executed with THIS SITE's own
@@ -300,12 +337,16 @@ export async function POST(req) {
       }
     }
 
-    const cost = COST_USD[engine];
+    const baseCost = COST_USD[engine];
+    const tierDiscount = await getStakedTierDiscount(address);
+    const cost = Math.round(baseCost * (1 - tierDiscount) * 100) / 100;
     const balanceBeforeUsd = await getBalanceUsd(address);
     if (balanceBeforeUsd < cost) {
       return Response.json(
         {
-          error: `This generation costs $${cost.toFixed(2)} of video credit; your balance is $${balanceBeforeUsd.toFixed(
+          error: `This generation costs $${cost.toFixed(2)} of video credit${
+            tierDiscount > 0 ? ` (${Math.round(tierDiscount * 100)}% staking-tier discount already applied)` : ""
+          }; your balance is $${balanceBeforeUsd.toFixed(
             2
           )}. Burn more $INTERN on the video-credits page first.`,
         },
@@ -366,7 +407,7 @@ export async function POST(req) {
       console.error("[blaze] recordGenerationStart failed (non-fatal):", recordErr);
     }
 
-    return Response.json({ ...submitted, costUsd: cost, newBalanceUsd });
+    return Response.json({ ...submitted, costUsd: cost, baseCostUsd: baseCost, tierDiscount, newBalanceUsd });
   } catch (err) {
     console.error("[blaze] generate error:", err);
     const status = err.status || 500;

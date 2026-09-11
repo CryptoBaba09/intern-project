@@ -12,8 +12,8 @@ import {
 import { formatUnits, parseUnits } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
-import { CONTRACTS, DEAD_ADDRESS, isTradingLive } from "../lib/chain";
-import { ERC20_ABI } from "../lib/abis";
+import { CONTRACTS, DEAD_ADDRESS, isTradingLive, videoCreditDiscountForStake } from "../lib/chain";
+import { ERC20_ABI, STAKING_REWARDS_ABI } from "../lib/abis";
 
 const MIN_CREDIT_USD = 1;
 const GENERATION_COST_USD = 1.5;
@@ -404,6 +404,29 @@ function ModeTabs({ selected, onSelect }) {
 // status endpoint (never the provider directly) until a video lands.
 function Generator({ balanceUsd, onSpent }) {
   const { address, isConnected } = useAccount();
+
+  // Preview only -- the server independently re-reads staked balance and
+  // enforces the real discount in api/blaze/generate/route.js; this is
+  // purely so the button shows the right price before you click it.
+  const { data: stakedRaw } = useReadContract({
+    address: CONTRACTS.distributor || undefined,
+    abi: STAKING_REWARDS_ABI,
+    functionName: "balanceOf",
+    args: [address],
+    query: { enabled: Boolean(address && CONTRACTS.distributor) },
+  });
+  const { data: internDecimals } = useReadContract({
+    address: CONTRACTS.internToken || undefined,
+    abi: ERC20_ABI,
+    functionName: "decimals",
+    query: { enabled: Boolean(CONTRACTS.internToken) },
+  });
+  const tierDiscount =
+    stakedRaw !== undefined && internDecimals !== undefined
+      ? videoCreditDiscountForStake(Number(formatUnits(stakedRaw, internDecimals)))
+      : 0;
+  const discountedCost = Math.round(GENERATION_COST_USD * (1 - tierDiscount) * 100) / 100;
+
   const [mode, setMode] = useState("persona"); // "persona" | "custom" -- see docs/custom-video-prompt-spec.md
   const [persona, setPersona] = useState("blaze");
   const [scene, setScene] = useState("default");
@@ -431,7 +454,7 @@ function Generator({ balanceUsd, onSpent }) {
   }, [job]);
 
   async function handleGenerate() {
-    if (!prompt.trim() || balanceUsd < GENERATION_COST_USD) return;
+    if (!prompt.trim() || balanceUsd < discountedCost) return;
     if (isCustom && !acknowledged) return;
     setSubmitting(true);
     setError(null);
@@ -517,15 +540,26 @@ function Generator({ balanceUsd, onSpent }) {
       <button
         type="button"
         onClick={handleGenerate}
-        disabled={!prompt.trim() || balanceUsd < GENERATION_COST_USD || submitting || (isCustom && !acknowledged)}
+        disabled={!prompt.trim() || balanceUsd < discountedCost || submitting || (isCustom && !acknowledged)}
         className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {submitting ? "STARTING…" : `GENERATE — $${GENERATION_COST_USD.toFixed(2)}`}
+        {submitting
+          ? "STARTING…"
+          : tierDiscount > 0
+            ? `GENERATE — $${discountedCost.toFixed(2)} (was $${GENERATION_COST_USD.toFixed(2)})`
+            : `GENERATE — $${GENERATION_COST_USD.toFixed(2)}`}
       </button>
 
-      {balanceUsd < GENERATION_COST_USD && (
+      {tierDiscount > 0 && (
+        <p className="mt-3 font-mono text-[10px] text-[var(--color-accent)]">
+          {Math.round(tierDiscount * 100)}% staking-tier discount applied — verified live from your
+          staked balance.
+        </p>
+      )}
+
+      {balanceUsd < discountedCost && (
         <p className="mt-3 font-mono text-[10px] text-[var(--color-muted)]">
-          Need ${(GENERATION_COST_USD - balanceUsd).toFixed(2)} more credit — burn above first.
+          Need ${(discountedCost - balanceUsd).toFixed(2)} more credit — burn above first.
         </p>
       )}
 
@@ -666,7 +700,7 @@ export default function VideoCreditsView() {
       <section className="px-6 pt-16 pb-12 max-w-5xl mx-auto w-full">
         <Reveal className="flex flex-wrap items-center gap-3 mb-4">
           <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest">
-            MEET BLAZE · VIDEO INTERN
+            VIDEO INTERN · ANY OF THE CREW
           </p>
           <LiveBadge>LIVE</LiveBadge>
         </Reveal>
@@ -680,7 +714,9 @@ export default function VideoCreditsView() {
           </Link>{" "}
           already ships for text: burn $INTERN at the live price, spend the credit on a real
           Runway or HeyGen generation of any of the four interns — in whichever scene you
-          pick — right here, no key to copy.
+          pick, or skip the character entirely with a custom prompt — right here, no key to
+          copy. Staked $INTERN also drops the price per generation — see the discount below
+          once you&apos;re connected.
         </Reveal>
       </section>
 

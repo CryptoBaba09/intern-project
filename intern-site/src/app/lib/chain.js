@@ -50,6 +50,23 @@ export function isStakingLive() {
   return Boolean(CONTRACTS.internToken && CONTRACTS.distributor);
 }
 
+// Shared by api/blaze/generate/route.js (server-side enforcement) and
+// video-credits/VideoCreditsView.js (client-side price preview) --
+// deliberately one source of truth so the price shown before generating
+// can never drift from what the server actually charges. Same 10k/100k/
+// 1M thresholds already used for Rendo's daily text-gen limits and the
+// stake page's TierPath, reused here rather than invented fresh.
+export const VIDEO_CREDIT_TIER_DISCOUNTS = [
+  { minStaked: 1_000_000, discount: 0.5 },
+  { minStaked: 100_000, discount: 0.25 },
+  { minStaked: 10_000, discount: 0.1 },
+];
+
+export function videoCreditDiscountForStake(stakedAmount) {
+  const tier = VIDEO_CREDIT_TIER_DISCOUNTS.find((t) => stakedAmount >= t.minStaked);
+  return tier?.discount ?? 0;
+}
+
 export function isTradingLive() {
   return Boolean(CONTRACTS.internToken);
 }
