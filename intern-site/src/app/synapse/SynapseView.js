@@ -349,6 +349,24 @@ export default function SynapseView() {
             )}
           </div>
         </Reveal>
+        <Reveal delay={0.05}>
+          <p className="font-mono text-[10px] text-[var(--color-muted-2)] text-center mt-4 leading-relaxed">
+            &quot;Connectome&quot; isn&apos;t just a theme here — it&apos;s a
+            real term from real neuroscience. Full credit to{" "}
+            <a
+              href="https://github.com/fruitflydev/flycoinrh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--color-accent)] hover:underline"
+            >
+              fruitflydev&apos;s flycoinrh ↗
+            </a>
+            , a genuinely real 165,122-neuron fruit fly connectome (CC-BY
+            data from HHMI Janelia FlyEM) driving a live browser on-chain —
+            worth a look if you want to see what &quot;connectome&quot;
+            means when it&apos;s not us.
+          </p>
+        </Reveal>
       </section>
 
       <HowItWorks />
