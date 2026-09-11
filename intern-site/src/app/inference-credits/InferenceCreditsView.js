@@ -11,6 +11,7 @@ import {
 } from "wagmi";
 import { formatUnits, parseUnits } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
+import PersonaIntroVideo from "../components/PersonaIntroVideo";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { CONTRACTS, DEAD_ADDRESS, isTradingLive } from "../lib/chain";
 import { ERC20_ABI } from "../lib/abis";
@@ -337,6 +338,16 @@ export default function InferenceCreditsView() {
             design spec ↗
           </a>{" "}
           for what the staking-pool half still requires before it can ship.
+        </Reveal>
+      </section>
+
+      <section className="px-6 pb-10 max-w-3xl mx-auto w-full">
+        <Reveal delay={0.2}>
+          <PersonaIntroVideo
+            src="/personas/videos/promptly-intro.mp4"
+            poster="/personas/promptly.png"
+            label="Promptly idle animation"
+          />
         </Reveal>
       </section>
 

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import AnimatedNumber from "../components/AnimatedNumber";
+import PersonaIntroVideo from "../components/PersonaIntroVideo";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { formatNumber } from "../lib/format";
 import { CONTRACTS, DEAD_ADDRESS, isStakingLive, isTradingLive } from "../lib/chain";
@@ -295,6 +296,16 @@ export default function SynapseView() {
           Not a mascot with a gimmick — a real connectome of $INTERN&apos;s
           own numbers. Click a node below for the live value behind it, or
           the honest reason it&apos;s not there yet.
+        </Reveal>
+      </section>
+
+      <section className="px-6 pb-10 max-w-3xl mx-auto w-full">
+        <Reveal delay={0.15}>
+          <PersonaIntroVideo
+            src="/personas/videos/synapse-intro.mp4"
+            poster="/personas/synapse.png"
+            label="Synapse idle animation"
+          />
         </Reveal>
       </section>
 

@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import AnimatedNumber from "../components/AnimatedNumber";
+import PersonaIntroVideo from "../components/PersonaIntroVideo";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { formatNumber } from "../lib/format";
 import { CONTRACTS, DEAD_ADDRESS, isStakingLive, isTradingLive } from "../lib/chain";
@@ -301,6 +302,16 @@ export default function BlazeView() {
           claimed off the $INTERN/ETH pool, most of it is bought back and
           burned automatically — the live number below is real, read
           straight from the dead address.
+        </Reveal>
+      </section>
+
+      <section className="px-6 pb-10 max-w-3xl mx-auto w-full">
+        <Reveal delay={0.15}>
+          <PersonaIntroVideo
+            src="/personas/videos/blaze-intro.mp4"
+            poster="/personas/blaze.png"
+            label="Blaze idle animation"
+          />
         </Reveal>
       </section>
 
