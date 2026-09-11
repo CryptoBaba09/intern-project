@@ -9,6 +9,7 @@ import ParticleField from "./components/ParticleField";
 import BuyCta from "./components/BuyCta";
 import Mascot from "./components/Mascot";
 import AnimatedNumber from "./components/AnimatedNumber";
+import InternFamilyScene from "./components/InternFamilyScene";
 import { Reveal, fadeUp, staggerContainer } from "./components/motion";
 import { formatNumber } from "./lib/format";
 import { CONTRACTS, DEAD_ADDRESS, isStakingLive, isTradingLive } from "./lib/chain";
@@ -306,35 +307,15 @@ function HowItWorks() {
 }
 
 function MeetTheInterns() {
-  const interns = [
-    {
-      name: "Blaze",
-      role: "Burn Tracker",
-      status: "LIVE",
-      body: "The autonomous burn engine. Claims fees, buys back, burns — every cycle, no user action needed.",
-    },
-    {
-      name: "Rendo",
-      role: "Media Intern",
-      status: "BETA LIVE",
-      body: "Real text-generation beta, gated by your stake tier. Full AI video avatars still in design.",
-    },
-    {
-      name: "Promptly",
-      role: "Inference Intern",
-      status: "TOP-UP LIVE",
-      body: "Burn $INTERN for a real OpenRouter credit top-up today. Routing staked $INTERN into a treasury-funded pool is still in design.",
-    },
-  ];
   return (
     <section className="px-6 py-20 max-w-6xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
         <div>
           <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
-            THE MARKETPLACE
+            THE CREW
           </Reveal>
           <Reveal as="h2" delay={0.05} className="text-3xl sm:text-4xl font-semibold max-w-xl">
-            Hire an intern. Burn some $INTERN.
+            One family, four jobs, all real.
           </Reveal>
         </div>
         <Reveal delay={0.1}>
@@ -346,32 +327,9 @@ function MeetTheInterns() {
           </Link>
         </Reveal>
       </div>
-      <motion.div
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: "-80px" }}
-        variants={staggerContainer}
-        className="grid sm:grid-cols-3 gap-6"
-      >
-        {interns.map((it) => (
-          <motion.div
-            key={it.name}
-            variants={fadeUp}
-            whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
-            transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="border border-[var(--color-line)] p-6 bg-[var(--color-surface)]"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <h3 className="text-xl font-semibold">{it.name}</h3>
-              <span className="font-mono text-[10px] text-[var(--color-muted)] border border-[var(--color-line)] rounded-full px-2 py-0.5 shrink-0">
-                {it.status}
-              </span>
-            </div>
-            <p className="font-mono text-xs text-[var(--color-ember)] mb-3">{it.role}</p>
-            <p className="text-sm text-[var(--color-muted)] leading-relaxed">{it.body}</p>
-          </motion.div>
-        ))}
-      </motion.div>
+      <Reveal delay={0.15}>
+        <InternFamilyScene ctaHref="/marketplace" ctaLabel="see the full roster →" />
+      </Reveal>
     </section>
   );
 }

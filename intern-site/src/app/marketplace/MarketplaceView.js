@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
+import InternFamilyScene from "../components/InternFamilyScene";
 
 const INTERNS = [
   {
@@ -151,6 +152,15 @@ export default function MarketplaceView() {
           the people staking it. Three are live today, in different
           forms. The rest are being built in the open — check each
           one&apos;s real status before you plan around it.
+        </Reveal>
+      </section>
+
+      <section className="px-6 pb-16 max-w-6xl mx-auto w-full">
+        <Reveal>
+          <InternFamilyScene
+            title="TAP A FACE TO SEE WHAT THEY'RE UP TO"
+            subtitle="Every stat below is read live from the chain, not self-reported."
+          />
         </Reveal>
       </section>
 
