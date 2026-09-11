@@ -35,8 +35,13 @@ const config = {
   feeEscrowAddress: process.env.PONS_FEE_ESCROW_ADDRESS || "0xd3AFEB2a57f70eF218Aa82451c51B2fb0416Ac9e",
   // Ops/marketing/expansion wallet -- receives the treasury cut of
   // every claim, in plain ETH now (v1 paid this in BE; v2's fees accrue
-  // in ETH since $INTERN v2 is a native-ETH launch).
-  treasuryAddress: process.env.TREASURY_ADDRESS || "",
+  // in ETH since $INTERN v2 is a native-ETH launch). Deliberately NOT
+  // the same wallet PRIVATE_KEY signs from (that's the creator wallet
+  // as of 2026-09-11) -- keeping treasury separate from the bot's hot
+  // signing wallet is exactly the separation the README's pre-launch
+  // checklist called for.
+  treasuryAddress:
+    process.env.TREASURY_ADDRESS || "0xBF2670493E35A015505dC5DdA82dF2Ff8D4FCEFC",
   // The deployed InternStakingRewards contract for v2 (see
   // ../contracts -- NOT the same address as v1's, which is tied to the
   // old token and should not be reused). Deployed 2026-09-11, verified
