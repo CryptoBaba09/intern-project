@@ -136,10 +136,17 @@ function LiveStatStrip() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden px-6 pt-20 pb-24 max-w-6xl mx-auto w-full">
+    // The starfield used to live *inside* the max-w-6xl column below, so
+    // on any screen wider than 1152px it was a boxed rectangle with plain
+    // page background on either side -- not "floating in the universe."
+    // Full-bleed section here, with the actual copy/CTA column nested
+    // inside its own max-w-6xl wrapper, so the stars span edge to edge
+    // while the text still lines up with the rest of the page.
+    <section className="relative overflow-hidden w-full">
       <SpaceField className="absolute inset-0 w-full h-full" />
 
-      <div className="relative flex flex-col lg:flex-row items-center gap-14">
+      <div className="relative px-6 pt-20 pb-24 max-w-6xl mx-auto w-full">
+        <div className="relative flex flex-col lg:flex-row items-center gap-14">
         <motion.div
           initial="hidden"
           animate="show"
@@ -234,6 +241,7 @@ function Hero() {
       >
         <BuyCta />
       </motion.div>
+      </div>
     </section>
   );
 }
