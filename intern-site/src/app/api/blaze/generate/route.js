@@ -28,27 +28,59 @@ const RUNWAY_BASE = "https://api.dev.runwayml.com";
 const RUNWAY_VERSION = "2024-11-06";
 const HEYGEN_BASE = "https://api.heygen.com";
 
-// The three locked reference stills, served from this site's own /public
-// so Runway's servers (which need a URL, not a local file) can fetch
-// them. Keeps every user generation anchored to the same approved face
-// design instead of trusting a client-supplied image.
-const PERSONA_SEED_PATH = {
-  blaze: "/personas/blaze.png",
-  rendo: "/personas/rendo.png",
-  promptly: "/personas/promptly.png",
-  synapse: "/personas/synapse.png",
+// Locked reference stills per persona PER SCENE, served from this
+// site's own /public so Runway's servers (which need a URL, not a local
+// file) can fetch them. "default" is each persona's original locked
+// concept art; other scenes (e.g. "beach") are the same character,
+// same head/proportions, re-rendered into a different environment --
+// generated once via Runway with the original art as a reference, not
+// a separate design. Keeps every user generation anchored to an
+// approved still instead of trusting a client-supplied image.
+const PERSONA_SCENES = {
+  blaze: {
+    default: "/personas/blaze.png",
+    beach: "/personas/scenes/blaze-beach.png",
+  },
+  rendo: {
+    default: "/personas/rendo.png",
+    beach: "/personas/scenes/rendo-beach.png",
+  },
+  promptly: {
+    default: "/personas/promptly.png",
+    beach: "/personas/scenes/promptly-beach.png",
+  },
+  synapse: {
+    default: "/personas/synapse.png",
+    beach: "/personas/scenes/synapse-beach.png",
+  },
 };
+const DEFAULT_SCENE = "default";
+const SCENE_IDS = Object.keys(PERSONA_SCENES.blaze); // same scene set for every persona
 
 // HeyGen avatar IDs are per-account (created via HeyGen's studio, not
 // derivable from anything in this repo) -- unset until an operator
-// creates real Blaze/Rendo/Promptly avatars in HeyGen and fills these in
-// via env vars. Missing ones fail with a clear "not configured" error
-// rather than a confusing provider-side 404.
+// creates real avatar "looks" in HeyGen and fills these in via env
+// vars. One look per scene per persona (a HeyGen "look" is scene-
+// specific, unlike Runway's img2img which can reuse one still as a
+// motion reference for any prompt). Missing ones fail with a clear
+// "not configured" error rather than a confusing provider-side 404.
 const HEYGEN_AVATAR_ID = {
-  blaze: process.env.HEYGEN_BLAZE_AVATAR_ID || "",
-  rendo: process.env.HEYGEN_RENDO_AVATAR_ID || "",
-  promptly: process.env.HEYGEN_PROMPTLY_AVATAR_ID || "",
-  synapse: process.env.HEYGEN_SYNAPSE_AVATAR_ID || "",
+  blaze: {
+    default: process.env.HEYGEN_BLAZE_AVATAR_ID || "",
+    beach: process.env.HEYGEN_BLAZE_AVATAR_ID_BEACH || "",
+  },
+  rendo: {
+    default: process.env.HEYGEN_RENDO_AVATAR_ID || "",
+    beach: process.env.HEYGEN_RENDO_AVATAR_ID_BEACH || "",
+  },
+  promptly: {
+    default: process.env.HEYGEN_PROMPTLY_AVATAR_ID || "",
+    beach: process.env.HEYGEN_PROMPTLY_AVATAR_ID_BEACH || "",
+  },
+  synapse: {
+    default: process.env.HEYGEN_SYNAPSE_AVATAR_ID || "",
+    beach: process.env.HEYGEN_SYNAPSE_AVATAR_ID_BEACH || "",
+  },
 };
 
 function siteOrigin(req) {
@@ -68,13 +100,13 @@ function siteOrigin(req) {
 // change needed here if pricing shifts (the router re-evaluates live).
 const RUNWAY_ROUTER_CONFIG_ID = "intern-video-credits";
 
-async function submitRunway(req, { persona, prompt }) {
+async function submitRunway(req, { persona, scene, prompt }) {
   if (!process.env.RUNWAYML_API_SECRET) {
     throw Object.assign(new Error("Runway isn't configured yet — missing API key server-side."), {
       status: 503,
     });
   }
-  const promptImage = `${siteOrigin(req)}${PERSONA_SEED_PATH[persona]}`;
+  const promptImage = `${siteOrigin(req)}${PERSONA_SCENES[persona][scene]}`;
 
   const res = await fetch(`${RUNWAY_BASE}/v1/generate/video`, {
     method: "POST",
@@ -102,16 +134,18 @@ async function submitRunway(req, { persona, prompt }) {
   return { engine: "runway", taskId: data.id };
 }
 
-async function submitHeygen({ persona, prompt }) {
+async function submitHeygen({ persona, scene, prompt }) {
   if (!process.env.HEYGEN_API_KEY) {
     throw Object.assign(new Error("HeyGen isn't configured yet — missing API key server-side."), {
       status: 503,
     });
   }
-  const avatarId = HEYGEN_AVATAR_ID[persona];
+  const avatarId = HEYGEN_AVATAR_ID[persona][scene];
   if (!avatarId) {
     throw Object.assign(
-      new Error(`No HeyGen avatar configured for ${persona} yet — Runway is available in the meantime.`),
+      new Error(
+        `No HeyGen avatar configured for ${persona} in the "${scene}" scene yet — try the default scene, or Runway is available in the meantime.`
+      ),
       { status: 503 }
     );
   }
@@ -148,7 +182,7 @@ async function submitHeygen({ persona, prompt }) {
 
 export async function POST(req) {
   try {
-    const { address, engine, persona, prompt } = await req.json();
+    const { address, engine, persona, scene, prompt } = await req.json();
 
     if (!address || !isAddress(address)) {
       return Response.json({ error: "A connected wallet address is required." }, { status: 400 });
@@ -156,8 +190,12 @@ export async function POST(req) {
     if (engine !== "runway" && engine !== "heygen") {
       return Response.json({ error: "engine must be 'runway' or 'heygen'." }, { status: 400 });
     }
-    if (!persona || !PERSONA_SEED_PATH[persona]) {
+    if (!persona || !PERSONA_SCENES[persona]) {
       return Response.json({ error: "persona must be 'blaze', 'rendo', 'promptly', or 'synapse'." }, { status: 400 });
+    }
+    const resolvedScene = scene || DEFAULT_SCENE;
+    if (!SCENE_IDS.includes(resolvedScene)) {
+      return Response.json({ error: `scene must be one of: ${SCENE_IDS.join(", ")}.` }, { status: 400 });
     }
     if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
       return Response.json(
@@ -187,8 +225,8 @@ export async function POST(req) {
 
     const submitted =
       engine === "runway"
-        ? await submitRunway(req, { persona, prompt: prompt.trim() })
-        : await submitHeygen({ persona, prompt: prompt.trim() });
+        ? await submitRunway(req, { persona, scene: resolvedScene, prompt: prompt.trim() })
+        : await submitHeygen({ persona, scene: resolvedScene, prompt: prompt.trim() });
 
     return Response.json({ ...submitted, costUsd: cost, newBalanceUsd });
   } catch (err) {

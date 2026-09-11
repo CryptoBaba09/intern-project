@@ -18,11 +18,44 @@ import { ERC20_ABI } from "../lib/abis";
 const MIN_CREDIT_USD = 1;
 const GENERATION_COST_USD = 1.5;
 
+// Every scene entry below is a real, generated still an operator can
+// verify -- not a placeholder. "beach" reuses each persona's exact
+// locked head/proportions (see the Runway session that made them),
+// just re-rendered into a different environment. Adding a new scene
+// later means generating one more still per persona and adding one
+// more key here, plus a matching HeyGen look ID -- see
+// api/blaze/generate/route.js's own PERSONA_SCENES/HEYGEN_AVATAR_ID for
+// the server side of this same map.
+const SCENES = [
+  { id: "default", label: "Studio", desc: "Each persona's usual setting" },
+  { id: "beach", label: "Beach", desc: "Same character, chilling on vacation" },
+];
+
 const PERSONAS = [
-  { id: "blaze", label: "Blaze", tagline: "Burn mechanism", img: "/personas/blaze.png" },
-  { id: "rendo", label: "Rendo", tagline: "Content", img: "/personas/rendo.png" },
-  { id: "promptly", label: "Promptly", tagline: "Prompts", img: "/personas/promptly.png" },
-  { id: "synapse", label: "Synapse", tagline: "Research", img: "/personas/synapse.png" },
+  {
+    id: "blaze",
+    label: "Blaze",
+    tagline: "Burn mechanism",
+    img: { default: "/personas/blaze.png", beach: "/personas/scenes/blaze-beach.png" },
+  },
+  {
+    id: "rendo",
+    label: "Rendo",
+    tagline: "Content",
+    img: { default: "/personas/rendo.png", beach: "/personas/scenes/rendo-beach.png" },
+  },
+  {
+    id: "promptly",
+    label: "Promptly",
+    tagline: "Prompts",
+    img: { default: "/personas/promptly.png", beach: "/personas/scenes/promptly-beach.png" },
+  },
+  {
+    id: "synapse",
+    label: "Synapse",
+    tagline: "Research",
+    img: { default: "/personas/synapse.png", beach: "/personas/scenes/synapse-beach.png" },
+  },
 ];
 
 const ENGINES = [
@@ -264,7 +297,7 @@ function BlazeTopUp({ balanceUsd, onCredited }) {
   );
 }
 
-function PersonaPicker({ selected, onSelect }) {
+function PersonaPicker({ selected, scene, onSelect }) {
   return (
     <div className="grid grid-cols-3 gap-3">
       {PERSONAS.map((p) => (
@@ -279,9 +312,39 @@ function PersonaPicker({ selected, onSelect }) {
           }`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={p.img} alt={p.label} className="w-full aspect-video object-cover rounded-lg mb-2" />
+          <img
+            src={p.img[scene] ?? p.img.default}
+            alt={p.label}
+            className="w-full aspect-video object-cover rounded-lg mb-2"
+          />
           <p className="font-mono text-xs text-[var(--color-fg)]">{p.label}</p>
           <p className="font-mono text-[10px] text-[var(--color-muted)]">{p.tagline}</p>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Second axis, independent of which persona is picked: which scene
+// that persona's video generates in. Same real stills swap in above in
+// PersonaPicker's own thumbnails so the preview never lies about what
+// you're about to spend credit on.
+function ScenePicker({ selected, onSelect }) {
+  return (
+    <div className="flex gap-2">
+      {SCENES.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          onClick={() => onSelect(s.id)}
+          className={`flex-1 rounded-xl border px-3 py-2 text-left transition-colors ${
+            selected === s.id
+              ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10"
+              : "border-[var(--color-line)] hover:border-[var(--color-accent)]/40"
+          }`}
+        >
+          <p className="font-mono text-xs text-[var(--color-fg)]">{s.label}</p>
+          <p className="font-mono text-[9px] text-[var(--color-muted)] leading-snug">{s.desc}</p>
         </button>
       ))}
     </div>
@@ -315,6 +378,7 @@ function EngineTabs({ selected, onSelect }) {
 function Generator({ balanceUsd, onSpent }) {
   const { address, isConnected } = useAccount();
   const [persona, setPersona] = useState("blaze");
+  const [scene, setScene] = useState("default");
   const [engine, setEngine] = useState("runway");
   const [prompt, setPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -345,7 +409,7 @@ function Generator({ balanceUsd, onSpent }) {
       const res = await fetch("/api/blaze/generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ address, engine, persona, prompt: prompt.trim() }),
+        body: JSON.stringify({ address, engine, persona, scene, prompt: prompt.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't start that generation.");
@@ -364,7 +428,10 @@ function Generator({ balanceUsd, onSpent }) {
     <div className="w-full max-w-md border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6">
       <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-4">GENERATE</p>
 
-      <PersonaPicker selected={persona} onSelect={setPersona} />
+      <PersonaPicker selected={persona} scene={scene} onSelect={setPersona} />
+      <div className="h-4" />
+      <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-2">SCENE</p>
+      <ScenePicker selected={scene} onSelect={setScene} />
       <div className="h-4" />
       <EngineTabs selected={engine} onSelect={setEngine} />
 
@@ -464,7 +531,8 @@ export default function VideoCreditsView() {
             Promptly
           </Link>{" "}
           already ships for text: burn $INTERN at the live price, spend the credit on a real
-          Runway or HeyGen generation of Blaze, Rendo, or Promptly — right here, no key to copy.
+          Runway or HeyGen generation of any of the four interns — in whichever scene you
+          pick — right here, no key to copy.
         </Reveal>
       </section>
 
