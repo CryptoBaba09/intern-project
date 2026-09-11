@@ -79,3 +79,22 @@ body {
 .ember-pulse {
   animation: ember-pulse 2.4s ease-in-out infinite;
 }
+
+/* FloatingMascots.js -- a slow, organic bob + drift, not a mechanical
+   loop: horizontal drift and vertical bob run on deliberately
+   non-matching offsets/timings per keyframe so instances with different
+   `animationDuration`s never visibly sync up. prefers-reduced-motion is
+   already handled globally above. */
+@keyframes intern-drift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(10px, -14px) rotate(3deg); }
+  50%  { transform: translate(-6px, -22px) rotate(-2deg); }
+  75%  { transform: translate(-12px, -8px) rotate(2deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.intern-float {
+  animation-name: intern-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}

@@ -19,12 +19,15 @@ const TOP_LINKS = [
 
 const CATEGORIES = [
   {
-    label: "Create",
+    // Leads with the crew roster, not utility pages -- "$INTERN" as a
+    // tab is the marketplace of interns first, everything you can build
+    // with them second.
+    label: "$INTERN",
     items: [
+      { href: "/marketplace", label: "Meet the Crew" },
+      { href: "/personas", label: "Personas" },
       { href: "/video-credits", label: "Video Credits" },
       { href: "/burn-to-create", label: "Burn to Create" },
-      { href: "/personas", label: "Personas" },
-      { href: "/marketplace", label: "Marketplace" },
     ],
   },
   {

@@ -5,6 +5,7 @@ import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import CursorGlow from "./components/CursorGlow";
 import SpaceField from "./components/SpaceField";
+import FloatingMascots from "./components/FloatingMascots";
 
 // Real bug found during an SEO/social-sharing audit (2026-09-07): this was
 // still the old Vercel preview URL from before internburn.xyz was live.
@@ -108,6 +109,7 @@ export default function RootLayout({ children }) {
         style={{ fontFamily: "'Space Grotesk', 'Arial', sans-serif", backgroundColor: "#05060a" }}
       >
         <SpaceField className="fixed inset-0 -z-10 w-screen h-screen" />
+        <FloatingMascots />
         <Web3Provider>
           <CursorGlow />
           <AnnouncementBar />
