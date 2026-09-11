@@ -64,7 +64,7 @@ export default function AnnouncementBar() {
           own comment documents, one row higher. */}
       <div
         className="relative px-6 py-2.5 border-b border-[#D9A441]/25 hover:bg-white/[0.04] transition-colors"
-        style={{ backgroundColor: "rgba(217,164,65,0.08)" }}
+        style={{ backgroundColor: "rgba(15,10,4,0.94)" }}
       >
         <div className="max-w-6xl mx-auto w-full flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center pr-6">
           <span className="font-mono text-[10px] text-[#D9A441] tracking-widest border border-[#D9A441]/40 rounded-full px-2 py-0.5 shrink-0">
