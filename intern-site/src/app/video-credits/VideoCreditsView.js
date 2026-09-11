@@ -373,17 +373,47 @@ function EngineTabs({ selected, onSelect }) {
   );
 }
 
+const MODES = [
+  { id: "persona", label: "Persona", desc: "One of the 4 crew, in a set scene" },
+  { id: "custom", label: "Custom Prompt", desc: "Any idea — Runway text-to-video, no character" },
+];
+
+function ModeTabs({ selected, onSelect }) {
+  return (
+    <div className="flex gap-2 mb-4">
+      {MODES.map((m) => (
+        <button
+          key={m.id}
+          type="button"
+          onClick={() => onSelect(m.id)}
+          className={`flex-1 rounded-xl border px-4 py-2.5 text-left transition-colors ${
+            selected === m.id
+              ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10"
+              : "border-[var(--color-line)] hover:border-[var(--color-accent)]/40"
+          }`}
+        >
+          <p className="font-mono text-xs text-[var(--color-fg)] mb-0.5">{m.label}</p>
+          <p className="font-mono text-[10px] text-[var(--color-muted)] leading-snug">{m.desc}</p>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // Spends video credit on a real generation, then polls this site's own
 // status endpoint (never the provider directly) until a video lands.
 function Generator({ balanceUsd, onSpent }) {
   const { address, isConnected } = useAccount();
+  const [mode, setMode] = useState("persona"); // "persona" | "custom" -- see docs/custom-video-prompt-spec.md
   const [persona, setPersona] = useState("blaze");
   const [scene, setScene] = useState("default");
   const [engine, setEngine] = useState("runway");
   const [prompt, setPrompt] = useState("");
+  const [acknowledged, setAcknowledged] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [job, setJob] = useState(null); // { engine, taskId, status, videoUrl }
   const [error, setError] = useState(null);
+  const isCustom = mode === "custom";
 
   useEffect(() => {
     if (!job || job.status === "ready" || job.status === "failed") return;
@@ -402,6 +432,7 @@ function Generator({ balanceUsd, onSpent }) {
 
   async function handleGenerate() {
     if (!prompt.trim() || balanceUsd < GENERATION_COST_USD) return;
+    if (isCustom && !acknowledged) return;
     setSubmitting(true);
     setError(null);
     setJob(null);
@@ -409,7 +440,11 @@ function Generator({ balanceUsd, onSpent }) {
       const res = await fetch("/api/blaze/generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ address, engine, persona, scene, prompt: prompt.trim() }),
+        body: JSON.stringify(
+          isCustom
+            ? { address, engine: "runway", custom: true, acknowledged: true, prompt: prompt.trim() }
+            : { address, engine, persona, scene, prompt: prompt.trim() }
+        ),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't start that generation.");
@@ -428,32 +463,61 @@ function Generator({ balanceUsd, onSpent }) {
     <div className="w-full max-w-md border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6">
       <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-4">GENERATE</p>
 
-      <PersonaPicker selected={persona} scene={scene} onSelect={setPersona} />
-      <div className="h-4" />
-      <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-2">SCENE</p>
-      <ScenePicker selected={scene} onSelect={setScene} />
-      <div className="h-4" />
-      <EngineTabs selected={engine} onSelect={setEngine} />
+      <ModeTabs selected={mode} onSelect={setMode} />
 
-      <textarea
-        rows={3}
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value.slice(0, 500))}
-        placeholder={
-          engine === "heygen"
-            ? "What should this persona say?"
-            : "Describe subtle motion — e.g. embers drift, ticker ticks down, camera static."
-        }
-        disabled={submitting}
-        className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 font-mono text-xs outline-none focus:border-[var(--color-accent)]/50 disabled:opacity-50 resize-none mb-4"
-      />
+      {isCustom ? (
+        <>
+          <textarea
+            rows={3}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value.slice(0, 500))}
+            placeholder="Describe any video — no character, pure text-to-video. Runway picks the model."
+            disabled={submitting}
+            className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 font-mono text-xs outline-none focus:border-[var(--color-accent)]/50 disabled:opacity-50 resize-none mb-3"
+          />
+          <label className="flex items-start gap-2 mb-4 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={acknowledged}
+              onChange={(e) => setAcknowledged(e.target.checked)}
+              className="mt-0.5 accent-[var(--color-accent)]"
+            />
+            <span className="font-mono text-[10px] text-[var(--color-muted)] leading-relaxed">
+              I won&apos;t prompt for real people, hate/harassment, sexual, or illegal content.
+              $INTERN can reject or remove any output, and this prompt is reviewed before it runs.
+            </span>
+          </label>
+        </>
+      ) : (
+        <>
+          <PersonaPicker selected={persona} scene={scene} onSelect={setPersona} />
+          <div className="h-4" />
+          <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-2">SCENE</p>
+          <ScenePicker selected={scene} onSelect={setScene} />
+          <div className="h-4" />
+          <EngineTabs selected={engine} onSelect={setEngine} />
+
+          <textarea
+            rows={3}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value.slice(0, 500))}
+            placeholder={
+              engine === "heygen"
+                ? "What should this persona say?"
+                : "Describe subtle motion — e.g. embers drift, ticker ticks down, camera static."
+            }
+            disabled={submitting}
+            className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 font-mono text-xs outline-none focus:border-[var(--color-accent)]/50 disabled:opacity-50 resize-none mb-4"
+          />
+        </>
+      )}
 
       {error && <p className="font-mono text-[10px] text-[var(--color-danger)] mb-4 leading-relaxed">{error}</p>}
 
       <button
         type="button"
         onClick={handleGenerate}
-        disabled={!prompt.trim() || balanceUsd < GENERATION_COST_USD || submitting}
+        disabled={!prompt.trim() || balanceUsd < GENERATION_COST_USD || submitting || (isCustom && !acknowledged)}
         className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {submitting ? "STARTING…" : `GENERATE — $${GENERATION_COST_USD.toFixed(2)}`}

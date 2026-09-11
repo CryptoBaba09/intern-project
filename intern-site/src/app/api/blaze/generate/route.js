@@ -100,13 +100,26 @@ function siteOrigin(req) {
 // change needed here if pricing shifts (the router re-evaluates live).
 const RUNWAY_ROUTER_CONFIG_ID = "intern-video-credits";
 
-async function submitRunway(req, { persona, scene, prompt }) {
+async function submitRunway(req, { persona, scene, prompt, custom }) {
   if (!process.env.RUNWAYML_API_SECRET) {
     throw Object.assign(new Error("Runway isn't configured yet — missing API key server-side."), {
       status: 503,
     });
   }
-  const promptImage = `${siteOrigin(req)}${PERSONA_SCENES[persona][scene]}`;
+  // Custom mode drops promptImage entirely -- pure text-to-video, not
+  // anchored to one of the 4 approved persona stills. See
+  // docs/custom-video-prompt-spec.md for why this is its own mode
+  // rather than just "persona: null" falling through: the router
+  // (RUNWAY_ROUTER_CONFIG_ID) picks a text-to-video-capable model on
+  // its own once there's no image input, same secret, same config.
+  const input = custom
+    ? { promptText: prompt, ratio: "1280:720", duration: 5 }
+    : {
+        promptImage: `${siteOrigin(req)}${PERSONA_SCENES[persona][scene]}`,
+        promptText: prompt,
+        ratio: "1280:720",
+        duration: 5,
+      };
 
   const res = await fetch(`${RUNWAY_BASE}/v1/generate/video`, {
     method: "POST",
@@ -115,15 +128,7 @@ async function submitRunway(req, { persona, scene, prompt }) {
       "X-Runway-Version": RUNWAY_VERSION,
       "content-type": "application/json",
     },
-    body: JSON.stringify({
-      configId: RUNWAY_ROUTER_CONFIG_ID,
-      input: {
-        promptImage,
-        promptText: prompt,
-        ratio: "1280:720",
-        duration: 5,
-      },
-    }),
+    body: JSON.stringify({ configId: RUNWAY_ROUTER_CONFIG_ID, input }),
   });
   if (!res.ok) {
     const detail = await res.text();
@@ -180,9 +185,61 @@ async function submitHeygen({ persona, scene, prompt }) {
   return { engine: "heygen", taskId: videoId };
 }
 
+// Blunt, honestly-labeled fallback for when OPENAI_API_KEY isn't set --
+// a keyword list is not real content moderation, it's a last-resort net
+// for the most obvious cases. Kept short and generic on purpose: this
+// is a safety net, not the actual moderation layer (see
+// docs/custom-video-prompt-spec.md, "Moderation" section).
+const DENYLIST_FALLBACK = [
+  "child sex", "csam", "rape", "kill myself", "suicide method",
+  "bomb making", "school shooting",
+];
+
+// Real moderation only runs when OPENAI_API_KEY is configured -- until
+// then this route is explicit (in its own error text via the denylist
+// path, and in the spec doc) that it's running the weaker fallback,
+// rather than silently claiming a review that isn't happening.
+async function moderatePrompt(prompt) {
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const res = await fetch("https://api.openai.com/v1/moderations", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ input: prompt }),
+      });
+      if (!res.ok) {
+        console.error("[blaze] moderation API error:", res.status, await res.text());
+        // Fail closed on a broken moderation call -- better to block a
+        // legitimate generation than let an unmoderated one through.
+        return { flagged: true, reason: "moderation check unavailable, try again shortly" };
+      }
+      const data = await res.json();
+      const result = data.results?.[0];
+      if (result?.flagged) {
+        const categories = Object.entries(result.categories || {})
+          .filter(([, v]) => v)
+          .map(([k]) => k)
+          .join(", ");
+        return { flagged: true, reason: categories || undefined };
+      }
+      return { flagged: false };
+    } catch (err) {
+      console.error("[blaze] moderation call failed:", err);
+      return { flagged: true, reason: "moderation check unavailable, try again shortly" };
+    }
+  }
+
+  const lower = prompt.toLowerCase();
+  const hit = DENYLIST_FALLBACK.find((term) => lower.includes(term));
+  return hit ? { flagged: true } : { flagged: false };
+}
+
 export async function POST(req) {
   try {
-    const { address, engine, persona, scene, prompt } = await req.json();
+    const { address, engine, persona, scene, prompt, custom, acknowledged } = await req.json();
 
     if (!address || !isAddress(address)) {
       return Response.json({ error: "A connected wallet address is required." }, { status: 400 });
@@ -190,11 +247,25 @@ export async function POST(req) {
     if (engine !== "runway" && engine !== "heygen") {
       return Response.json({ error: "engine must be 'runway' or 'heygen'." }, { status: 400 });
     }
-    if (!persona || !PERSONA_SCENES[persona]) {
+    if (custom) {
+      // Custom mode has no persona/scene to anchor to -- see
+      // docs/custom-video-prompt-spec.md. HeyGen always needs a real
+      // avatar_id, so there's no meaningful "custom" HeyGen request;
+      // only Runway's pure text-to-video path applies.
+      if (engine !== "runway") {
+        return Response.json({ error: "Custom prompts are Runway-only for now." }, { status: 400 });
+      }
+      if (!acknowledged) {
+        return Response.json(
+          { error: "Check the content acknowledgment box before generating a custom prompt." },
+          { status: 400 }
+        );
+      }
+    } else if (!persona || !PERSONA_SCENES[persona]) {
       return Response.json({ error: "persona must be 'blaze', 'rendo', 'promptly', or 'synapse'." }, { status: 400 });
     }
     const resolvedScene = scene || DEFAULT_SCENE;
-    if (!SCENE_IDS.includes(resolvedScene)) {
+    if (!custom && !SCENE_IDS.includes(resolvedScene)) {
       return Response.json({ error: `scene must be one of: ${SCENE_IDS.join(", ")}.` }, { status: 400 });
     }
     if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
@@ -205,6 +276,16 @@ export async function POST(req) {
     }
     if (prompt.length > 500) {
       return Response.json({ error: "Keep the prompt under 500 characters." }, { status: 400 });
+    }
+
+    if (custom) {
+      const modResult = await moderatePrompt(prompt.trim());
+      if (modResult.flagged) {
+        return Response.json(
+          { error: `That prompt was rejected by content review${modResult.reason ? `: ${modResult.reason}` : "."}` },
+          { status: 422 }
+        );
+      }
     }
 
     const cost = COST_USD[engine];
@@ -225,7 +306,7 @@ export async function POST(req) {
 
     const submitted =
       engine === "runway"
-        ? await submitRunway(req, { persona, scene: resolvedScene, prompt: prompt.trim() })
+        ? await submitRunway(req, { persona, scene: resolvedScene, prompt: prompt.trim(), custom: Boolean(custom) })
         : await submitHeygen({ persona, scene: resolvedScene, prompt: prompt.trim() });
 
     return Response.json({ ...submitted, costUsd: cost, newBalanceUsd });
