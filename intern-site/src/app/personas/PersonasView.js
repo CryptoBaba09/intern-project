@@ -6,56 +6,23 @@ import { motion } from "framer-motion";
 import { useAccount, useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
-import Mascot from "../components/Mascot";
 import PersonaIntroVideo from "../components/PersonaIntroVideo";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { CONTRACTS, isStakingLive } from "../lib/chain";
 import { ERC20_ABI, STAKING_REWARDS_ABI } from "../lib/abis";
 
-// Rendo's color, same trick as the Genesis trait previews and the crew
-// card: a CSS hue-rotate over the same base Blaze artwork rather than a
-// second hand-authored character -- keeps the "family" visually
-// consistent and honest about not having commissioned separate art yet.
-function AvatarMock({ gradient, label }) {
+// PreviewBadge/AvatarMock/TIERS/the "how it would work" tier-gated
+// avatar-template section they used to back were a mockup for a
+// video-avatar model that was never actually built: stake to a
+// threshold, unlock templates. What shipped instead is video-credits
+// (burn a flat cost per generation, any of the 4 personas incl. Rendo,
+// real commissioned art, no stake gate on video specifically) -- see
+// api/blaze/generate/route.js. Removed the mockup rather than relabel
+// it "live," since it describes a mechanic that doesn't exist.
+function LiveVideoBadge() {
   return (
-    <div
-      className={`aspect-[3/4] rounded-2xl ${gradient} relative overflow-hidden border border-[var(--color-line)] flex items-end justify-center p-4`}
-    >
-      <div className="absolute inset-0 flex items-center justify-center" style={{ filter: "hue-rotate(80deg) saturate(1.15)" }}>
-        <Mascot className="w-3/4 h-3/4" />
-      </div>
-      <span className="relative font-mono text-[9px] tracking-widest text-[var(--color-fg)]/70 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-const TIERS = [
-  {
-    name: "Intern",
-    stake: "10,000",
-    gradient: "bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-line)]",
-    perks: ["1 avatar template", "Basic monthly video credits", "Standard render queue"],
-  },
-  {
-    name: "Senior Intern",
-    stake: "100,000",
-    gradient: "bg-gradient-to-br from-[var(--color-surface)] via-[#122015] to-[var(--color-line)]",
-    perks: ["More templates", "Higher credit allowance", "Voice customization (planned)"],
-  },
-  {
-    name: "Full-Time Offer",
-    stake: "1,000,000",
-    gradient: "bg-gradient-to-br from-[#16120A] via-[#1c160e] to-[var(--color-line)]",
-    perks: ["Full customization", "Highest credit allowance", "Priority render queue"],
-  },
-];
-
-function PreviewBadge() {
-  return (
-    <span className="font-mono text-[10px] text-[var(--color-ember)] border border-[var(--color-ember)]/30 rounded-full px-2.5 py-1 tracking-widest">
-      VIDEO AVATARS · NOT LIVE
+    <span className="font-mono text-[10px] text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-full px-2.5 py-1 tracking-widest">
+      VIDEO · LIVE (BURN-BASED)
     </span>
   );
 }
@@ -226,7 +193,7 @@ export default function PersonasView() {
             MEET RENDO · MEDIA INTERN
           </p>
           <LiveBadge />
-          <PreviewBadge />
+          <LiveVideoBadge />
         </Reveal>
         <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6 max-w-2xl">
           Your own digital intern, for content creation.
@@ -236,10 +203,15 @@ export default function PersonasView() {
           delay={0.1}
           className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-4"
         >
-          Stake $INTERN, unlock Rendo. The text-generation beta below is
-          real and working today — captions, post ideas, short scripts,
-          gated by your actual staked balance. The full AI video avatar
-          vision is still planned, not live yet.
+          Stake $INTERN, unlock Rendo&apos;s text-generation beta below —
+          captions, post ideas, short scripts, gated by your actual
+          staked balance. Real video generation is also live now, burn-
+          based rather than stake-gated, covering all four interns
+          (Rendo included) — head to{" "}
+          <Link href="/video-credits" className="text-[var(--color-accent)] hover:underline">
+            video-credits
+          </Link>{" "}
+          to try it.
         </Reveal>
         <Reveal as="p" delay={0.15} className="text-[var(--color-muted-2)] text-sm max-w-2xl">
           Beta means beta: usage limits are tracked server-side but not
@@ -272,56 +244,17 @@ export default function PersonasView() {
         <RendoTool />
       </section>
 
-      <section className="px-6 pb-20 max-w-5xl mx-auto w-full">
-        <p className="font-mono text-[10px] text-[var(--color-muted-2)] mb-6 max-w-2xl leading-relaxed">
-          These same three stake thresholds already gate the real text
-          beta above. The perks below — avatar templates, video credits —
-          are the planned full vision, not live yet.
-        </p>
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={staggerContainer}
-          className="grid sm:grid-cols-3 gap-6"
-        >
-          {TIERS.map((tier) => (
-            <motion.div
-              key={tier.name}
-              variants={fadeUp}
-              whileHover={{ y: -4, borderColor: "rgba(0,200,5,0.35)" }}
-              transition={{ type: "spring", stiffness: 300, damping: 24 }}
-              className="border border-[var(--color-line)] p-5"
-            >
-              <AvatarMock gradient={tier.gradient} label="RENDO · ILLUSTRATIVE" />
-              <div className="mt-4">
-                <h3 className="text-lg font-medium mb-1">{tier.name}</h3>
-                <p className="font-mono text-xs text-[var(--color-ember)] mb-4">
-                  {tier.stake} $INTERN staked
-                </p>
-                <ul className="space-y-2">
-                  {tier.perks.map((perk) => (
-                    <li
-                      key={perk}
-                      className="flex items-start gap-2 text-sm text-[var(--color-muted)]"
-                    >
-                      <span className="text-[var(--color-accent)] mt-0.5">→</span>
-                      {perk}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
-
       <section className="px-6 py-20 border-t border-[var(--color-line)] max-w-5xl mx-auto w-full">
         <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
-          HOW IT WOULD WORK
+          HOW VIDEO ACTUALLY WORKS
         </Reveal>
-        <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-10">
-          Stake, generate, post.
+        <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-4">
+          Burn, generate, post.
+        </Reveal>
+        <Reveal as="p" delay={0.08} className="text-[var(--color-muted)] text-sm max-w-2xl mb-10">
+          Not stake-gated templates — burn $INTERN for real video credit,
+          same as the rest of this site&apos;s burn mechanics. Works for
+          all four interns, not just Rendo.
         </Reveal>
         <motion.div
           initial="hidden"
@@ -333,18 +266,18 @@ export default function PersonasView() {
           {[
             {
               n: "01",
-              title: "Stake $INTERN",
-              body: "Reach a tier threshold in the InternStakingRewards contract you're already earning BE from.",
+              title: "Burn $INTERN",
+              body: "Burn at the live price for real, spend-capped video credit — a real, irreversible on-chain transfer, tracked on-site.",
             },
             {
               n: "02",
-              title: "Generate",
-              body: "Pick a template, write a script, and generate a video with your digital intern.",
+              title: "Pick a persona, scene, or your own prompt",
+              body: "Any of the 4 interns in Studio or Beach, via Runway or HeyGen — or skip the character entirely with a custom text-to-video prompt.",
             },
             {
               n: "03",
-              title: "Post it",
-              body: "Download and post — no watermark hassle at higher tiers, more usage the higher you stake.",
+              title: "Generate, then download",
+              body: "A real provider call runs server-side. Finished clips show up in your own generation history — download what you want to keep.",
             },
           ].map((step) => (
             <motion.div key={step.n} variants={fadeUp} className="border border-[var(--color-line)] p-6">
@@ -359,21 +292,25 @@ export default function PersonasView() {
       <section className="px-6 pb-24 max-w-5xl mx-auto w-full text-center">
         <Reveal className="border border-[var(--color-line)] rounded-2xl p-10 bg-[var(--color-surface)]">
           <p className="font-mono text-xs text-[var(--color-muted)] tracking-widest mb-3">
-            TEXT BETA LIVE · VIDEO STILL PLANNED
+            TEXT BETA LIVE · VIDEO LIVE (BURN-BASED)
           </p>
           <p className="text-[var(--color-fg)] text-lg mb-6 max-w-xl mx-auto">
-            Try the real thing above. Full AI video avatars ship once
-            there's a real generation provider picked and budgeted — follow
-            the{" "}
-            <Link href="/roadmap" className="text-[var(--color-accent)] hover:underline">
-              roadmap
-            </Link>{" "}
-            for status.
+            Try the text beta above, or go generate real video right now —
+            no stake required for video, just a burn. Custom prompts
+            (no character at all) are live too.
           </p>
+          <div className="flex flex-wrap gap-4 justify-center mb-6">
+            <Link
+              href="/video-credits"
+              className="inline-block rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
+            >
+              GENERATE VIDEO →
+            </Link>
+          </div>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/stake"
-              className="inline-block rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
+              className="inline-block rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
             >
               GO TO STAKING →
             </Link>
