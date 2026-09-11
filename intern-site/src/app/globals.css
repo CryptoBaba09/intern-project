@@ -21,6 +21,15 @@
   --color-accent-foreground: #0B0C0B;
   --color-ember: #D9A441;
   --color-danger: #E5484D;
+  /* Text drawn over SpaceField's canvas (Hero, InternFamilyScene) --
+     that canvas paints a literal near-black background unconditionally
+     in both themes (it's a "space window", not page chrome), so its
+     text needs the same fixed-regardless-of-theme treatment as
+     --color-accent-foreground above: it must NOT reuse --color-fg,
+     which flips to near-black in light mode and would go invisible on
+     top of that same canvas. */
+  --color-space-fg: #EDEEF0;
+  --color-space-muted: #9BA1A6;
 }
 
 [data-theme="light"] {
@@ -51,6 +60,8 @@
   --color-ember: var(--color-ember);
   --color-danger: var(--color-danger);
   --color-line: var(--color-line);
+  --color-space-fg: var(--color-space-fg);
+  --color-space-muted: var(--color-space-muted);
 }
 
 body {

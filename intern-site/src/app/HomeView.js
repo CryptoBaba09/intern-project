@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useReadContract } from "wagmi";
 import { formatUnits } from "viem";
-import ParticleField from "./components/ParticleField";
+import SpaceField from "./components/SpaceField";
 import BuyCta from "./components/BuyCta";
 import Mascot from "./components/Mascot";
 import AnimatedNumber from "./components/AnimatedNumber";
@@ -79,20 +79,20 @@ function LiveStatStrip() {
       <motion.div
         variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="flex gap-4 font-mono text-xs text-[var(--color-muted)]"
+        className="flex gap-4 font-mono text-xs text-[var(--color-space-muted)]"
       >
         <div>
-          <p className="text-[var(--color-fg)] text-sm">{formatNumber(LAUNCH_SUPPLY)}</p>
+          <p className="text-[var(--color-space-fg)] text-sm">{formatNumber(LAUNCH_SUPPLY)}</p>
           <p>FIXED SUPPLY</p>
         </div>
-        <div className="w-px bg-[var(--color-line)]" />
+        <div className="w-px bg-white/15" />
         <div>
-          <p className="text-[var(--color-fg)] text-sm">70/20/10</p>
+          <p className="text-[var(--color-space-fg)] text-sm">70/20/10</p>
           <p>BURN / STAKE / TREASURY</p>
         </div>
-        <div className="w-px bg-[var(--color-line)]" />
+        <div className="w-px bg-white/15" />
         <div>
-          <p className="text-[var(--color-fg)] text-sm">0%</p>
+          <p className="text-[var(--color-space-fg)] text-sm">0%</p>
           <p>MINT FUNCTION</p>
         </div>
       </motion.div>
@@ -108,23 +108,23 @@ function LiveStatStrip() {
         <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
         LIVE · READ DIRECTLY FROM CHAIN
       </p>
-      <div className="flex flex-wrap gap-x-6 gap-y-4 font-mono text-xs text-[var(--color-muted)]">
+      <div className="flex flex-wrap gap-x-6 gap-y-4 font-mono text-xs text-[var(--color-space-muted)]">
         <div>
-          <p className="text-[var(--color-fg)] text-sm tabular-nums">
+          <p className="text-[var(--color-space-fg)] text-sm tabular-nums">
             {burned === null ? "—" : <AnimatedNumber value={Math.round(burned)} />}
           </p>
           <p>$INTERN BURNED</p>
         </div>
-        <div className="w-px bg-[var(--color-line)]" />
+        <div className="w-px bg-white/15" />
         <div>
-          <p className="text-[var(--color-fg)] text-sm tabular-nums">
+          <p className="text-[var(--color-space-fg)] text-sm tabular-nums">
             {staked === null ? "—" : <AnimatedNumber value={Math.round(staked)} />}
           </p>
           <p>$INTERN STAKED (V1)</p>
         </div>
-        <div className="w-px bg-[var(--color-line)]" />
+        <div className="w-px bg-white/15" />
         <div>
-          <p className="text-[var(--color-fg)] text-sm tabular-nums">
+          <p className="text-[var(--color-space-fg)] text-sm tabular-nums">
             {volumeUsd === null ? "—" : `$${formatNumber(Math.round(volumeUsd))}`}
           </p>
           <p>24H VOLUME</p>
@@ -137,7 +137,7 @@ function LiveStatStrip() {
 function Hero() {
   return (
     <section className="relative overflow-hidden px-6 pt-20 pb-24 max-w-6xl mx-auto w-full">
-      <ParticleField className="absolute inset-0 w-full h-full opacity-60" />
+      <SpaceField className="absolute inset-0 w-full h-full" />
 
       <div className="relative flex flex-col lg:flex-row items-center gap-14">
         <motion.div
@@ -156,15 +156,22 @@ function Hero() {
             >
               ROBINHOOD CHAIN · PONS · QUOTED IN ETH
             </p>,
+            <p
+              key="mantra"
+              className="font-mono text-[10px] text-white/40 tracking-[0.25em] mb-4"
+            >
+              $INTERN <span className="text-white/25">×</span> SPACE{" "}
+              <span className="text-white/25">×</span> COMPUTE
+            </p>,
             <h1
               key="h1"
-              className="text-5xl sm:text-6xl font-semibold leading-[1.05] mb-6"
+              className="text-[var(--color-space-fg)] text-5xl sm:text-6xl font-semibold leading-[1.05] mb-6"
             >
               Interns run on power.
               <br />
               <span className="text-[var(--color-ember)] ember-glow">Supply</span> runs down.
             </h1>,
-            <p key="p" className="text-[var(--color-muted)] text-lg leading-relaxed mb-8">
+            <p key="p" className="text-[var(--color-space-muted)] text-lg leading-relaxed mb-8">
               Every $INTERN needs real compute, and real compute runs on
               real money. $INTERN is quoted against ETH — the OG currency
               layer, still the one everything else gets built on top of.
@@ -193,7 +200,7 @@ function Hero() {
             </a>
             <Link
               href="/stake"
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/20 text-[var(--color-space-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
             >
               STAKE FOR BE
             </Link>
