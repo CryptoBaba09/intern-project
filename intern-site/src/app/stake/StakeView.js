@@ -14,6 +14,10 @@ import ConnectWalletButton from "../components/ConnectWalletButton";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { CONTRACTS, isStakingLive } from "../lib/chain";
 import { ERC20_ABI, STAKING_REWARDS_ABI } from "../lib/abis";
+import Confetti from "../components/Confetti";
+import TierPath from "../components/TierPath";
+import Badges from "../components/Badges";
+import StreakBadge from "../components/StreakTracker";
 
 function useTokenDecimals(address) {
   const { data } = useReadContract({
@@ -196,6 +200,14 @@ function StakeDashboard() {
   const [walletBalance, allowance, staked, earned, totalStaked] =
     data?.map((d) => d.result) ?? [];
 
+  // Plain numbers for the gamification components -- same values as the
+  // StatCards above, just unwrapped from bigint. null (not 0) while a
+  // wallet is connected but the read hasn't resolved yet, so TierPath/
+  // Badges can tell "still loading" apart from "genuinely zero."
+  const balanceNum = walletBalance !== undefined ? Number(formatUnits(walletBalance, internDecimals)) : null;
+  const stakedNum = staked !== undefined ? Number(formatUnits(staked, internDecimals)) : null;
+  const earnedNum = earned !== undefined ? Number(formatUnits(earned, beDecimals)) : null;
+
   const { writeContract, data: txHash, isPending, error, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({ hash: txHash });
@@ -278,9 +290,13 @@ function StakeDashboard() {
 
   return (
     <section className="px-6 pt-16 pb-24 max-w-4xl mx-auto w-full">
-      <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
-        STAKE
-      </Reveal>
+      <Confetti burstKey={isConfirmed ? txHash : null} />
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest">
+          STAKE
+        </Reveal>
+        <StreakBadge address={address} />
+      </div>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-2">
         Stake $INTERN, earn BE
       </Reveal>
@@ -320,6 +336,11 @@ function StakeDashboard() {
           />
         </motion.div>
       </motion.div>
+
+      <div className="grid sm:grid-cols-2 gap-4 mb-10">
+        <TierPath staked={stakedNum} />
+        <Badges balance={balanceNum} staked={stakedNum} earned={earnedNum} />
+      </div>
 
       <TxStatusBanner
         pendingLabel={needsApproval ? "Approving" : mode === "stake" ? "Staking" : "Unstaking"}
