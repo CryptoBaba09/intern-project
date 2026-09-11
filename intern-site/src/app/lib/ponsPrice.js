@@ -53,7 +53,13 @@ async function fetchEthUsd() {
 // run against. Throws clearly instead of silently returning a wrong
 // number if that day arrives before this gets updated.
 export async function fetchInternPriceUsd() {
-  const { launch } = await publicClient.readContract({
+  // viem returns the decoded tuple directly, not wrapped in an object
+  // keyed by the ABI's parameter name -- an earlier version of this
+  // destructured `{ launch }` here, which is an ethers.js habit, not a
+  // viem one, and threw "Cannot read properties of undefined" in
+  // production. Caught by testing the live endpoint before announcing
+  // this feature as fixed, not assumed from the code alone.
+  const launch = await publicClient.readContract({
     address: FACTORY_ADDRESS,
     abi: FACTORY_ABI,
     functionName: "getLaunchedToken",
