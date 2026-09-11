@@ -81,5 +81,9 @@ anything public-facing, not just at submission).
   *text*)
 - Rate limiting beyond the existing per-wallet credit balance (worth
   adding — e.g., N generations/day — but not blocking v0)
-- A public gallery/showcase of generations (explicitly out of scope
-  above; build the private version first)
+- A public gallery/showcase of generations, or paying $INTERN to unlock
+  someone else's generation — the private version (each wallet's own
+  generation history, persisted, view/download) shipped 2026-09-11 as
+  part of moving the credit ledger off in-memory storage; see
+  `docs/generation-gallery-spec.md` for the public/pay-to-download
+  extension, which is its own spec, not an extension of this one

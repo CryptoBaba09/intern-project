@@ -561,6 +561,90 @@ function Generator({ balanceUsd, onSpent }) {
   );
 }
 
+// "View/download your generations for later" -- backed by
+// api/blaze/generations, which reads the generations collection
+// written by api/blaze/generate (see lib/videoCredits.js). Polls on a
+// slow interval rather than reacting to Generator's own job state
+// directly, so this stays a self-contained read with no prop-drilling
+// between the two -- the tradeoff is a completed generation can take up
+// to one poll cycle to appear here.
+function MyGenerations({ address, refreshSignal }) {
+  const [generations, setGenerations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!address) return;
+    let cancelled = false;
+    function load() {
+      fetch(`/api/blaze/generations?address=${address}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!cancelled) setGenerations(data.generations ?? []);
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    }
+    load();
+    const id = setInterval(load, 10000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [address, refreshSignal]);
+
+  if (!address) return null;
+  if (!loading && generations.length === 0) return null;
+
+  return (
+    <div className="w-full max-w-5xl mx-auto">
+      <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-4">
+        YOUR GENERATIONS
+      </p>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {generations.map((g) => (
+          <div
+            key={g.id}
+            className="border border-[var(--color-line)] rounded-xl bg-[var(--color-surface)] overflow-hidden"
+          >
+            {g.status === "ready" && g.videoUrl ? (
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <video src={g.videoUrl} controls className="w-full aspect-video bg-black" />
+            ) : (
+              <div className="w-full aspect-video bg-[var(--color-bg)] flex items-center justify-center">
+                <p className="font-mono text-[10px] text-[var(--color-muted)]">
+                  {g.status === "failed" ? "Failed" : "Processing…"}
+                </p>
+              </div>
+            )}
+            <div className="p-3">
+              <p className="font-mono text-[10px] text-[var(--color-muted)] leading-snug line-clamp-2 mb-2">
+                {g.custom ? "Custom: " : `${g.persona ?? ""}/${g.scene ?? ""}: `}
+                {g.prompt}
+              </p>
+              {g.status === "ready" && g.videoUrl && (
+                <a
+                  href={g.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-[10px] text-[var(--color-accent)] hover:underline"
+                >
+                  Open / download ↗
+                </a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-4 leading-relaxed">
+        Links come from the provider (Runway/HeyGen) and may expire after a
+        while — save what you want to keep.
+      </p>
+    </div>
+  );
+}
+
 export default function VideoCreditsView() {
   const { address, isConnected } = useAccount();
   const live = isTradingLive();
@@ -622,6 +706,12 @@ export default function VideoCreditsView() {
           </motion.div>
         )}
       </section>
+
+      {live && (
+        <section className="px-6 pb-24 max-w-5xl mx-auto w-full">
+          <MyGenerations address={address} refreshSignal={balanceUsd} />
+        </section>
+      )}
 
       <section className="px-6 pb-24 max-w-5xl mx-auto w-full text-center">
         <Reveal className="border border-[var(--color-line)] rounded-2xl p-10 bg-[var(--color-surface)]">

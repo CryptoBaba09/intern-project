@@ -1,5 +1,11 @@
 import { isAddress } from "viem";
-import { getBalanceUsd, debitUsd, creditUsd } from "../../../lib/videoCredits";
+import {
+  getBalanceUsd,
+  debitUsd,
+  creditUsd,
+  recordGenerationStart,
+  updateGenerationStatus,
+} from "../../../lib/videoCredits";
 
 // Blaze v1: spends video credit (from api/blaze/topup) on a real
 // generation call to Runway or HeyGen, executed with THIS SITE's own
@@ -295,12 +301,13 @@ export async function POST(req) {
     }
 
     const cost = COST_USD[engine];
-    if (getBalanceUsd(address) < cost) {
+    const balanceBeforeUsd = await getBalanceUsd(address);
+    if (balanceBeforeUsd < cost) {
       return Response.json(
         {
-          error: `This generation costs $${cost.toFixed(2)} of video credit; your balance is $${getBalanceUsd(
-            address
-          ).toFixed(2)}. Burn more $INTERN on the video-credits page first.`,
+          error: `This generation costs $${cost.toFixed(2)} of video credit; your balance is $${balanceBeforeUsd.toFixed(
+            2
+          )}. Burn more $INTERN on the video-credits page first.`,
         },
         { status: 402 }
       );
@@ -314,7 +321,7 @@ export async function POST(req) {
     // remaining gap in videoCredits.js: a job that's accepted here but
     // fails later on the provider's side (after this function returns)
     // still isn't caught -- only failures at submission time are.
-    const newBalanceUsd = debitUsd(address, cost);
+    const newBalanceUsd = await debitUsd(address, cost);
 
     let submitted;
     try {
@@ -323,7 +330,7 @@ export async function POST(req) {
           ? await submitRunway(req, { persona, scene: resolvedScene, prompt: prompt.trim(), custom: Boolean(custom) })
           : await submitHeygen({ persona, scene: resolvedScene, prompt: prompt.trim() });
     } catch (submitErr) {
-      const refundedBalanceUsd = creditUsd(address, cost);
+      const refundedBalanceUsd = await creditUsd(address, cost);
       console.error("[blaze] submission failed, refunded $" + cost.toFixed(2) + ":", submitErr);
       const status = submitErr.status || 500;
       return Response.json(
@@ -334,6 +341,29 @@ export async function POST(req) {
         },
         { status }
       );
+    }
+
+    // Recorded after a successful submit, not before -- a request that
+    // never made it to the provider (validation error, insufficient
+    // credit) has nothing worth showing in "your generations" yet.
+    // Awaited (not fire-and-forget): a serverless function can be frozen
+    // the instant it returns its response, so an un-awaited write here
+    // could just never happen. A history-write failure is logged and
+    // swallowed rather than failing the request -- the video itself
+    // already submitted successfully, that's the part that must not be
+    // lost over a secondary record.
+    try {
+      await recordGenerationStart({
+        address,
+        engine: submitted.engine,
+        persona: custom ? null : persona,
+        scene: custom ? null : resolvedScene,
+        custom: Boolean(custom),
+        prompt: prompt.trim(),
+        taskId: submitted.taskId,
+      });
+    } catch (recordErr) {
+      console.error("[blaze] recordGenerationStart failed (non-fatal):", recordErr);
     }
 
     return Response.json({ ...submitted, costUsd: cost, newBalanceUsd });
@@ -356,6 +386,7 @@ export async function GET(req) {
   }
 
   try {
+    let status, videoUrl;
     if (engine === "runway") {
       const res = await fetch(`${RUNWAY_BASE}/v1/tasks/${taskId}`, {
         headers: {
@@ -365,20 +396,34 @@ export async function GET(req) {
       });
       if (!res.ok) throw new Error(`Runway status check returned ${res.status}`);
       const data = await res.json();
-      const status = { PENDING: "queued", RUNNING: "processing", SUCCEEDED: "ready", FAILED: "failed" }[
-        data.status
-      ] ?? "unknown";
-      return Response.json({ status, videoUrl: data.output?.[0] ?? null });
+      status = { PENDING: "queued", RUNNING: "processing", SUCCEEDED: "ready", FAILED: "failed" }[data.status] ?? "unknown";
+      videoUrl = data.output?.[0] ?? null;
+    } else {
+      const res = await fetch(`${HEYGEN_BASE}/v1/video_status.get?video_id=${encodeURIComponent(taskId)}`, {
+        headers: { "X-Api-Key": process.env.HEYGEN_API_KEY },
+      });
+      if (!res.ok) throw new Error(`HeyGen status check returned ${res.status}`);
+      const data = await res.json();
+      const raw = data.data?.status ?? data.status;
+      status = { pending: "queued", processing: "processing", completed: "ready", failed: "failed" }[raw] ?? "unknown";
+      videoUrl = data.data?.video_url ?? null;
     }
 
-    const res = await fetch(`${HEYGEN_BASE}/v1/video_status.get?video_id=${encodeURIComponent(taskId)}`, {
-      headers: { "X-Api-Key": process.env.HEYGEN_API_KEY },
-    });
-    if (!res.ok) throw new Error(`HeyGen status check returned ${res.status}`);
-    const data = await res.json();
-    const raw = data.data?.status ?? data.status;
-    const status = { pending: "queued", processing: "processing", completed: "ready", failed: "failed" }[raw] ?? "unknown";
-    return Response.json({ status, videoUrl: data.data?.video_url ?? null });
+    // Only persist on a terminal state -- "queued"/"processing" gets
+    // polled every 6s by the client and re-writing the same row that
+    // often is pure waste. This is also the only place generations.videoUrl
+    // (and the provider's own expiring link -- see videoCredits.js's
+    // disclosed limitation) ever gets saved. Awaited, not fire-and-forget
+    // -- same serverless-freeze-on-response reasoning as the POST handler.
+    if (status === "ready" || status === "failed") {
+      try {
+        await updateGenerationStatus({ engine, taskId, status, videoUrl });
+      } catch (updateErr) {
+        console.error("[blaze] updateGenerationStatus failed (non-fatal):", updateErr);
+      }
+    }
+
+    return Response.json({ status, videoUrl });
   } catch (err) {
     console.error("[blaze] status check error:", err);
     return Response.json({ error: "Couldn't check generation status right now." }, { status: 502 });

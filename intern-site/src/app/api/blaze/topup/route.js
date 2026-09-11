@@ -40,7 +40,7 @@ export async function POST(req) {
     if (!isTradingLive()) {
       return Response.json({ error: "$INTERN isn't live yet." }, { status: 503 });
     }
-    if (isBurnRedeemed(txHash)) {
+    if (await isBurnRedeemed(txHash)) {
       return Response.json({ error: "This burn has already been redeemed for credit." }, { status: 409 });
     }
 
@@ -105,8 +105,8 @@ export async function POST(req) {
     // ledger already disclosed as best-effort for a low-traffic beta,
     // erring toward "we might overpay" over "we might steal a real burn"
     // is the deliberate tradeoff here.
-    const newBalanceUsd = creditUsd(normalizedAddress, creditAddedUsd);
-    markBurnRedeemed(txHash);
+    const newBalanceUsd = await creditUsd(normalizedAddress, creditAddedUsd);
+    await markBurnRedeemed(txHash);
 
     return Response.json({
       status: "credited",
@@ -127,5 +127,5 @@ export async function GET(req) {
   if (!address || !isAddress(address)) {
     return Response.json({ error: "A valid address is required." }, { status: 400 });
   }
-  return Response.json({ balanceUsd: getBalanceUsd(address) });
+  return Response.json({ balanceUsd: await getBalanceUsd(address) });
 }
