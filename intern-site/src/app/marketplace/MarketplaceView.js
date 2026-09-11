@@ -14,7 +14,7 @@ const INTERNS = [
     status: "LIVE",
     body: "The protocol's own burn engine — no deploy, no fee, nothing to buy. Every time creator fees are claimed off the $INTERN/BE pool, 70% is bought back and burned automatically, starting from $INTERN's first trade.",
     fee: "Autonomous — 70% of every fee claim burned, no user action needed",
-    href: null,
+    href: "/blaze",
   },
   {
     name: "Rendo",

@@ -103,7 +103,7 @@ export default function InternFamilyScene({ title, subtitle, ctaHref, ctaLabel }
         burned !== null
           ? { label: "$INTERN burned so far", value: burned }
           : null,
-      href: "/tokenomics",
+      href: "/blaze",
     },
     {
       id: "rendo",
