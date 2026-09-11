@@ -53,10 +53,16 @@ export function debitUsd(address, amountUsd) {
   return next;
 }
 
-// Debited at job submission, not on confirmed success -- same "value in
-// at face value" principle as the rest of the burn-for-credit system, but
-// with a real known gap: a Runway/HeyGen job that fails server-side after
-// submission currently is NOT refunded automatically. Worth fixing before
-// this leaves beta (needs a job-status webhook or a reconciliation pass),
-// flagged here rather than silently left as a surprise.
-export const REFUND_ON_FAILURE_IMPLEMENTED = false;
+// Debited at job submission, not on confirmed success. api/blaze/generate's
+// POST handler now refunds via creditUsd() when the Runway/HeyGen submit
+// call itself throws (rejected request, provider outage, etc.) -- see the
+// "No eligible model" bug this closed on 2026-09-11, real request
+// zp8t5-1789117089311-ad0868abfb0a, where a broken router config debited
+// a user's credit for a generation that never ran.
+//
+// Real remaining gap: a job that's ACCEPTED at submission but fails later
+// on the provider's own side (after this route already returned 200) is
+// NOT refunded -- that needs a job-status webhook or a reconciliation
+// pass this codebase doesn't have yet. Worth fixing before this leaves
+// beta; flagged here rather than silently left as a surprise.
+export const REFUND_ON_FAILURE_IMPLEMENTED = "submission-time only";

@@ -1,5 +1,5 @@
 import { isAddress } from "viem";
-import { getBalanceUsd, debitUsd } from "../../../lib/videoCredits";
+import { getBalanceUsd, debitUsd, creditUsd } from "../../../lib/videoCredits";
 
 // Blaze v1: spends video credit (from api/blaze/topup) on a real
 // generation call to Runway or HeyGen, executed with THIS SITE's own
@@ -306,14 +306,35 @@ export async function POST(req) {
       );
     }
 
-    // Debited at submission, not confirmed success -- see
-    // REFUND_ON_FAILURE_IMPLEMENTED in videoCredits.js for the known gap.
+    // Debited at submission, not confirmed success -- if the provider
+    // call below throws (rejected request, network error, etc.), the
+    // catch block refunds this exact amount before returning the error,
+    // so a request that produced no video never leaves the balance
+    // short. This does NOT touch REFUND_ON_FAILURE_IMPLEMENTED's real
+    // remaining gap in videoCredits.js: a job that's accepted here but
+    // fails later on the provider's side (after this function returns)
+    // still isn't caught -- only failures at submission time are.
     const newBalanceUsd = debitUsd(address, cost);
 
-    const submitted =
-      engine === "runway"
-        ? await submitRunway(req, { persona, scene: resolvedScene, prompt: prompt.trim(), custom: Boolean(custom) })
-        : await submitHeygen({ persona, scene: resolvedScene, prompt: prompt.trim() });
+    let submitted;
+    try {
+      submitted =
+        engine === "runway"
+          ? await submitRunway(req, { persona, scene: resolvedScene, prompt: prompt.trim(), custom: Boolean(custom) })
+          : await submitHeygen({ persona, scene: resolvedScene, prompt: prompt.trim() });
+    } catch (submitErr) {
+      const refundedBalanceUsd = creditUsd(address, cost);
+      console.error("[blaze] submission failed, refunded $" + cost.toFixed(2) + ":", submitErr);
+      const status = submitErr.status || 500;
+      return Response.json(
+        {
+          error: `${submitErr.message || "Couldn't start that generation."} Your $${cost.toFixed(
+            2
+          )} credit was refunded — balance is now $${refundedBalanceUsd.toFixed(2)}.`,
+        },
+        { status }
+      );
+    }
 
     return Response.json({ ...submitted, costUsd: cost, newBalanceUsd });
   } catch (err) {
