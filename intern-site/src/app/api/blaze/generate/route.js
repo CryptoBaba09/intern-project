@@ -112,8 +112,14 @@ async function submitRunway(req, { persona, scene, prompt, custom }) {
   // rather than just "persona: null" falling through: the router
   // (RUNWAY_ROUTER_CONFIG_ID) picks a text-to-video-capable model on
   // its own once there's no image input, same secret, same config.
+  //
+  // Confirmed against a real 400 from Runway (2026-09-11, request
+  // zp8t5-1789117089311-ad0868abfb0a): the text-to-video schema
+  // rejects `ratio` as an unrecognized key -- that field only exists
+  // on the image-to-video request shape. duration/promptText are the
+  // only inputs the text-to-video schema takes.
   const input = custom
-    ? { promptText: prompt, ratio: "1280:720", duration: 5 }
+    ? { promptText: prompt, duration: 5 }
     : {
         promptImage: `${siteOrigin(req)}${PERSONA_SCENES[persona][scene]}`,
         promptText: prompt,
