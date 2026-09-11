@@ -2,7 +2,12 @@
 
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
-import { INTERN_ADDRESS, PONS_TRADE_URL } from "../lib/pools";
+import {
+  INTERN_ADDRESS,
+  PONS_TRADE_URL,
+  GECKOTERMINAL_POOL_URL,
+  GECKOTERMINAL_EMBED_URL,
+} from "../lib/pools";
 
 // v2 $INTERN trades on Pons (ponsfamily.com), paired against ETH --
 // not through an in-house swap widget calling a locked Uniswap V4 pool
@@ -43,6 +48,42 @@ export default function TradeView() {
         send you there instead of running our own swap widget — see why
         below.
       </Reveal>
+
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={staggerContainer}
+        className="border border-[var(--color-line)] rounded-2xl overflow-hidden bg-[var(--color-surface)] mb-6"
+      >
+        {/* Live chart, embedded straight from GeckoTerminal -- Robinhood
+            Chain isn't indexed on DexScreener (checked directly), but
+            GeckoTerminal already lists this exact pool under Pons V2.
+            This is a chart, not a swap widget -- same reasoning as
+            below for why the actual trade button still sends you to
+            Pons rather than executing here. */}
+        <iframe
+          height="450"
+          width="100%"
+          title="INTERN/WETH live chart on GeckoTerminal"
+          src={GECKOTERMINAL_EMBED_URL}
+          frameBorder="0"
+          allow="clipboard-write"
+          loading="lazy"
+          className="block w-full"
+        />
+        <p className="font-mono text-[10px] text-[var(--color-muted-2)] px-4 py-2 border-t border-[var(--color-line)]">
+          Live chart via{" "}
+          <a
+            href={GECKOTERMINAL_POOL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--color-accent)] hover:underline"
+          >
+            GeckoTerminal ↗
+          </a>{" "}
+          — not loading? Open it directly there instead.
+        </p>
+      </motion.div>
 
       <motion.div
         initial="hidden"
