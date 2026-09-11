@@ -142,7 +142,7 @@ export default function InternFamilyScene({ title, subtitle, ctaHref, ctaLabel }
         staked !== null
           ? { label: "$INTERN staked right now", value: staked }
           : null,
-      href: "/video-credits",
+      href: "/synapse",
     },
   ];
 

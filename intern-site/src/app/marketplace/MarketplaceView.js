@@ -39,9 +39,9 @@ const INTERNS = [
     role: "Research Intern",
     icon: "/personas/synapse-icon.png",
     status: "NEW",
-    body: "The newest hire. Maps things nobody asked it to map — burn history, staking flow, holder activity — as a literal connectome. The video-avatar option is live today via video credits; the live on-site data-connectome view is being built next.",
-    fee: "Free to use as a video-credit avatar today — the connectome dashboard has no fee planned",
-    href: "/video-credits",
+    body: "The newest hire. Maps burn history, staking flow, and (once there's an indexer) holder activity as a literal connectome — v1 is live now, real numbers, no fee.",
+    fee: "Free — the connectome view has no fee planned, and the video-credit avatar option is free within your tier",
+    href: "/synapse",
   },
   {
     name: "Perky",
