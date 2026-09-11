@@ -57,15 +57,23 @@ export default function AnnouncementBar() {
 
   return (
     <Link href={CAMPAIGN.href} className="block group">
-      <div className="relative px-6 py-2.5 bg-[var(--color-ember)]/[0.08] border-b border-[var(--color-ember)]/25 hover:bg-[var(--color-ember)]/[0.13] transition-colors">
+      {/* Fixed dark regardless of theme, same reasoning as Nav.js -- this
+          bar sits directly above it, which sits directly above a
+          SpaceField-backed hero on every page that has one. A
+          theme-following bg here would reopen the exact seam Nav.js's
+          own comment documents, one row higher. */}
+      <div
+        className="relative px-6 py-2.5 border-b border-[#D9A441]/25 hover:bg-white/[0.04] transition-colors"
+        style={{ backgroundColor: "rgba(217,164,65,0.08)" }}
+      >
         <div className="max-w-6xl mx-auto w-full flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center pr-6">
-          <span className="font-mono text-[10px] text-[var(--color-ember)] tracking-widest border border-[var(--color-ember)]/40 rounded-full px-2 py-0.5 shrink-0">
+          <span className="font-mono text-[10px] text-[#D9A441] tracking-widest border border-[#D9A441]/40 rounded-full px-2 py-0.5 shrink-0">
             {CAMPAIGN.noCountdown ? "UPDATE" : left === 1 ? "LAST DAY" : `${left} DAYS LEFT`}
           </span>
-          <span className="text-sm text-[var(--color-fg)]">
+          <span className="text-sm text-[var(--color-space-fg)]">
             <strong className="font-semibold">{CAMPAIGN.label}</strong> — {CAMPAIGN.copy}
           </span>
-          <span className="font-mono text-xs text-[var(--color-ember)] group-hover:underline shrink-0">
+          <span className="font-mono text-xs text-[#D9A441] group-hover:underline shrink-0">
             See the rules →
           </span>
         </div>
@@ -73,7 +81,7 @@ export default function AnnouncementBar() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)] hover:text-[var(--color-fg)] p-1.5 rounded-md hover:bg-[var(--color-fg)]/[0.06] transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-space-muted)] hover:text-[var(--color-space-fg)] p-1.5 rounded-md hover:bg-white/[0.08] transition-colors"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
             <path d="M1.5 1.5L10.5 10.5M10.5 1.5L1.5 10.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />

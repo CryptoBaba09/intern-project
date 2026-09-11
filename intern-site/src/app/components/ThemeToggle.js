@@ -15,7 +15,7 @@ export default function ThemeToggle({ className = "" }) {
       onClick={toggleTheme}
       aria-label={isLight ? "Switch to dark mode" : "Switch to light mode"}
       title={isLight ? "Switch to dark mode" : "Switch to light mode"}
-      className={`text-[var(--color-fg)] p-2 rounded-lg hover:bg-[var(--color-fg)]/[0.06] transition-colors ${className}`}
+      className={`text-[var(--color-space-fg)] p-2 rounded-lg hover:bg-white/[0.08] transition-colors ${className}`}
     >
       {isLight ? (
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>

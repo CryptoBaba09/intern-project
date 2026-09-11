@@ -8,7 +8,6 @@ import { fadeUp, staggerContainer } from "./motion";
 import ConnectWalletButton from "./ConnectWalletButton";
 import Mascot from "./Mascot";
 import ThemeToggle from "./ThemeToggle";
-import { useTheme } from "./ThemeProvider";
 
 // Burn to Create's contest window closed (see AnnouncementBar.js) -- the
 // page itself now explains that plus the Pons migration, so it's still
@@ -95,26 +94,23 @@ function PanelLink({ href, children, active, external, onClick }) {
   );
 }
 
-// Scroll-driven backdrop needs literal rgba strings for framer-motion's
-// interpolation (a CSS var can't be animated between two color stops this
-// way), so it has to know the theme explicitly rather than just reading
-// --color-bg. Kept in sync with the two token sets in globals.css.
-const SCROLL_BG = {
-  dark: ["rgba(11,12,11,0)", "rgba(11,12,11,0.85)"],
-  light: ["rgba(247,248,246,0)", "rgba(247,248,246,0.85)"],
-};
-const SCROLL_BORDER = {
-  dark: ["rgba(27,29,27,0)", "rgba(27,29,27,1)"],
-  light: ["rgba(226,229,226,0)", "rgba(226,229,226,1)"],
-};
+// Deliberately NOT theme-dependent, unlike the rest of the page: this
+// bar sits directly above SpaceField-backed hero sections (see
+// components/SpaceField.js), which paint a literal near-black canvas
+// regardless of the light/dark toggle. A theme-following transparent
+// nav used to reveal the *light-mode body background* through itself
+// at scroll top, creating a hard white-strip-over-black-hero seam --
+// a real bug, not a design choice. Fixed to the exact same fill color
+// SpaceField uses (#05060a) so the two are visually one surface, with
+// only the border still fading in on scroll as a subtle depth cue.
+const NAV_BG = "rgba(5,6,10,0.92)";
+const SCROLL_BORDER = ["rgba(255,255,255,0)", "rgba(255,255,255,0.12)"];
 
 export default function Nav() {
   const pathname = usePathname();
-  const { theme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const { scrollY } = useScroll();
-  const background = useTransform(scrollY, [0, 80], SCROLL_BG[theme]);
-  const borderColor = useTransform(scrollY, [0, 80], SCROLL_BORDER[theme]);
+  const borderColor = useTransform(scrollY, [0, 80], SCROLL_BORDER);
 
   // The dropdown panel needs to open right below this bar's actual
   // bottom edge, not a hardcoded pixel guess -- AnnouncementBar.js sits
@@ -154,13 +150,13 @@ export default function Nav() {
     <>
       <motion.nav
         ref={navRef}
-        style={{ backgroundColor: background, borderColor }}
+        style={{ backgroundColor: NAV_BG, borderColor }}
         className="sticky top-0 z-50 w-full border-b backdrop-blur-md"
       >
         <div className="px-6 py-4 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <Mascot className="w-7 h-7" />
-            <span className="font-mono text-sm tracking-widest text-[var(--color-fg)]">
+            <span className="font-mono text-sm tracking-widest text-[var(--color-space-fg)]">
               $INTERN
             </span>
           </Link>
@@ -175,7 +171,7 @@ export default function Nav() {
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
-              className="text-[var(--color-fg)] p-2 -mr-2 rounded-lg hover:bg-[var(--color-fg)]/[0.06] transition-colors"
+              className="text-[var(--color-space-fg)] p-2 -mr-2 rounded-lg hover:bg-white/[0.08] transition-colors"
             >
               <MenuIcon open={menuOpen} />
             </button>
