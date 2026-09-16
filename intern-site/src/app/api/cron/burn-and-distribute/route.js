@@ -12,14 +12,14 @@
 // intern-burn-bot/lib/) but runs it as a scheduled serverless
 // invocation on infrastructure this project already deploys to.
 //
-// Two more real, on-chain fixes are required before this can actually
-// distribute anything, verified 2026-09-16 (not assumed):
-//   1. InternStakingRewards' owner must be BOT_PRIVATE_KEY's address --
-//      it currently is not, so notifyRewardAmount() would revert.
-//   2. Pons's creatorFeeRecipient for $INTERN must be BOT_PRIVATE_KEY's
-//      address -- it currently is not (it's the deploying wallet), so
-//      claim() would find nothing to withdraw even after fees exist in
-//      escrow. See docs/burn-bot-cron-migration.md.
+// BOT_PRIVATE_KEY must be 0x163c267e80f02e849fe2982affcfe0810347a3bf's
+// key -- NOT the key in intern-burn-bot/.env, which is the wrong
+// wallet. That address is already Pons's creatorFeeRecipient for
+// $INTERN and already the owner of InternStakingRewards /
+// InternRewardsRouter, so running as it needs zero on-chain
+// transferOwnership/transferCreatorFeeRecipient calls -- an earlier
+// plan proposed exactly those and was superseded once this simpler
+// fix was confirmed. Full history in docs/burn-bot-cron-migration.md.
 //
 // Vercel Cron sends a GET request with an Authorization header set to
 // `Bearer ${CRON_SECRET}` (the same env var configured in
