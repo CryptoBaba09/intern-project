@@ -11,7 +11,14 @@ import AnimatedNumber from "./components/AnimatedNumber";
 import InternFamilyScene from "./components/InternFamilyScene";
 import { Reveal, fadeUp, staggerContainer } from "./components/motion";
 import { formatNumber } from "./lib/format";
-import { CONTRACTS, DEAD_ADDRESS, isStakingLive, isTradingLive } from "./lib/chain";
+import {
+  CONTRACTS,
+  DEAD_ADDRESS,
+  isStakingLive,
+  isTradingLive,
+  isRewardsRouterLive,
+  REWARD_TARGET_ASSETS,
+} from "./lib/chain";
 import { ERC20_ABI, STAKING_REWARDS_ABI } from "./lib/abis";
 
 const LAUNCH_SUPPLY = 1_000_000_000;
@@ -285,7 +292,7 @@ function HowItWorks() {
     {
       n: "03",
       title: "Stakers earn the rest, or it burns too",
-      body: "20% streams to whoever's staking $INTERN, in BE, pro-rata and time-weighted — or joins the burn if nobody's staked yet. 10% funds treasury.",
+      body: "20% streams to whoever's staking $INTERN, in BE, pro-rata and time-weighted — or joins the burn if nobody's staked yet. 10% funds treasury. Choose to convert that BE into real TSLA, NVDA, or SPCX — see below.",
     },
   ];
   return (
@@ -317,6 +324,69 @@ function HowItWorks() {
           </motion.div>
         ))}
       </motion.div>
+    </section>
+  );
+}
+
+// Surfaces the live convert() flow (see RewardChoicePreview.js on /stake)
+// right on the homepage -- deployed and audited (Slither + manual review)
+// same day this section was added, so gated on isRewardsRouterLive()
+// rather than hardcoded true: if the env var ever goes unset again, this
+// section quietly disappears instead of claiming something that isn't
+// live, same discipline every other "LIVE" tag on this site follows.
+function RewardChoiceTeaser() {
+  if (!isRewardsRouterLive()) return null;
+  const stockAssets = REWARD_TARGET_ASSETS.filter((a) => !a.isDefault);
+
+  return (
+    <section className="px-6 py-20 max-w-6xl mx-auto w-full">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+        <div>
+          <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
+            NEW · LIVE
+          </Reveal>
+          <Reveal as="h2" delay={0.05} className="text-3xl sm:text-4xl font-semibold max-w-xl">
+            Interns work for you. You get paid how you want.
+          </Reveal>
+        </div>
+        <Reveal delay={0.1}>
+          <Link
+            href="/stake"
+            className="font-mono text-sm text-[var(--color-accent)] hover:underline whitespace-nowrap"
+          >
+            CHOOSE YOUR REWARD →
+          </Link>
+        </Reveal>
+      </div>
+      <Reveal delay={0.15}>
+        <div className="border border-[var(--color-line)] rounded-2xl p-8 sm:p-10">
+          <p className="text-[var(--color-muted)] text-lg leading-relaxed mb-8 max-w-2xl">
+            Stake $INTERN, earn BE — same as always. Now you can convert
+            that BE into real, tokenized Tesla, NVIDIA, or SpaceX shares,
+            one click, straight to your wallet. $INTERN don&apos;t get
+            equity. They get burned. You get to choose what you get paid
+            in.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {stockAssets.map((asset) => (
+              <span
+                key={asset.symbol}
+                className="font-mono text-sm text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-full px-4 py-2"
+              >
+                {asset.symbol} · {asset.name}
+              </span>
+            ))}
+            <span className="font-mono text-sm text-[var(--color-muted)] border border-[var(--color-line)] rounded-full px-4 py-2">
+              + BE, or hold as-is
+            </span>
+          </div>
+          <p className="font-mono text-[11px] text-[var(--color-muted-2)] mt-6">
+            Real Uniswap V3 route, real slippage protection, real contract
+            — more assets get added as real onchain liquidity for them
+            exists.
+          </p>
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -435,6 +505,7 @@ export default function HomeView() {
       <Hero />
       <TrustStrip />
       <HowItWorks />
+      <RewardChoiceTeaser />
       <MeetTheInterns />
       <QuickLinks />
       <FinalCta />
