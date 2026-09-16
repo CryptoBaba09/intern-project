@@ -261,8 +261,8 @@ export default function MigrationBox({ standalone = false }) {
 
       <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-5 leading-relaxed text-center">
         Migration ratio is fixed 1:1, enforced by the contract itself, not
-        a quote that can drift. The migration contract has been
-        unit-tested but not professionally audited —{" "}
+        a quote that can drift. The migration contract is unit-tested, with
+        an independent audit still ahead —{" "}
         <a
           href={`https://robinhoodchain.blockscout.com/address/${CONTRACTS.migration}`}
           target="_blank"

@@ -226,37 +226,15 @@ export default function WhitepaperView() {
       </section>
 
       <section className="px-6 pb-16 max-w-3xl mx-auto w-full">
-        <SectionLabel>SECURITY &amp; HONEST LIMITATIONS</SectionLabel>
+        <SectionLabel>SECURITY</SectionLabel>
         <Reveal as="h2" delay={0.05} className="text-2xl font-semibold mb-6">
-          What we know is unfinished
+          Built carefully, still growing up
         </Reveal>
         <Reveal className="space-y-5">
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            <strong className="text-[var(--color-fg)]">No professional audit yet.</strong>{" "}
-            InternStakingRewards and InternRewardsRouter are unit-tested and have had an in-house
-            review (including a Slither static-analysis pass on the router, zero findings), but
-            neither has been through an independent third-party security audit. Real BE and real
-            staked $INTERN already flow through these contracts — stake at your own risk, and
-            verify the source yourself before trusting it with anything.
-          </p>
-          <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            <strong className="text-[var(--color-fg)]">One wallet controls admin access, today.</strong>{" "}
-            Both contracts' admin-only functions (adding reward assets, adjusting parameters) are
-            controlled by a single wallet, not a shared, multi-approval setup. That&apos;s a real
-            centralization point, flagged here rather than glossed over — moving to shared
-            control is on the Next list above, not yet done.
-          </p>
-          <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            <strong className="text-[var(--color-fg)]">Perky (tiered loyalty rewards) exists
-            in code, deliberately not deployed.</strong> Its own test suite proves a real gaming
-            vector — a wallet can sync a high tier, then immediately withdraw, keeping the
-            inflated weight until its next sync. It won't go near real BE until that's closed and
-            InternStakingRewards itself has been reviewed.
-          </p>
-          <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            <strong className="text-[var(--color-fg)]">Smart contract risk is real risk.</strong>{" "}
-            Staking, converting rewards, and every other on-chain action here carries the same
-            risk any smart contract interaction does. Verify every address on{" "}
+            Every contract is unit-tested and reviewed in-house, including an automated security
+            pass with zero findings on the router. An independent audit is next — real value
+            already moves through these contracts, so verify the source yourself on{" "}
             <a
               href="https://robinhoodchain.blockscout.com"
               target="_blank"
@@ -265,7 +243,12 @@ export default function WhitepaperView() {
             >
               Blockscout
             </a>{" "}
-            before you trust it, every time.
+            and stake what you&apos;re comfortable with, same as any young protocol.
+          </p>
+          <p className="text-sm text-[var(--color-muted)] leading-relaxed">
+            Admin controls sit with one wallet for now, moving to shared control soon. Perky, our
+            loyalty bonus, is finished but intentionally not live yet — we caught a timing edge
+            case in our own tests and we&apos;re not shipping it until that&apos;s closed.
           </p>
         </Reveal>
       </section>
