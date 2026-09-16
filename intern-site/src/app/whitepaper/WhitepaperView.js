@@ -69,7 +69,7 @@ const ROADMAP_PHASES = [
       "Choose your reward, Phase 2 — open the target-asset list to any token with real onchain liquidity, not just an owner-curated three",
       "A standing reward preference, so future claims land pre-converted instead of a manual step every time",
       "Independent professional security review of InternStakingRewards and InternRewardsRouter",
-      "Multisig ownership for both contracts, replacing today's single-EOA owner",
+      "Shared, multi-approval control over both contracts' admin functions, instead of one wallet holding that access alone",
     ],
   },
   {
@@ -240,11 +240,11 @@ export default function WhitepaperView() {
             verify the source yourself before trusting it with anything.
           </p>
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            <strong className="text-[var(--color-fg)]">Single-EOA ownership, today.</strong> Both
-            contracts' owner-only functions (adding reward assets, adjusting parameters) are
-            controlled by a single wallet, not a multisig. That's a real centralization point,
-            flagged here rather than glossed over — moving to a multisig is on the Next list
-            above, not yet done.
+            <strong className="text-[var(--color-fg)]">One wallet controls admin access, today.</strong>{" "}
+            Both contracts' admin-only functions (adding reward assets, adjusting parameters) are
+            controlled by a single wallet, not a shared, multi-approval setup. That&apos;s a real
+            centralization point, flagged here rather than glossed over — moving to shared
+            control is on the Next list above, not yet done.
           </p>
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
             <strong className="text-[var(--color-fg)]">Perky (tiered loyalty rewards) exists
