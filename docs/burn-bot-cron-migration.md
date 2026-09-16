@@ -96,6 +96,21 @@ plan:
    to confirm the logs look sane before flipping it.
 4. Do **not** run `intern-burn-bot` (`npm start`) at the same time as this
    route once it's live — see that project's own README.
-5. Double check Vercel's actual Cron frequency limits for this project's
-   plan tier before trusting `vercel.json`'s `0 * * * *` (hourly) --
-   adjust the schedule there if the plan caps it lower.
+5. **Confirmed 2026-09-16: this was the actual reason nothing ever ran.**
+   Hobby plan caps Cron Jobs at once/day -- `vercel.json`'s original
+   `0 * * * *` (hourly) silently failed Vercel's Git-integration
+   auto-deploy on every push since the schedule was added, so production
+   kept serving an older build with no `/api/cron` route at all (a 404 on
+   every hit, confirmed via a manual dry-run curl). Fixed by changing the
+   schedule to `0 0 * * *` (once daily, midnight UTC) and deploying that
+   commit directly via Vercel's "Create Deployment" (branch/commit
+   picker).
+
+   **Gotcha for next time:** Vercel's "Redeploy" button does *not* pull
+   the latest commit -- its own dialog says so ("the same source code as
+   your current one"). It only reruns the exact snapshot the current
+   production deployment was already built from, refreshed with the
+   latest env vars/settings. Two Redeploys after setting the router env
+   var and the bot secrets both silently rebuilt the same stale
+   pre-cron-route commit; the fix only landed once "Create Deployment"
+   was pointed explicitly at `main`'s real tip.
