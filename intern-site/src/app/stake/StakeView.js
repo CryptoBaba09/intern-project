@@ -96,7 +96,7 @@ function ConnectPrompt() {
   );
 }
 
-function TxStatusBanner({ pendingLabel, txHash, isConfirming, isConfirmed, error }) {
+function TxStatusBanner({ pendingLabel, confirmedLabel, txHash, isConfirming, isConfirmed, error }) {
   if (!txHash && !error) return null;
   return (
     <div
@@ -112,7 +112,7 @@ function TxStatusBanner({ pendingLabel, txHash, isConfirming, isConfirmed, error
         {error
           ? error.shortMessage || error.message || "Transaction failed."
           : isConfirmed
-            ? "Confirmed."
+            ? confirmedLabel || "Confirmed."
             : isConfirming
               ? `${pendingLabel} — confirming…`
               : "Waiting for wallet confirmation…"}
@@ -214,16 +214,34 @@ function StakeDashboard() {
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({ hash: txHash });
 
+  // Which action is actually in flight -- "approve" | "stake" | "withdraw" |
+  // "claim" | "exit". writeContract/txHash/isConfirmed are shared across all
+  // five actions on this page, so without tracking this separately, a
+  // confirmed *approval* is indistinguishable from a confirmed *stake* --
+  // real bug found 2026-09-16 (user report): approving fired the confetti
+  // burst and a bare "Confirmed." banner as if staking had happened, when
+  // approve() moves nothing -- the actual stake() (the transaction that
+  // transfers the asset) still hadn't been sent yet.
+  const [pendingAction, setPendingAction] = useState(null);
+  const isRealMove = pendingAction && pendingAction !== "approve";
+
   useEffect(() => {
     if (isConfirmed) {
       refetch();
-      setStakeAmount("");
-      setWithdrawAmount("");
+      // Only clear the typed amount once it's actually been staked/
+      // withdrawn -- clearing it right after a mere approval wiped out
+      // the number the user still needs for the STAKE click that follows.
+      if (isRealMove) {
+        setStakeAmount("");
+        setWithdrawAmount("");
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConfirmed, refetch]);
 
   function switchMode(next) {
     setMode(next);
+    setPendingAction(null);
     reset();
   }
 
@@ -248,6 +266,7 @@ function StakeDashboard() {
   const busy = isPending || isConfirming;
 
   function handleApprove() {
+    setPendingAction("approve");
     writeContract({
       address: CONTRACTS.internToken,
       abi: ERC20_ABI,
@@ -257,6 +276,7 @@ function StakeDashboard() {
   }
 
   function handleStake() {
+    setPendingAction("stake");
     writeContract({
       address: CONTRACTS.distributor,
       abi: STAKING_REWARDS_ABI,
@@ -266,6 +286,7 @@ function StakeDashboard() {
   }
 
   function handleWithdraw() {
+    setPendingAction("withdraw");
     writeContract({
       address: CONTRACTS.distributor,
       abi: STAKING_REWARDS_ABI,
@@ -275,6 +296,7 @@ function StakeDashboard() {
   }
 
   function handleClaim() {
+    setPendingAction("claim");
     writeContract({
       address: CONTRACTS.distributor,
       abi: STAKING_REWARDS_ABI,
@@ -283,6 +305,7 @@ function StakeDashboard() {
   }
 
   function handleExit() {
+    setPendingAction("exit");
     writeContract({
       address: CONTRACTS.distributor,
       abi: STAKING_REWARDS_ABI,
@@ -292,7 +315,10 @@ function StakeDashboard() {
 
   return (
     <section className="px-6 pt-16 pb-24 max-w-4xl mx-auto w-full">
-      <Confetti burstKey={isConfirmed ? txHash : null} />
+      {/* Confetti only fires for a transaction that actually moved or paid
+          out $INTERN/BE -- never for a plain approve(), which transfers
+          nothing. */}
+      <Confetti burstKey={isConfirmed && isRealMove ? txHash : null} />
       <div className="flex items-start justify-between gap-4 mb-3">
         <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest">
           STAKE
@@ -354,7 +380,28 @@ function StakeDashboard() {
       </div>
 
       <TxStatusBanner
-        pendingLabel={needsApproval ? "Approving" : mode === "stake" ? "Staking" : "Unstaking"}
+        pendingLabel={
+          pendingAction === "approve"
+            ? "Approving"
+            : pendingAction === "stake"
+              ? "Staking"
+              : pendingAction === "withdraw"
+                ? "Unstaking"
+                : pendingAction === "claim"
+                  ? "Claiming BE"
+                  : "Exiting"
+        }
+        confirmedLabel={
+          pendingAction === "approve"
+            ? "Approved — click STAKE below to actually stake it."
+            : pendingAction === "stake"
+              ? "Staked."
+              : pendingAction === "withdraw"
+                ? "Unstaked."
+                : pendingAction === "claim"
+                  ? "BE claimed."
+                  : "Exited — unstaked and claimed BE."
+        }
         txHash={txHash}
         isConfirming={isConfirming}
         isConfirmed={isConfirmed}
