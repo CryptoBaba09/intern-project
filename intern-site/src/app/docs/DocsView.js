@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
 
@@ -77,6 +78,14 @@ export default function DocsView() {
           Chain — click through to Blockscout and read the source before
           you trust it with anything.
         </Reveal>
+        <Reveal delay={0.15} className="mt-6">
+          <Link
+            href="/whitepaper"
+            className="font-mono text-sm text-[var(--color-accent)] hover:underline"
+          >
+            Read the full whitepaper →
+          </Link>
+        </Reveal>
       </section>
 
       <section className="px-6 pb-16 max-w-4xl mx-auto w-full">
@@ -97,8 +106,9 @@ export default function DocsView() {
         <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-sm leading-relaxed mb-6 max-w-2xl">
           $INTERN v2 is live on Pons, paired against ETH — migrated off
           v1/Pair.fund on 2026-09-10 after Pair.fund's trading route broke
-          for days. Every address below is real; InternStakingRewards is
-          listed as not-yet-deployed rather than pointed at a guess.
+          for days. Every address below is real and deployed; where
+          something hasn't had a professional security review yet, that's
+          disclosed next to the address instead of hidden.
         </Reveal>
         <Reveal>
           <InfoTable rows={CONTRACT_ROWS} />
