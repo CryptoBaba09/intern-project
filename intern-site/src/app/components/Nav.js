@@ -25,6 +25,7 @@ const CATEGORIES = [
     label: "$INTERN",
     items: [
       { href: "/marketplace", label: "Meet the Crew" },
+      { href: "/roster", label: "Roster Call" },
       { href: "/personas", label: "Personas" },
       { href: "/video-credits", label: "Video Credits" },
       { href: "/burn-to-create", label: "Burn to Create" },

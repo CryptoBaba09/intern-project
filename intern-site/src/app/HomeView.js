@@ -415,6 +415,14 @@ function MeetTheInterns() {
       <Reveal delay={0.15}>
         <InternFamilyScene ctaHref="/marketplace" ctaLabel="see the full roster →" />
       </Reveal>
+      <Reveal delay={0.2} className="text-center mt-6">
+        <Link
+          href="/roster"
+          className="font-mono text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
+        >
+          Got an idea for intern #5? Pitch it →
+        </Link>
+      </Reveal>
     </section>
   );
 }
