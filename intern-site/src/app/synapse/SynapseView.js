@@ -161,7 +161,7 @@ function HowItWorks() {
     {
       n: "01",
       title: "Read the chain",
-      body: "Burned and staked totals come straight from balanceOf() and totalStaked() -- the same reads every other page on this site already uses, not a second copy.",
+      body: "Burned and staked totals are read live from the same chain data every other page on this site already uses -- not a separate copy.",
     },
     {
       n: "02",
