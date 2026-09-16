@@ -18,6 +18,7 @@ import Confetti from "../components/Confetti";
 import TierPath from "../components/TierPath";
 import Badges from "../components/Badges";
 import PerkyPreview from "../components/PerkyPreview";
+import RewardChoicePreview from "../components/RewardChoicePreview";
 import StreakBadge from "../components/StreakTracker";
 import MigrationBox from "../components/MigrationBox";
 
@@ -375,8 +376,11 @@ function StakeDashboard() {
         <TierPath staked={stakedNum} />
         <Badges balance={balanceNum} staked={stakedNum} earned={earnedNum} />
       </div>
-      <div className="mb-10">
+      <div className="mb-4">
         <PerkyPreview staked={stakedNum} />
+      </div>
+      <div className="mb-10">
+        <RewardChoicePreview />
       </div>
 
       <TxStatusBanner
