@@ -32,18 +32,30 @@ function ManyHats() {
     },
     {
       n: "05",
+      title: "Choose your reward",
+      body: "Convert claimed BE into real TSLA, NVDA, or SPCX, one click — live now. Phase 2: any asset with real onchain liquidity, not just a curated three.",
+      status: "LIVE",
+    },
+    {
+      n: "06",
+      title: "Roster Call",
+      body: "Pitch the next intern persona. Real submissions, real database — treasury pays chosen ideas in $INTERN by hand, no automatic payout yet.",
+      status: "LIVE",
+    },
+    {
+      n: "07",
       title: "Resource-sharing rewards",
       body: "A future phase rewarding holders for contributing resources they aren't using.",
       status: "EXPLORING",
     },
     {
-      n: "06",
+      n: "08",
       title: "Inference credit key",
       body: "Burn $INTERN for an instant OpenRouter credit top-up — live now. Staking into a shared credit pool is still in design.",
       status: "TOP-UP LIVE",
     },
     {
-      n: "07",
+      n: "09",
       title: "Custom-build currency",
       body: "10,000 $INTERN burned once to launch your own custom intern, plus a staking minimum to keep it live.",
       status: "IN DESIGN",
@@ -120,6 +132,23 @@ function Protocol() {
       body: "Burn $INTERN for an instant OpenRouter credit top-up — live today. Staked $INTERN earning a pro-rata share of a treasury-funded credit pool is still in design.",
       status: "TOP-UP LIVE",
       href: "/inference-credits",
+    },
+    {
+      title: "Choose your reward",
+      body: "Convert BE claimed from staking into real, tokenized TSLA, NVDA, or SPCX — one approval, one swap, straight to your wallet. Real Uniswap V3 route, real slippage protection.",
+      status: "LIVE",
+      href: "/stake",
+    },
+    {
+      title: "Choose your reward, Phase 2",
+      body: "Today the target-asset list is owner-curated (three stocks plus BE) — safe, but limited. Phase 2 opens it to any asset with real onchain liquidity as Pons/pools.trade list more tokenized stocks, and explores a standing preference (pick once, every future claim lands pre-converted) instead of converting by hand each time.",
+      status: "EXPLORING",
+    },
+    {
+      title: "Roster Call",
+      body: "The community pitches new intern personas — real submissions, stored and read. Treasury reviews and pays chosen ideas in $INTERN by hand from the treasury wallet; no automatic selection or on-chain payout yet.",
+      status: "LIVE",
+      href: "/roster",
     },
     {
       title: "Custom intern builds",

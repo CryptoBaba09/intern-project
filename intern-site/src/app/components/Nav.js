@@ -37,6 +37,7 @@ const CATEGORIES = [
     items: [
       { href: "/tokenomics", label: "Tokenomics" },
       { href: "/roadmap", label: "Roadmap" },
+      { href: "/whitepaper", label: "Whitepaper" },
       { href: "/docs", label: "Docs" },
     ],
   },
