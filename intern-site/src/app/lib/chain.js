@@ -26,11 +26,14 @@ export const robinhoodChain = defineChain({
 // page using isStakingLive() checks for that and shows a "not live yet"
 // state instead of calling contract methods against a garbage address.
 //
-// PAIR-specific trade infrastructure (aggregator/v4Quoter/beToken) is
+// PAIR-specific trade infrastructure (the old aggregator/v4Quoter) is
 // gone -- v2 doesn't trade through a locked Uniswap V4 pool we can call
-// directly (see lib/pools.js), so there's nothing for those addresses
-// to point at anymore. /trade links out to Pons instead of executing
-// swaps in-house.
+// directly (see lib/pools.js), so there's nothing for those two
+// addresses to point at anymore. /trade links out to Pons instead of
+// executing swaps in-house. beToken and usdgToken below are a separate,
+// newer thing -- real addresses RewardChoicePreview.js needs for its
+// own Uniswap V3 quote/convert flow (see InternRewardsRouter.sol), not
+// PAIR-related at all.
 export const CONTRACTS = {
   internToken:
     process.env.NEXT_PUBLIC_INTERN_TOKEN_ADDRESS ||
@@ -55,7 +58,62 @@ export const CONTRACTS = {
   migration:
     process.env.NEXT_PUBLIC_MIGRATION_ADDRESS ||
     "0x3bADCd1DeE2c0213EBdA77c3D243826ABFbeFa89",
+  // InternRewardsRouter -- Phase 1 of letting a staker convert claimed
+  // BE into a real Robinhood Stock Token. Deliberately NO hardcoded
+  // fallback, unlike every address above: this contract genuinely
+  // isn't deployed yet (unit-tested, not audited -- see
+  // docs/rewards-router-spec.md), so leaving this unset is what keeps
+  // RewardChoicePreview.js rendering its honest, non-interactive
+  // preview instead of a real convert() flow. Only set this once a
+  // real deployment exists and the audit gate has actually been
+  // cleared -- see contracts/scripts/deploy-rewards-router-direct.js.
+  rewardsRouter: process.env.NEXT_PUBLIC_REWARDS_ROUTER_ADDRESS || null,
+  // BE's own token address -- genuinely never wired up before now (see
+  // the 2026-09-11 investigation into why /stake's "beToken" reads
+  // always came back undefined: NEXT_PUBLIC_BE_TOKEN_ADDRESS had never
+  // been set in production). Harmless until now only because BE's
+  // real decimals (18) happen to match useTokenDecimals' fallback --
+  // but RewardChoicePreview's real convert() flow needs the actual
+  // address to read balances/quotes, not just decimals, so fixing it
+  // here rather than letting a second feature quietly depend on the
+  // same gap. Confirmed against docs.robinhood.com/chain/contracts.
+  beToken:
+    process.env.NEXT_PUBLIC_BE_TOKEN_ADDRESS ||
+    "0x822CC93fFD030293E9842c30BBD678F530701867",
+  // USDG -- the shared quote currency every Robinhood Stock Token pool
+  // is denominated in. Real, deployed, confirmed against
+  // docs.robinhood.com/chain/contracts -- fine to hardcode, this site
+  // doesn't own or deploy it, same as beToken above.
+  usdgToken:
+    process.env.NEXT_PUBLIC_USDG_TOKEN_ADDRESS ||
+    "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
 };
+
+// Real, deployed Robinhood Stock Token addresses (confirmed against
+// docs.robinhood.com/chain/contracts, the official on-chain asset
+// registry, 2026-09-16) -- these exist and trade today regardless of
+// whether InternRewardsRouter itself is deployed. Fine to hardcode:
+// unlike rewardsRouter above, this site doesn't own or deploy these,
+// it only ever reads/targets them once the router is live.
+export const REWARD_TARGET_ASSETS = [
+  { symbol: "BE", name: "Bloom Energy", address: CONTRACTS.beToken, isDefault: true },
+  { symbol: "TSLA", name: "Tesla", address: "0x322F0929c4625eD5bAd873c95208D54E1c003b2d" },
+  { symbol: "NVDA", name: "NVIDIA", address: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC" },
+  { symbol: "SPCX", name: "SpaceX", address: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa" },
+];
+
+export function isRewardsRouterLive() {
+  return Boolean(CONTRACTS.rewardsRouter);
+}
+
+// Same live Uniswap V3 infra intern-burn-bot/lib/swapEthForBe.js and
+// InternRewardsRouter.sol both already point at -- confirmed against
+// live chain state 2026-09-16, not guessed. QUOTER_V2_ADDRESS is for
+// read-only quotes only (never a real swap); BE_USDG_FEE is the real
+// BE/USDG pool's fee tier, matching InternRewardsRouter's own
+// immutable beUsdgFee at deployment.
+export const QUOTER_V2_ADDRESS = "0x33e885eD0Ec9bF04EcfB19341582aADCb4c8A9E7";
+export const BE_USDG_FEE = 3000;
 
 // Fallback only -- MigrationBox reads claimDeadline() live from the
 // contract itself. Recorded here as a sanity check: decoded 2026-09-11

@@ -153,6 +153,57 @@ export const MIGRATION_ABI = [
   },
 ];
 
+// InternRewardsRouter -- Phase 1 of letting a staker convert claimed BE
+// into a real Robinhood Stock Token (contracts/contracts/
+// InternRewardsRouter.sol). Not verified on Blockscout once deployed
+// (same as InternMigration), so hand-written from source.
+export const REWARDS_ROUTER_ABI = [
+  {
+    type: "function",
+    name: "targetFee",
+    stateMutability: "view",
+    inputs: [{ name: "asset", type: "address" }],
+    outputs: [{ type: "uint24" }],
+  },
+  {
+    type: "function",
+    name: "convert",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "targetAsset", type: "address" },
+      { name: "beAmount", type: "uint256" },
+      { name: "minAmountOut", type: "uint256" },
+    ],
+    outputs: [{ name: "amountOut", type: "uint256" }],
+  },
+];
+
+// Uniswap V3's QuoterV2 -- the same live deployment
+// intern-burn-bot/lib/swapEthForBe.js already calls for its own
+// single-hop quote. quoteExactInput is the multi-hop variant this site
+// needs for a BE -> USDG -> target quote (RewardChoicePreview.js
+// encodes the same packed-path format InternRewardsRouter.sol uses).
+// Marked nonpayable despite being read-only for the same reason
+// V4_QUOTER_ABI below is: it's meant to be called via eth_call /
+// wagmi's simulate, not a real transaction.
+export const QUOTER_V2_ABI = [
+  {
+    type: "function",
+    name: "quoteExactInput",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "path", type: "bytes" },
+      { name: "amountIn", type: "uint256" },
+    ],
+    outputs: [
+      { name: "amountOut", type: "uint256" },
+      { name: "sqrtPriceX96AfterList", type: "uint160[]" },
+      { name: "initializedTicksCrossedList", type: "uint32[]" },
+      { name: "gasEstimate", type: "uint256" },
+    ],
+  },
+];
+
 // PairV5MultiPoolAggregator -- PAIR's own permissionless swap-execution
 // contract (the exact one their site's AUTO buy/sell uses), pulled verbatim
 // from Blockscout's verified ABI at 0x9d7741776098aFA315e4D576ede4F2c67a21d8Ce
