@@ -1,0 +1,144 @@
+const { ethers } = require("ethers");
+const { swapEthForBe } = require("./swapEthForBe");
+
+const DISTRIBUTOR_ABI = [
+  "function totalStaked() view returns (uint256)",
+  "function notifyRewardAmount(uint256 amount)",
+];
+
+const ERC20_ABI = [
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+];
+
+/**
+ * Splits claimed ETH per config.{burn,distribution,treasury}Percent --
+ * EXCEPT the distribution cut folds into burn instead of sitting idle
+ * whenever nobody is staked yet (confirmed by the user as the intended
+ * policy: money owed to stakers-that-don't-exist shouldn't wait around
+ * doing nothing, it should keep burning until stakers show up). Checked
+ * fresh every cycle via distributor.totalStaked() -- if stakers appear
+ * later, later cycles automatically go back to the normal three-way
+ * split without any config change.
+ *
+ * Returns { burnEth, distributionEth, treasuryEth, distributeToStakers }
+ * rather than performing every transfer itself, same separation-of-
+ * concerns v1's computeSplit had.
+ */
+async function computeSplit({ config, totalEth, distributor }) {
+  let totalStaked = 0n;
+  let distributeToStakers = false;
+
+  if (config.distributorAddress) {
+    try {
+      totalStaked = await distributor.totalStaked();
+      distributeToStakers = totalStaked > 0n;
+    } catch (err) {
+      console.warn(
+        `[split] Couldn't read totalStaked() from ${config.distributorAddress} ` +
+          `(${err.shortMessage || err.message}) -- treating as "no stakers" and folding ` +
+          "distribution into burn rather than guessing."
+      );
+    }
+  } else {
+    console.log("[split] No distributor configured -- folding distribution into burn.");
+  }
+
+  const effectiveBurnPercent = distributeToStakers
+    ? config.burnPercent
+    : config.burnPercent + config.distributionPercent;
+  const effectiveDistributionPercent = distributeToStakers ? config.distributionPercent : 0;
+
+  const burnEth = (totalEth * BigInt(effectiveBurnPercent)) / 100n;
+  const distributionEth = (totalEth * BigInt(effectiveDistributionPercent)) / 100n;
+  // Remainder absorbs integer-division dust so no wei silently disappears.
+  const treasuryEth = totalEth - burnEth - distributionEth;
+
+  console.log(
+    `[split] ${ethers.formatEther(totalEth)} ETH to split ` +
+      `(${distributeToStakers ? `${ethers.formatEther(totalStaked)} $INTERN staked` : "nobody staked"}) -> ` +
+      `burn ${ethers.formatEther(burnEth)} (${effectiveBurnPercent}%), ` +
+      `distribution ${ethers.formatEther(distributionEth)} (${effectiveDistributionPercent}%), ` +
+      `treasury ${ethers.formatEther(treasuryEth)} (${config.treasuryPercent}%)`
+  );
+
+  return { burnEth, distributionEth, treasuryEth, distributeToStakers };
+}
+
+/**
+ * Sends the treasury cut (plain ETH, no swap needed) and, only when
+ * stakers actually exist, converts the distribution cut to BE via a
+ * verified Uniswap V3 route (lib/swapEthForBe.js -- a real WETH/BE pool
+ * with real liquidity, independent of Pons/Pair.fund, confirmed against
+ * live chain state on 2026-09-11) and deposits it into the distributor.
+ *
+ * Treasury is sent first, same ordering as before: if the swap or the
+ * distributor deposit fails partway, only the distribution cut is left
+ * stranded in the wallet (as ETH, recoverable next cycle), not treasury
+ * too.
+ */
+async function sendDistributionAndTreasury({ wallet, config, distributionEth, treasuryEth, dryRun }) {
+  await sendEth({ wallet, config, amount: treasuryEth, to: config.treasuryAddress, label: "treasury", dryRun });
+
+  if (distributionEth > 0n) {
+    const beReceived = await swapEthForBe({ wallet, config, ethAmount: distributionEth, dryRun });
+    await notifyDistributor({ wallet, config, beAmount: beReceived, dryRun });
+  } else {
+    console.log("[split] Nothing to swap/distribute this run.");
+  }
+}
+
+async function sendEth({ wallet, config, amount, to, label, dryRun }) {
+  if (amount === 0n) {
+    console.log(`[split] Nothing to send to ${label} this run.`);
+    return;
+  }
+  if (!to) {
+    throw new Error(`No ${label} address configured, but ${ethers.formatEther(amount)} ETH is owed to it.`);
+  }
+
+  console.log(`[split] Sending ${ethers.formatEther(amount)} ETH to ${label} (${to})...`);
+  if (dryRun) {
+    console.log(`[split] DRY_RUN — skipping actual transfer to ${label}.`);
+    return;
+  }
+
+  const tx = await wallet.sendTransaction({ to, value: amount });
+  console.log(`[split] Transfer to ${label} sent: ${tx.hash}`);
+  const receipt = await tx.wait();
+  console.log(`[split] Transfer to ${label} confirmed in block ${receipt.blockNumber}`);
+}
+
+async function notifyDistributor({ wallet, config, beAmount, dryRun }) {
+  if (beAmount === 0n) {
+    console.log("[split] Nothing to send to the staking distributor this run.");
+    return;
+  }
+
+  console.log(
+    `[split] Depositing ${ethers.formatEther(beAmount)} BE into the staking distributor ` +
+      `(${config.distributorAddress})...`
+  );
+  if (dryRun) {
+    console.log("[split] DRY_RUN — skipping distributor deposit + notify.");
+    return;
+  }
+
+  const beToken = new ethers.Contract(config.beTokenAddress, ERC20_ABI, wallet);
+  const distributor = new ethers.Contract(config.distributorAddress, DISTRIBUTOR_ABI, wallet);
+
+  const allowance = await beToken.allowance(wallet.address, config.distributorAddress);
+  if (allowance < beAmount) {
+    console.log("[split] Approving distributor to pull BE...");
+    const approveTx = await beToken.approve(config.distributorAddress, ethers.MaxUint256);
+    await approveTx.wait();
+    console.log(`[split] Approval confirmed: ${approveTx.hash}`);
+  }
+
+  const tx = await distributor.notifyRewardAmount(beAmount);
+  console.log(`[split] notifyRewardAmount sent: ${tx.hash}`);
+  const receipt = await tx.wait();
+  console.log(`[split] notifyRewardAmount confirmed in block ${receipt.blockNumber}`);
+}
+
+module.exports = { computeSplit, sendDistributionAndTreasury, notifyDistributor, DISTRIBUTOR_ABI };

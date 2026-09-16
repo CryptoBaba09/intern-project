@@ -1,5 +1,27 @@
 # $INTERN Burn Bot
 
+**Superseded 2026-09-16 by `intern-site/src/app/api/cron/burn-and-distribute/`
+(a Vercel Cron route) — do not run this standalone bot (`npm start`) at the
+same time as that route.** Both would claim/distribute/burn the same cycle
+independently, racing each other. This code's own `lib/` logic was copied
+into the new route rather than rewritten; this directory is kept for
+reference and local dry-run testing, not for a live, scheduled deployment.
+Root cause of the switch: this bot's own `cron.schedule()` only works while
+its node process stays running forever, and nothing in this project ever
+deployed it as a persistent process anywhere -- confirmed by zero
+`RewardAdded`/`RewardParked` events, ever, on the live `InternStakingRewards`
+contract despite real $INTERN already staked. See
+`docs/burn-bot-cron-migration.md` for the full writeup, including two
+further on-chain fixes (contract ownership, Pons's `creatorFeeRecipient`)
+that were also required before any of this could distribute anything for
+real.
+
+The description below (PAIR, `lib/swap.js`, `lib/pairContracts.js`) is
+**stale** -- it documents the v1 setup. The actual, current v2 logic lives in
+`lib/claimFees.js` + `lib/ponsContracts.js` (Pons, not PAIR) and
+`lib/swapEthForBe.js` (a direct Uniswap V3 route, not PAIR's aggregator).
+Not rewritten below yet; flagging rather than leaving it silently wrong.
+
 Claims $INTERN's accumulated creator fees (paid in BE) from PAIR and splits
 every claim three ways — automated, on a schedule, with every transaction
 hash logged as public proof:
