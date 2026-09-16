@@ -10,11 +10,41 @@ choice of shape.
 exists and is unit-tested (`contracts/test/InternRewardsRouter.test.js`,
 against a mock swap router — Uniswap's own AMM math is out of scope for
 these tests, deliberately; they test this contract's allowlist/approval/
-recipient/slippage logic, not Uniswap's). **Not deployed** — same
-"unit-tested but not professionally audited" gate as everything else this
-site discloses before it goes live with real value. A preview showing what
-this would look like (clearly marked NOT LIVE) is on the stake page — see
-`components/RewardChoicePreview.js`.
+recipient/slippage logic, not Uniswap's). The full frontend flow
+(`components/RewardChoicePreview.js`) is built and gated behind
+`NEXT_PUBLIC_REWARDS_ROUTER_ADDRESS` — it stays as the honest NOT LIVE
+preview until that's actually set.
+
+**Security review, 2026-09-16 (in-house, not a substitute for an
+independent professional audit):**
+- Slither (Trail of Bits' static analyzer, the standard first-pass tool
+  real audit firms run) against the full contracts project, 100+
+  detectors: **zero findings on InternRewardsRouter.sol.** The 15
+  findings it did raise are all in the other, already-deployed
+  contracts, all pre-existing, low-severity, already-understood
+  patterns (timestamp comparisons, a strict-equality zero-check that's
+  the intended semantics, a cosmetic naming convention) -- nothing new,
+  nothing in this contract.
+- Manual review confirmed the owner cannot rug this contract (no
+  function pulls user funds out; `convert()` only ever moves the
+  caller's own approved BE to the caller's own wallet), that Robinhood
+  Stock Tokens' `uiMultiplier()` (ERC-8056, for splits/dividends) is
+  display-only per their own docs ("onchain swaps remain unaffected") --
+  no hidden scaling in the actual transfer/balance math -- and that none
+  of the target tokens have transfer restrictions that would block this
+  contract from holding them mid-swap (proven in practice: all three
+  already trade with $1M-$7M of real liquidity on public,
+  permissionless Uniswap V3 pools, which requires unrestricted
+  transfers to function as an AMM at all).
+- **One real, unchanged gap:** whoever is set as this contract's owner
+  at deployment should be a multisig, not a single EOA -- same finding
+  already flagged for `InternStakingRewards`'s current owner. Worth
+  deciding at deployment time rather than retrofitting later.
+
+Given this, the remaining gate before going live is a deliberate
+decision, not more code: deploy, call `setTargetAsset()` for each asset,
+and set the env var -- see
+`contracts/scripts/deploy-rewards-router-direct.js` for the exact steps.
 
 ## Why this doesn't touch `InternStakingRewards`
 
