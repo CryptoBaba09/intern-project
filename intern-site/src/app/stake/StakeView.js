@@ -505,8 +505,9 @@ function StakeDashboard() {
       <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-8 leading-relaxed max-w-2xl">
         Total $INTERN staked across all wallets: {formatToken(totalStaked, internDecimals, 0)}.
         Staking is non-custodial — this contract only holds your $INTERN
-        while staked, and only pays out BE it has actually received. It has
-        NOT had a professional security audit; stake at your own risk.
+        while staked, and only pays out BE it has actually received. An
+        independent audit is still ahead, so stake what you&apos;re
+        comfortable with.
       </p>
     </section>
   );

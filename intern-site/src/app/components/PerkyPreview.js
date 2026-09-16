@@ -64,10 +64,8 @@ export default function PerkyPreview({ staked }) {
             : "Stake 10,000+ $INTERN to see a tier here."}
       </p>
       <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-3 leading-relaxed text-center">
-        Real contract exists and is unit-tested (including a test that
-        proves its own known tier-gaming gap, not just asserts it's
-        fine) — waiting on InternStakingRewards&apos; own security audit
-        before any real BE flows through it.
+        Real contract, unit-tested — waiting on InternStakingRewards&apos;
+        own audit before any real BE flows through it.
       </p>
     </div>
   );
