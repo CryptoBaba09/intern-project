@@ -12,13 +12,12 @@ import Link from "next/link";
 // one live campaign at a time, so a config array is more machinery than
 // this needs right now.
 const CAMPAIGN = {
-  id: "migrating-to-pons-sep-2026",
-  href: "/burn-to-create",
-  start: "2026-09-11",
-  end: "2026-10-11",
-  label: "Migrating to Pons",
-  copy: "Pair.fund's trading route has been broken for days. $INTERN is moving pools — burns and prizes from Burn to Create are still honored.",
-  // This banner isn't counting down a deadline -- see badge below.
+  id: "migrate-v1-v2-sep-2026",
+  href: "/migrate",
+  start: "2026-09-16",
+  end: "2026-10-01",
+  label: "Now live on Pons",
+  copy: "$INTERN fully migrated off Pair.fund's broken route on Sep 10. Still holding v1 tokens? Migrate 1:1 before the Oct 1 deadline.",
   noCountdown: true,
 };
 

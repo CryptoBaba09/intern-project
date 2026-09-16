@@ -51,6 +51,7 @@ const CONTRACT_ROWS = [
   ["InternMigration (v1 → v2, 1:1)", "0x3bADCd1DeE2c0213EBdA77c3D243826ABFbeFa89"],
   ["InternStakingRewards (v1, paired with old token)", "0xe7804319Ea528CfED8C7908A4197EdE0ae44895a"],
   ["InternStakingRewards (v2)", "0xd73a24D7bd311E36151344E233a7e6C73369E558 — deployed, not yet security-reviewed"],
+  ["InternRewardsRouter (BE → TSLA/NVDA/SPCX)", "0x71b7863210A772F1986Ac943917dC9a65CebEAfC — Slither-reviewed + manual review, not a professional audit"],
   ["Dead / burn address", "0x000000000000000000000000000000000000dEaD"],
 ];
 

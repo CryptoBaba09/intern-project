@@ -102,10 +102,10 @@ export default function InternFamilyScene({ title, subtitle, ctaHref, ctaLabel }
       glow: "#00C805",
       floatOffset: 0,
       status: "LIVE",
-      blurb: "The autonomous burn engine — claims fees, buys back, burns. No user action needed.",
+      blurb: "The autonomous burn engine — claims fees, buys back, burns. No user action needed. Running for real since 2026-09-16.",
       stat:
         burned !== null
-          ? { label: "$INTERN burned so far", value: burned }
+          ? { label: "$INTERN burned so far, all sources combined", value: burned }
           : null,
       href: "/blaze",
     },

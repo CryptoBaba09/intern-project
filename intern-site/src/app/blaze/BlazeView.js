@@ -84,7 +84,9 @@ function LiveBurnTicker() {
         </p>
         <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-6 max-w-md mx-auto leading-relaxed">
           Not self-reported — this is {DEAD_ADDRESS}&apos;s real balance,
-          refreshed every 10 seconds.{" "}
+          refreshed every 10 seconds. It&apos;s every burn combined
+          (migration, Burn to Create, video credits, Blaze&apos;s own
+          fee-claim burns), not Blaze&apos;s contribution alone.{" "}
           <a
             href={`https://robinhoodchain.blockscout.com/address/${DEAD_ADDRESS}`}
             target="_blank"
@@ -300,8 +302,12 @@ export default function BlazeView() {
         >
           No deploy, no fee, nothing to buy. Every time creator fees are
           claimed off the $INTERN/ETH pool, most of it is bought back and
-          burned automatically — the live number below is real, read
-          straight from the dead address.
+          burned automatically — that automation is genuinely running now
+          (fixed 2026-09-16; it existed in code for weeks but was never
+          actually deployed as a scheduled job until then). The live
+          number below is the dead address&apos;s real balance, but
+          it&apos;s every burn source combined, not Blaze&apos;s output
+          alone — see the note underneath it.
         </Reveal>
       </section>
 
