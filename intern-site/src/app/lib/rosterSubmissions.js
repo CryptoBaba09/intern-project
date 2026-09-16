@@ -39,3 +39,24 @@ export async function countRosterSubmissions() {
   const db = await getDb();
   return db.collection("rosterSubmissions").countDocuments();
 }
+
+// Admin-only read -- see /api/admin/roster-submissions. Newest first,
+// capped at 500 so this never turns into an unbounded query as
+// submissions grow.
+export async function listRosterSubmissions() {
+  const db = await getDb();
+  const docs = await db
+    .collection("rosterSubmissions")
+    .find({})
+    .sort({ createdAt: -1 })
+    .limit(500)
+    .toArray();
+  return docs.map((d) => ({
+    id: d._id.toString(),
+    role: d.role,
+    pitch: d.pitch,
+    submitterName: d.submitterName,
+    wallet: d.wallet,
+    createdAt: d.createdAt,
+  }));
+}
