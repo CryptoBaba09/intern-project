@@ -216,12 +216,10 @@ function BurnSplitSimulator() {
         </motion.div>
 
         <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-6 leading-relaxed">
-          70/20/10 is the bot&apos;s default split — an operator can change
-          it via env var, which this page can&apos;t see. The
-          conditional-burn-fallback rule above (fold 20% into burn when
-          nobody&apos;s staked) uses a live{" "}
-          <code className="text-[var(--color-fg)]">totalStaked()</code>{" "}
-          read, so that part reflects the real chain state right now.
+          This simulator uses the protocol&apos;s current 70/20/10 split. If
+          nobody is staked when a real claim happens, the 20% stakers&apos;
+          share redirects into the burn instead — checked live against the
+          real amount currently staked.
         </p>
       </div>
     </section>
