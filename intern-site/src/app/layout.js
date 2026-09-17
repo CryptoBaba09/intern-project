@@ -44,7 +44,12 @@ const jetbrainsMono = JetBrains_Mono({
 const SITE_URL = "https://internburn.xyz";
 const DESCRIPTION =
   "$INTERN is a fixed-supply utility token on Robinhood Chain, live on Pons and quoted against ETH: every AI agent hired burns $INTERN on the spot, every creator fee claim splits 70% buy-and-burn / 20% streamed to staked $INTERN (or joins the burn if nobody's staked yet) / 10% treasury. No mint function, ever.";
-const OG_IMAGE = { url: "/og-image.png", width: 1200, height: 630, alt: "$INTERN — Supply Runs Down" };
+// Filename versioned (og-image-v2.png, not og-image.png) because X/Twitter
+// caches link-preview images by URL indefinitely -- after fixing stale
+// content in the old file, X kept serving the cached bytes at the old URL
+// even from a brand-new tweet. A new URL forces a fresh fetch. Bump the
+// suffix again next time this image's content changes.
+const OG_IMAGE = { url: "/og-image-v2.png", width: 1200, height: 630, alt: "$INTERN — Supply Runs Down" };
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
