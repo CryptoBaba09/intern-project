@@ -40,7 +40,7 @@ export default function TradeView() {
   // cross-origin frame's real render state, so this uses a fixed timer
   // matching the measured real-world load time (8-13s) instead.
   useEffect(() => {
-    const id = setTimeout(() => setChartLoaded(true), 11000);
+    const id = setTimeout(() => setChartLoaded(true), 14000);
     return () => clearTimeout(id);
   }, []);
   return (
