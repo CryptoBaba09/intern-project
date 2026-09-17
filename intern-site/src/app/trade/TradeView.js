@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
 import {
@@ -31,6 +32,17 @@ import {
 // in-house widget becomes worth building again -- the same tradeoff
 // v1's TradeView made, just correctly this time.
 export default function TradeView() {
+  const [chartLoaded, setChartLoaded] = useState(false);
+  // A cross-origin iframe's own onLoad fires when ITS document loads --
+  // measured live, that happens well before GeckoTerminal's internal JS
+  // actually paints the chart (onLoad cleared the loading message with
+  // several seconds of black box still left). No way to read a
+  // cross-origin frame's real render state, so this uses a fixed timer
+  // matching the measured real-world load time (8-13s) instead.
+  useEffect(() => {
+    const id = setTimeout(() => setChartLoaded(true), 14000);
+    return () => clearTimeout(id);
+  }, []);
   return (
     <section className="px-6 pt-16 pb-24 max-w-2xl mx-auto w-full">
       <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
@@ -61,16 +73,34 @@ export default function TradeView() {
             This is a chart, not a swap widget -- same reasoning as
             below for why the actual trade button still sends you to
             Pons rather than executing here. */}
-        <iframe
-          height="450"
-          width="100%"
-          title="INTERN/WETH live chart on GeckoTerminal"
-          src={GECKOTERMINAL_EMBED_URL}
-          frameBorder="0"
-          allow="clipboard-write"
-          loading="lazy"
-          className="block w-full"
-        />
+        {/* GeckoTerminal's own embed genuinely takes 8-13s to paint
+            anything (measured via performance.getEntriesByType('resource')
+            against the live iframe, both with and without loading="lazy" --
+            lazy loading was never the cause of a "never loads" bug, an
+            earlier pass here misread a network-inspection tool that simply
+            can't see cross-origin iframe subresources). The real problem
+            was a silent black box for 8+ seconds with zero feedback, which
+            reads as broken even though it isn't. Fixed with a loading
+            state below instead of touching the iframe itself. */}
+        <div className="relative">
+          {!chartLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-surface)]">
+              <p className="font-mono text-xs text-[var(--color-muted-2)] flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
+                LOADING LIVE CHART…
+              </p>
+            </div>
+          )}
+          <iframe
+            height="450"
+            width="100%"
+            title="INTERN/WETH live chart on GeckoTerminal"
+            src={GECKOTERMINAL_EMBED_URL}
+            frameBorder="0"
+            allow="clipboard-write"
+            className="block w-full"
+          />
+        </div>
         <p className="font-mono text-[10px] text-[var(--color-muted-2)] px-4 py-2 border-t border-[var(--color-line)]">
           Live chart via{" "}
           <a
