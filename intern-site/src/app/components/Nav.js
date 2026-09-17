@@ -8,30 +8,31 @@ import { fadeUp, staggerContainer } from "./motion";
 import ConnectWalletButton from "./ConnectWalletButton";
 import Mascot from "./Mascot";
 
-// Two standalone actions people jump to directly, kept as plain tabs --
-// everything else groups under a dropdown so the bar reads as ~4 things,
-// not nine. (Previously a flat 9-link list buried in a hamburger panel;
-// see git history if that flat structure is ever needed again.)
+// Simplified 2026-09-17 from a flat 6-item "$INTERN" dropdown (Meet the
+// Crew, Roster Call, Personas, Video Credits, Burn to Create, Migrate) that
+// a live user screenshot flagged as confusing -- "Personas" was really just
+// Rendo's own page (parallel to Blaze/Promptly/Synapse, which never had
+// their own nav entries), and Video Credits/Burn to Create are one burn-
+// for-generation mechanic wearing two names. Rather than build new hub
+// pages duplicating 700+ lines of live wallet logic, this points straight
+// at the existing pages that already do the job:
+//   - Interns -> /marketplace, which already grids all four personas
+//     (including Rendo, via its card) and now links out to Roster Call too.
+//   - Create -> /video-credits, which already cross-links prominently to
+//     Burn to Create as "part of the same campaign."
+// Migrate v1 -> v2 drops out of primary nav entirely -- it's a dated
+// campaign (ends Oct 1) already surfaced via the announcement banner and
+// automatically on /stake for any wallet holding v1, so a permanent nav
+// slot for it just becomes dead weight after the deadline. The route
+// itself is untouched, just no longer linked from here.
 const TOP_LINKS = [
   { href: "/trade", label: "Trade" },
   { href: "/stake", label: "Stake" },
+  { href: "/marketplace", label: "Interns" },
+  { href: "/video-credits", label: "Create" },
 ];
 
 const CATEGORIES = [
-  {
-    // Leads with the crew roster, not utility pages -- "$INTERN" as a
-    // tab is the marketplace of interns first, everything you can build
-    // with them second.
-    label: "$INTERN",
-    items: [
-      { href: "/marketplace", label: "Meet the Crew" },
-      { href: "/roster", label: "Roster Call" },
-      { href: "/personas", label: "Personas" },
-      { href: "/video-credits", label: "Video Credits" },
-      { href: "/burn-to-create", label: "Burn to Create" },
-      { href: "/migrate", label: "Migrate v1 → v2" },
-    ],
-  },
   {
     label: "About",
     items: [
