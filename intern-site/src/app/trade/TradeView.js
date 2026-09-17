@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
 import {
@@ -33,6 +33,16 @@ import {
 // v1's TradeView made, just correctly this time.
 export default function TradeView() {
   const [chartLoaded, setChartLoaded] = useState(false);
+  // A cross-origin iframe's own onLoad fires when ITS document loads --
+  // measured live, that happens well before GeckoTerminal's internal JS
+  // actually paints the chart (onLoad cleared the loading message with
+  // several seconds of black box still left). No way to read a
+  // cross-origin frame's real render state, so this uses a fixed timer
+  // matching the measured real-world load time (8-13s) instead.
+  useEffect(() => {
+    const id = setTimeout(() => setChartLoaded(true), 11000);
+    return () => clearTimeout(id);
+  }, []);
   return (
     <section className="px-6 pt-16 pb-24 max-w-2xl mx-auto w-full">
       <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
@@ -88,7 +98,6 @@ export default function TradeView() {
             src={GECKOTERMINAL_EMBED_URL}
             frameBorder="0"
             allow="clipboard-write"
-            onLoad={() => setChartLoaded(true)}
             className="block w-full"
           />
         </div>
