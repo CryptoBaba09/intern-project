@@ -80,9 +80,19 @@ routine stat updates; that's what the new square template is for.
 `x-card-mechanic.html` and `x-card-crew-live.html` folded into the explainer
 template above rather than kept as separate one-offs.
 
-## Next step
+## Built
 
-Build the square stat-card template as a real HTML file (same
-render-to-PNG pipeline the existing cards already use) so the next stat post
-uses it instead of another one-off. Not done yet — this doc is the decision,
-not the build.
+`branding/x-card-stat-template.html` — the reusable template
+(`{{NUM}}`/`{{LABEL}}`/`{{ACCENT}}` placeholders, swap per post). Rendered
+and verified via the same `qlmanage`-based pipeline the existing cards use;
+see `branding/x-card-stat-example-burned.html` for a filled-in example
+(10,654,566 burned) and its rendered PNG.
+
+Also fixed while building this: the live site's own display font (Space
+Grotesk) and mono font (JetBrains Mono) were declared everywhere but never
+actually loaded — no `next/font` import, no Google Fonts link. Every visitor
+has been silently seeing plain Arial and their OS's default monospace this
+whole time. Fixed in `intern-site/src/app/layout.js` and shipped to
+production same day — this was directly in scope here, since there's no
+point finalizing card typography around a typeface the live site itself
+never rendered.
