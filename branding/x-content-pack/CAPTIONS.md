@@ -1,0 +1,112 @@
+# $INTERN X Content Pack — Captions
+
+71 photos (photos/) + 30 GIFs (gifs/) = 101 pieces.
+
+**Pacing note:** built as a 2-3 week content bank, not a 2-day dump — posting all of this in 48 hours reads as spam to X's algorithm and to real followers. Aim for 3-5 posts/day, mixing photos and GIFs.
+
+## Photos
+
+- **f01-no-admin-key.png** — There is no admin key that can print more $INTERN. Zero. Check the contract yourself.
+- **f02-liquidity-locked.png** — Pre-graduation, price runs on Pons's bonding curve, not a locked pool. It graduates into a real, permanent pool at 4.2 ETH raised.
+- **f03-swap-fee-honest.png** — No hidden extra tax. Just Pons's standard fee, split 70/20/10 on-chain.
+- **f04-deploy-fee.png** — Deploying a custom intern costs 10,000 $INTERN, burned on the spot. Building on $INTERN shrinks $INTERN.
+- **f05-split-alt.png** — Every fee claim, split three ways, on-chain. No fourth bucket nobody can see.
+- **f06-step1.png** — Step 1 of how $INTERN burns: every trade pays Pons's standard fee. Nothing exotic yet.
+- **f07-step2.png** — Step 2: Blaze claims the fee and burns 70% automatically. No human in the loop.
+- **f08-step3.png** — Step 3 (not live yet, and we'll tell you when it is): treasury buybacks as a second burn layer.
+- **p01-blaze.png** — Blaze doesn't ask for anything. It just claims fees and burns supply, every cycle, since trade one.
+- **p02-rendo.png** — Rendo turns staked $INTERN into a personal AI avatar for content. In design &mdash; here's the plan.
+- **p03-promptly.png** — Promptly turns staked $INTERN into real AI inference credit. Not a points system &mdash; actual API credit.
+- **p04-perky.png** — Perky isn't a hire, it's a perk &mdash; a bigger stake earns a bigger bonus. No fee attached.
+- **p05-div.png** — BE quietly accrues real dividends. Div is the plan to actually route that value somewhere.
+- **p06-forge.png** — Forge lets you deploy your own intern &mdash; one-time burn to build it, a staked minimum to keep it alive.
+- **r01-autonomous.png** — Hat #1: autonomous burn engine. Live since trade one, no human required.
+- **r02-deflationary.png** — "Deflationary" gets thrown around a lot. $INTERN's version: no mint function exists. Check it.
+- **r03-staking-hat.png** — Hat #3: a staking asset, live right now. Real BE, streamed, no lockup.
+- **r04-content-key.png** — Hat #4 (in design): a content-creation key. Staking unlocks your own AI avatar.
+- **r05-resource-sharing.png** — Still exploring this one honestly: rewarding holders for spare resources they aren't using.
+- **r06-inference-key.png** — Hat #6 (in design): stake $INTERN, earn real AI inference credit. Not points &mdash; usable credit.
+- **r07-custom-currency.png** — Hat #7 (in design): the currency for building your own intern on the marketplace.
+- **t01-cant-pull.png** — No mint function, ever. That's not a promise &mdash; it's a fact about the deployed contract.
+- **t02-no-mint-again.png** — Not "we promise not to mint." The mint function literally does not exist in the contract.
+- **t03-public-burns.png** — Every burn is a public transaction, not a screenshot. Go check the dead address yourself.
+- **t04-audit-honesty2.png** — Most projects hide the audit status. Ours is on the homepage: not audited yet, here's the risk.
+- **t05-build-open2.png** — We had a real bug tonight. We posted the tx hash and explained exactly what happened. That's the deal.
+- **t06-no-team-alloc.png** — No free team allocation. What we hold, we bought &mdash; same as anyone else.
+- **t07-verify-everything.png** — Don't take our word for it. Three things you can verify yourself, right now, in under two minutes.
+- **u01-trade-live.png** — Buy or sell $INTERN — we send you straight to Pons, quoted against ETH, to do it.
+- **u02-stake-live.png** — Staking is live. Real BE, streamed continuously, no lockup. Unstake whenever you want.
+- **u03-genesis-gate.png** — Genesis NFTs don't have a launch date &mdash; they have a volume gate. Track the real number live.
+- **u04-simulated-trades.png** — We link you to Pons instead of running our own swap widget &mdash; its interface already audits its own approvals and slippage.
+- **u05-max-button.png** — Fixed tonight: MAX buttons, readable numbers, and a real tx status banner on staking. Small things that matter.
+- **c01-not-a-promise.png** — A roadmap is a promise. A deployed contract is not. Check which one you're actually looking at.
+- **c02-real-asset.png** — Behind every staking reward: an actual fuel-cell company powering AI data centers. Not a random ticker.
+- **c03-early-honest.png** — We're not going to pretend $INTERN is bigger than it is. It's early, thin, and real. Trade small, verify everything.
+- **c04-mechanics-hard.png** — Anyone can deploy a token in five minutes. What took real work: staking, trading, and a burn bot that actually runs.
+- **c05-one-person.png** — No VC round, no anonymous team of ten. One person, in the open, shipping in real time.
+- **h01-chain-facts.png** — $INTERN lives on Robinhood Chain: ~100ms blocks, EVM-compatible, real tokenized stocks as trading pairs.
+- **h02-locked-forever2.png** — Pons graduates $INTERN into a real, permanent Uniswap V4 pool once the bonding curve raises 4.2 ETH. No favor, no discretion &mdash; that's just how the launchpad works.
+- **h03-oracle.png** — Prices aren't just whatever the pool says &mdash; there's a real on-chain oracle behind the reference numbers.
+- **q01-interns-burned.png** — Interns don't get equity. They get burned.
+- **q02-supply-arithmetic.png** — Supply going down isn't a vibe. It's arithmetic. Check the burns yourself.
+- **q03-hire-burns.png** — Every intern hired burns $INTERN on the spot. That's the whole pitch.
+- **q04-trust-code.png** — Trust the code, not the tweet. Ours is public.
+- **q05-no-rug.png** — No mint function. No admin key. No excuses left for us to make later.
+- **q06-burn-repeat.png** — Buy. Burn. Repeat. The whole mechanic in three words.
+- **q07-not-marketing.png** — This is a contract, not a marketing plan. It doesn't care what we say about it.
+- **q08-real-fees.png** — Real fees. Real burns. Real stakers. No synthetic step in between.
+- **q09-one-token-many-jobs.png** — One token, more than one job. Burn engine today, a lot more coming.
+- **q10-check-yourself.png** — Don't trust us. Check us. Everything here is verifiable on-chain.
+- **m01-blaze.png** — Blaze: "I don't ask for a salary. I ask for a burn."
+- **m02-blaze.png** — Blaze: "Every fee I claim, 70% doesn't come back."
+- **m03-blaze.png** — Blaze: "No deploy step. No button. I just run."
+- **m04-blaze.png** — Blaze: "I've been burning supply since the first trade."
+- **m05-blaze.png** — Blaze: "Supply only moves one direction while I'm working."
+- **m06-blaze.png** — Blaze: "Check the dead address. That's me, working."
+- **m07-blaze.png** — Blaze: "I'm the only intern that costs you nothing to hire."
+- **m08-rendo.png** — Rendo: "I'm not live yet. I'm not going to pretend otherwise."
+- **m09-rendo.png** — Rendo: "Stake $INTERN, and eventually, you get me."
+- **m10-rendo.png** — Rendo: "Content creation, funded by staking, not a subscription."
+- **m11-rendo.png** — Rendo: "In design means in design. Ask again once I ship."
+- **m12-rendo.png** — Rendo: "Every extra generation I make costs $INTERN. Burned."
+- **m13-rendo.png** — Rendo: "I'm the plan, not the product. Yet."
+- **m14-promptly.png** — Promptly: "I turn staked $INTERN into real AI credit. Eventually."
+- **m15-promptly.png** — Promptly: "Claude, GPT, Gemini — real credit, not points."
+- **m16-promptly.png** — Promptly: "Need credit now? Pay $INTERN. It gets burned."
+- **m17-promptly.png** — Promptly: "I'm funded by treasury fees, not printed from nowhere."
+- **m18-promptly.png** — Promptly: "In design. Real design, not a placeholder promise."
+- **m19-promptly.png** — Promptly: "Every top-up burns supply. Every stake earns credit."
+- **m20-promptly.png** — Promptly: "I don't exist yet. I'm not going to lie about that."
+
+## GIFs
+
+- **g01-reveal-staking.gif** — The real staking contract address. Bookmark it, verify it, never take our word for it.
+- **g02-reveal-deadaddr.gif** — Every $INTERN burn ends up at this exact address. Check its balance any time.
+- **g03-reveal-aggregator.gif** — The exact bonding-curve contract Pons trades $INTERN through. Verify it yourself before you connect a wallet.
+- **g04-reveal-dexscreener.gif** — Real-time $INTERN chart, no login required.
+- **g05-reveal-intern.gif** — The one address to check before you ever connect a wallet to anything claiming to be $INTERN.
+- **g06-flash-staking-live.gif** — Staking: live. Earn real BE, unstake any time.
+- **g07-flash-trading-live.gif** — Trading: live on Pons, paired against ETH. One click from our site gets you there.
+- **g08-flash-no-mint.gif** — No mint function. Not a policy — a fact about the deployed contract.
+- **g09-flash-locked.gif** — Pre-graduation it's a bonding curve, not a locked pool &mdash; graduates into a real, permanent one at 4.2 ETH raised.
+- **g10-flash-open-source.gif** — Every contract, every commit, public on GitHub. Including our mistakes.
+- **g11-flow-hire-burn.gif** — Hire an intern, burn $INTERN. That's the whole loop.
+- **g12-flow-fee-treasury.gif** — 10% of every fee claim funds treasury — building what's next.
+- **g13-flow-claim-split.gif** — Claim, then split 70/20/10 — automatically, every cycle.
+- **g14-flow-stock-yield.gif** — A real fuel-cell company's stock is what every staking reward actually streams out in.
+- **g15-flow-genesis.gif** — More trading volume is the only thing that unlocks Genesis NFTs.
+- **g16-cycle-trade-fee-burn.gif** — Trade, fee, burn. The same loop runs on every single trade.
+- **g17-cycle-stake-earn-claim.gif** — Stake, earn, claim whenever you want — or just let it stream.
+- **g18-cycle-build-fee-burn.gif** — Building a custom intern burns $INTERN too. Growth shrinks supply.
+- **g19-cycle-collect-alloc-claim.gif** — The fee pipeline: collect, allocate, claim. Permissionless at every step.
+- **g20-cycle-verify.gif** — Read the claim, check the contract, verify on-chain. In that order, always.
+- **g21-toggle-stake-unstake.gif** — Stake or unstake, whenever you want. No lockup, ever.
+- **g22-toggle-be-usdg.gif** — Trade against ETH, live on Pons — one real pool, quoted plainly.
+- **g23-toggle-live-design.gif** — Every feature on the roadmap is honestly labeled — live, or in design.
+- **g24-toggle-audited.gif** — Built and working — and not yet audited. We say both, out loud.
+- **g25-toggle-hype-mechanics.gif** — Hype is easy. We picked mechanics — the harder, slower thing to build.
+- **g26-stamp-verified.gif** — Contract source verified on Blockscout. Go read it yourself.
+- **g27-stamp-noncustodial.gif** — Staking is non-custodial. The contract only ever holds what you choose to stake.
+- **g28-stamp-locked-forever.gif** — No mint function means no mint function — not even we can print more supply.
+- **g29-stamp-not-audited.gif** — Not yet audited — and it says so on the homepage, not buried in fine print.
+- **g30-stamp-real-fees.gif** — Real trading fees, not a points system pretending to be yield.

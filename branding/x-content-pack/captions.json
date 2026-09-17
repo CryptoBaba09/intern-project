@@ -1,0 +1,410 @@
+{
+  "photos": [
+    {
+      "file": "f01-no-admin-key.png",
+      "caption": "There is no admin key that can print more $INTERN. Zero. Check the contract yourself."
+    },
+    {
+      "file": "f02-liquidity-locked.png",
+      "caption": "Pre-graduation, price runs on Pons's bonding curve, not a locked pool. It graduates into a real, permanent pool at 4.2 ETH raised."
+    },
+    {
+      "file": "f03-swap-fee-honest.png",
+      "caption": "No hidden extra tax. Just Pons's standard fee, split 70/20/10 on-chain."
+    },
+    {
+      "file": "f04-deploy-fee.png",
+      "caption": "Deploying a custom intern costs 10,000 $INTERN, burned on the spot. Building on $INTERN shrinks $INTERN."
+    },
+    {
+      "file": "f05-split-alt.png",
+      "caption": "Every fee claim, split three ways, on-chain. No fourth bucket nobody can see."
+    },
+    {
+      "file": "f06-step1.png",
+      "caption": "Step 1 of how $INTERN burns: every trade pays Pons's standard fee. Nothing exotic yet."
+    },
+    {
+      "file": "f07-step2.png",
+      "caption": "Step 2: Blaze claims the fee and burns 70% automatically. No human in the loop."
+    },
+    {
+      "file": "f08-step3.png",
+      "caption": "Step 3 (not live yet, and we'll tell you when it is): treasury buybacks as a second burn layer."
+    },
+    {
+      "file": "p01-blaze.png",
+      "caption": "Blaze doesn't ask for anything. It just claims fees and burns supply, every cycle, since trade one."
+    },
+    {
+      "file": "p02-rendo.png",
+      "caption": "Rendo turns staked $INTERN into a personal AI avatar for content. In design &mdash; here's the plan."
+    },
+    {
+      "file": "p03-promptly.png",
+      "caption": "Promptly turns staked $INTERN into real AI inference credit. Not a points system &mdash; actual API credit."
+    },
+    {
+      "file": "p04-perky.png",
+      "caption": "Perky isn't a hire, it's a perk &mdash; a bigger stake earns a bigger bonus. No fee attached."
+    },
+    {
+      "file": "p05-div.png",
+      "caption": "BE quietly accrues real dividends. Div is the plan to actually route that value somewhere."
+    },
+    {
+      "file": "p06-forge.png",
+      "caption": "Forge lets you deploy your own intern &mdash; one-time burn to build it, a staked minimum to keep it alive."
+    },
+    {
+      "file": "r01-autonomous.png",
+      "caption": "Hat #1: autonomous burn engine. Live since trade one, no human required."
+    },
+    {
+      "file": "r02-deflationary.png",
+      "caption": "\"Deflationary\" gets thrown around a lot. $INTERN's version: no mint function exists. Check it."
+    },
+    {
+      "file": "r03-staking-hat.png",
+      "caption": "Hat #3: a staking asset, live right now. Real BE, streamed, no lockup."
+    },
+    {
+      "file": "r04-content-key.png",
+      "caption": "Hat #4 (in design): a content-creation key. Staking unlocks your own AI avatar."
+    },
+    {
+      "file": "r05-resource-sharing.png",
+      "caption": "Still exploring this one honestly: rewarding holders for spare resources they aren't using."
+    },
+    {
+      "file": "r06-inference-key.png",
+      "caption": "Hat #6 (in design): stake $INTERN, earn real AI inference credit. Not points &mdash; usable credit."
+    },
+    {
+      "file": "r07-custom-currency.png",
+      "caption": "Hat #7 (in design): the currency for building your own intern on the marketplace."
+    },
+    {
+      "file": "t01-cant-pull.png",
+      "caption": "No mint function, ever. That's not a promise &mdash; it's a fact about the deployed contract."
+    },
+    {
+      "file": "t02-no-mint-again.png",
+      "caption": "Not \"we promise not to mint.\" The mint function literally does not exist in the contract."
+    },
+    {
+      "file": "t03-public-burns.png",
+      "caption": "Every burn is a public transaction, not a screenshot. Go check the dead address yourself."
+    },
+    {
+      "file": "t04-audit-honesty2.png",
+      "caption": "Most projects hide the audit status. Ours is on the homepage: not audited yet, here's the risk."
+    },
+    {
+      "file": "t05-build-open2.png",
+      "caption": "We had a real bug tonight. We posted the tx hash and explained exactly what happened. That's the deal."
+    },
+    {
+      "file": "t06-no-team-alloc.png",
+      "caption": "No free team allocation. What we hold, we bought &mdash; same as anyone else."
+    },
+    {
+      "file": "t07-verify-everything.png",
+      "caption": "Don't take our word for it. Three things you can verify yourself, right now, in under two minutes."
+    },
+    {
+      "file": "u01-trade-live.png",
+      "caption": "Buy or sell $INTERN — we send you straight to Pons, quoted against ETH, to do it."
+    },
+    {
+      "file": "u02-stake-live.png",
+      "caption": "Staking is live. Real BE, streamed continuously, no lockup. Unstake whenever you want."
+    },
+    {
+      "file": "u03-genesis-gate.png",
+      "caption": "Genesis NFTs don't have a launch date &mdash; they have a volume gate. Track the real number live."
+    },
+    {
+      "file": "u04-simulated-trades.png",
+      "caption": "We link you to Pons instead of running our own swap widget &mdash; its interface already audits its own approvals and slippage."
+    },
+    {
+      "file": "u05-max-button.png",
+      "caption": "Fixed tonight: MAX buttons, readable numbers, and a real tx status banner on staking. Small things that matter."
+    },
+    {
+      "file": "c01-not-a-promise.png",
+      "caption": "A roadmap is a promise. A deployed contract is not. Check which one you're actually looking at."
+    },
+    {
+      "file": "c02-real-asset.png",
+      "caption": "Behind every staking reward: an actual fuel-cell company powering AI data centers. Not a random ticker."
+    },
+    {
+      "file": "c03-early-honest.png",
+      "caption": "We're not going to pretend $INTERN is bigger than it is. It's early, thin, and real. Trade small, verify everything."
+    },
+    {
+      "file": "c04-mechanics-hard.png",
+      "caption": "Anyone can deploy a token in five minutes. What took real work: staking, trading, and a burn bot that actually runs."
+    },
+    {
+      "file": "c05-one-person.png",
+      "caption": "No VC round, no anonymous team of ten. One person, in the open, shipping in real time."
+    },
+    {
+      "file": "h01-chain-facts.png",
+      "caption": "$INTERN lives on Robinhood Chain: ~100ms blocks, EVM-compatible, real tokenized stocks as trading pairs."
+    },
+    {
+      "file": "h02-locked-forever2.png",
+      "caption": "Pons graduates $INTERN into a real, permanent Uniswap V4 pool once the bonding curve raises 4.2 ETH. No favor, no discretion &mdash; that's just how the launchpad works."
+    },
+    {
+      "file": "h03-oracle.png",
+      "caption": "Prices aren't just whatever the pool says &mdash; there's a real on-chain oracle behind the reference numbers."
+    },
+    {
+      "file": "q01-interns-burned.png",
+      "caption": "Interns don't get equity. They get burned."
+    },
+    {
+      "file": "q02-supply-arithmetic.png",
+      "caption": "Supply going down isn't a vibe. It's arithmetic. Check the burns yourself."
+    },
+    {
+      "file": "q03-hire-burns.png",
+      "caption": "Every intern hired burns $INTERN on the spot. That's the whole pitch."
+    },
+    {
+      "file": "q04-trust-code.png",
+      "caption": "Trust the code, not the tweet. Ours is public."
+    },
+    {
+      "file": "q05-no-rug.png",
+      "caption": "No mint function. No admin key. No excuses left for us to make later."
+    },
+    {
+      "file": "q06-burn-repeat.png",
+      "caption": "Buy. Burn. Repeat. The whole mechanic in three words."
+    },
+    {
+      "file": "q07-not-marketing.png",
+      "caption": "This is a contract, not a marketing plan. It doesn't care what we say about it."
+    },
+    {
+      "file": "q08-real-fees.png",
+      "caption": "Real fees. Real burns. Real stakers. No synthetic step in between."
+    },
+    {
+      "file": "q09-one-token-many-jobs.png",
+      "caption": "One token, more than one job. Burn engine today, a lot more coming."
+    },
+    {
+      "file": "q10-check-yourself.png",
+      "caption": "Don't trust us. Check us. Everything here is verifiable on-chain."
+    },
+    {
+      "file": "m01-blaze.png",
+      "caption": "Blaze: \"I don't ask for a salary. I ask for a burn.\""
+    },
+    {
+      "file": "m02-blaze.png",
+      "caption": "Blaze: \"Every fee I claim, 70% doesn't come back.\""
+    },
+    {
+      "file": "m03-blaze.png",
+      "caption": "Blaze: \"No deploy step. No button. I just run.\""
+    },
+    {
+      "file": "m04-blaze.png",
+      "caption": "Blaze: \"I've been burning supply since the first trade.\""
+    },
+    {
+      "file": "m05-blaze.png",
+      "caption": "Blaze: \"Supply only moves one direction while I'm working.\""
+    },
+    {
+      "file": "m06-blaze.png",
+      "caption": "Blaze: \"Check the dead address. That's me, working.\""
+    },
+    {
+      "file": "m07-blaze.png",
+      "caption": "Blaze: \"I'm the only intern that costs you nothing to hire.\""
+    },
+    {
+      "file": "m08-rendo.png",
+      "caption": "Rendo: \"I'm not live yet. I'm not going to pretend otherwise.\""
+    },
+    {
+      "file": "m09-rendo.png",
+      "caption": "Rendo: \"Stake $INTERN, and eventually, you get me.\""
+    },
+    {
+      "file": "m10-rendo.png",
+      "caption": "Rendo: \"Content creation, funded by staking, not a subscription.\""
+    },
+    {
+      "file": "m11-rendo.png",
+      "caption": "Rendo: \"In design means in design. Ask again once I ship.\""
+    },
+    {
+      "file": "m12-rendo.png",
+      "caption": "Rendo: \"Every extra generation I make costs $INTERN. Burned.\""
+    },
+    {
+      "file": "m13-rendo.png",
+      "caption": "Rendo: \"I'm the plan, not the product. Yet.\""
+    },
+    {
+      "file": "m14-promptly.png",
+      "caption": "Promptly: \"I turn staked $INTERN into real AI credit. Eventually.\""
+    },
+    {
+      "file": "m15-promptly.png",
+      "caption": "Promptly: \"Claude, GPT, Gemini \u2014 real credit, not points.\""
+    },
+    {
+      "file": "m16-promptly.png",
+      "caption": "Promptly: \"Need credit now? Pay $INTERN. It gets burned.\""
+    },
+    {
+      "file": "m17-promptly.png",
+      "caption": "Promptly: \"I'm funded by treasury fees, not printed from nowhere.\""
+    },
+    {
+      "file": "m18-promptly.png",
+      "caption": "Promptly: \"In design. Real design, not a placeholder promise.\""
+    },
+    {
+      "file": "m19-promptly.png",
+      "caption": "Promptly: \"Every top-up burns supply. Every stake earns credit.\""
+    },
+    {
+      "file": "m20-promptly.png",
+      "caption": "Promptly: \"I don't exist yet. I'm not going to lie about that.\""
+    }
+  ],
+  "gifs": [
+    {
+      "file": "g01-reveal-staking.gif",
+      "caption": "The real staking contract address. Bookmark it, verify it, never take our word for it."
+    },
+    {
+      "file": "g02-reveal-deadaddr.gif",
+      "caption": "Every $INTERN burn ends up at this exact address. Check its balance any time."
+    },
+    {
+      "file": "g03-reveal-aggregator.gif",
+      "caption": "The exact bonding-curve contract Pons trades $INTERN through. Verify it yourself before you connect a wallet."
+    },
+    {
+      "file": "g04-reveal-dexscreener.gif",
+      "caption": "Real-time $INTERN chart, no login required."
+    },
+    {
+      "file": "g05-reveal-intern.gif",
+      "caption": "The one address to check before you ever connect a wallet to anything claiming to be $INTERN."
+    },
+    {
+      "file": "g06-flash-staking-live.gif",
+      "caption": "Staking: live. Earn real BE, unstake any time."
+    },
+    {
+      "file": "g07-flash-trading-live.gif",
+      "caption": "Trading: live on Pons, paired against ETH. One click from our site gets you there."
+    },
+    {
+      "file": "g08-flash-no-mint.gif",
+      "caption": "No mint function. Not a policy \u2014 a fact about the deployed contract."
+    },
+    {
+      "file": "g09-flash-locked.gif",
+      "caption": "Pre-graduation it's a bonding curve, not a locked pool &mdash; graduates into a real, permanent one at 4.2 ETH raised."
+    },
+    {
+      "file": "g10-flash-open-source.gif",
+      "caption": "Every contract, every commit, public on GitHub. Including our mistakes."
+    },
+    {
+      "file": "g11-flow-hire-burn.gif",
+      "caption": "Hire an intern, burn $INTERN. That's the whole loop."
+    },
+    {
+      "file": "g12-flow-fee-treasury.gif",
+      "caption": "10% of every fee claim funds treasury \u2014 building what's next."
+    },
+    {
+      "file": "g13-flow-claim-split.gif",
+      "caption": "Claim, then split 70/20/10 \u2014 automatically, every cycle."
+    },
+    {
+      "file": "g14-flow-stock-yield.gif",
+      "caption": "A real fuel-cell company's stock is what every staking reward actually streams out in."
+    },
+    {
+      "file": "g15-flow-genesis.gif",
+      "caption": "More trading volume is the only thing that unlocks Genesis NFTs."
+    },
+    {
+      "file": "g16-cycle-trade-fee-burn.gif",
+      "caption": "Trade, fee, burn. The same loop runs on every single trade."
+    },
+    {
+      "file": "g17-cycle-stake-earn-claim.gif",
+      "caption": "Stake, earn, claim whenever you want \u2014 or just let it stream."
+    },
+    {
+      "file": "g18-cycle-build-fee-burn.gif",
+      "caption": "Building a custom intern burns $INTERN too. Growth shrinks supply."
+    },
+    {
+      "file": "g19-cycle-collect-alloc-claim.gif",
+      "caption": "The fee pipeline: collect, allocate, claim. Permissionless at every step."
+    },
+    {
+      "file": "g20-cycle-verify.gif",
+      "caption": "Read the claim, check the contract, verify on-chain. In that order, always."
+    },
+    {
+      "file": "g21-toggle-stake-unstake.gif",
+      "caption": "Stake or unstake, whenever you want. No lockup, ever."
+    },
+    {
+      "file": "g22-toggle-be-usdg.gif",
+      "caption": "Trade against ETH, live on Pons \u2014 one real pool, quoted plainly."
+    },
+    {
+      "file": "g23-toggle-live-design.gif",
+      "caption": "Every feature on the roadmap is honestly labeled \u2014 live, or in design."
+    },
+    {
+      "file": "g24-toggle-audited.gif",
+      "caption": "Built and working \u2014 and not yet audited. We say both, out loud."
+    },
+    {
+      "file": "g25-toggle-hype-mechanics.gif",
+      "caption": "Hype is easy. We picked mechanics \u2014 the harder, slower thing to build."
+    },
+    {
+      "file": "g26-stamp-verified.gif",
+      "caption": "Contract source verified on Blockscout. Go read it yourself."
+    },
+    {
+      "file": "g27-stamp-noncustodial.gif",
+      "caption": "Staking is non-custodial. The contract only ever holds what you choose to stake."
+    },
+    {
+      "file": "g28-stamp-locked-forever.gif",
+      "caption": "No mint function means no mint function \u2014 not even we can print more supply."
+    },
+    {
+      "file": "g29-stamp-not-audited.gif",
+      "caption": "Not yet audited \u2014 and it says so on the homepage, not buried in fine print."
+    },
+    {
+      "file": "g30-stamp-real-fees.gif",
+      "caption": "Real trading fees, not a points system pretending to be yield."
+    }
+  ]
+}
