@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import Web3Provider from "./components/Web3Provider";
 import AnnouncementBar from "./components/AnnouncementBar";
 import Nav from "./components/Nav";
@@ -12,6 +13,34 @@ import FloatingMascots from "./components/FloatingMascots";
 // metadataBase feeds every relative OG/canonical URL on the site, so this
 // alone meant every shared link's rich preview -- and every canonical tag
 // Google sees -- pointed at the wrong domain.
+// Declared as the body font since day one (see the inline style below) but
+// never actually loaded anywhere -- no next/font import, no Google Fonts
+// link, no @font-face. Every visitor has been silently falling back to
+// plain Arial this whole time instead of the intended display face. Found
+// during a branding-consistency pass (2026-09-17) while building new social
+// assets around a typeface the live site never actually rendered. Variable
+// name matches globals.css's `@theme inline` token (--font-display) exactly
+// -- that's what makes it resolve there and for any future `font-display`
+// Tailwind utility class, not just this file's own inline style.
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+// Same bug, same fix: `font-mono` is used across dozens of components
+// (every eyebrow label, CTA, contract address, stat pill) but --font-mono
+// was just as unloaded as --font-display -- every visitor's monospace text
+// has been rendering in whatever their OS defaults to (Menlo, Consolas,
+// etc.) instead of one consistent chosen face.
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
 const SITE_URL = "https://internburn.xyz";
 const DESCRIPTION =
   "$INTERN is a fixed-supply utility token on Robinhood Chain, live on Pons and quoted against ETH: every AI agent hired burns $INTERN on the spot, every creator fee claim splits 70% buy-and-burn / 20% streamed to staked $INTERN (or joins the burn if nobody's staked yet) / 10% treasury. No mint function, ever.";
@@ -90,7 +119,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className={`h-full antialiased ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -106,7 +135,7 @@ export default function RootLayout({ children }) {
       */}
       <body
         className="min-h-full flex flex-col text-[var(--color-fg)]"
-        style={{ fontFamily: "'Space Grotesk', 'Arial', sans-serif", backgroundColor: "#05060a" }}
+        style={{ fontFamily: "var(--font-display), Arial, sans-serif", backgroundColor: "#05060a" }}
       >
         <SpaceField className="fixed inset-0 -z-10 w-screen h-screen" />
         <FloatingMascots />
