@@ -189,9 +189,9 @@ export default function BurnToCreateView() {
         </Reveal>
         <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-6">
           Video generation is real and live today — burn $INTERN via Video Credits, animate any of
-          the four crew (or a fully custom prompt), and submit it. The best entries win a real,
-          treasury-funded credit top-up, picked by hand — not a fixed number promised upfront, and
-          not an algorithm.
+          the four crew (or a fully custom prompt), and submit it. Top 3 entries get their burn
+          matched — 5x for 1st, 4x for 2nd, 3x for 3rd — paid on-chain from the founder wallet,
+          exactly like Round 1.
         </Reveal>
         <Reveal delay={0.15}>
           <LiveBurnStrip />
@@ -254,13 +254,32 @@ export default function BurnToCreateView() {
           THE PRIZE
         </Reveal>
         <Reveal as="h2" delay={0.05} className="text-2xl font-semibold mb-3">
-          More credit, not a token handout.
+          Real burn match, tiered by placement.
         </Reveal>
-        <Reveal as="p" delay={0.08} className="text-[var(--color-muted)] text-sm leading-relaxed max-w-2xl">
-          Winners get a real treasury-funded video-credit top-up — the same mechanism the whole
-          feature runs on, just funded on your behalf instead of your own burn. Standout entries
-          also get pinned on X and Telegram, credited by name or handle. No fixed prize amount is
-          promised here; if that changes to something more structured, this page changes with it.
+        <Reveal as="p" delay={0.08} className="text-[var(--color-muted)] text-sm leading-relaxed max-w-2xl mb-6">
+          The team still judges by hand, on creativity and quality — same as always. What changes
+          is the payout once the top 3 are picked: whatever $INTERN you burned to make your entry
+          gets multiplied and sent back to your wallet, on-chain, from the founder wallet.
+        </Reveal>
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={staggerContainer}
+          className="grid sm:grid-cols-3 gap-6 max-w-2xl"
+        >
+          <StepCard n="1ST" title="5x burn match" body="Whatever you burned to make your entry, multiplied by 5 and sent back." />
+          <StepCard n="2ND" title="4x burn match" body="Whatever you burned to make your entry, multiplied by 4 and sent back." />
+          <StepCard n="3RD" title="3x burn match" body="Whatever you burned to make your entry, multiplied by 3 and sent back." />
+        </motion.div>
+        <Reveal delay={0.1} className="text-[var(--color-muted)] text-sm leading-relaxed max-w-2xl mt-6">
+          Standout entries outside the top 3 also get pinned on X and Telegram, credited by name or
+          handle. And separately from this contest: the moment $INTERN crosses{" "}
+          <Link href="/genesis" className="text-[var(--color-accent)] hover:underline">
+            $1,000,000 in real cumulative trading volume
+          </Link>
+          , 500 Genesis Intern NFTs unlock for anyone to mint — one more reason every burn here
+          helps everyone, not just the top 3.
         </Reveal>
       </section>
 
