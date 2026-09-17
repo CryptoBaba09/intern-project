@@ -149,24 +149,31 @@ async function submitRunway(req, { persona, scene, prompt, custom }) {
       status: 503,
     });
   }
-  // Custom mode drops promptImage entirely -- pure text-to-video, not
+  // Custom mode drops referenceImages entirely -- pure text-to-video, not
   // anchored to one of the 4 approved persona stills. See
   // docs/custom-video-prompt-spec.md for why this is its own mode
   // rather than just "persona: null" falling through: the router
-  // (RUNWAY_ROUTER_CONFIG_ID) picks a text-to-video-capable model on
-  // its own once there's no image input, same secret, same config.
+  // (RUNWAY_ROUTER_CONFIG_ID) picks a model on its own based on which
+  // inputs are present, same secret, same config.
   //
-  // Confirmed against a real 400 from Runway (2026-09-11, request
-  // zp8t5-1789117089311-ad0868abfb0a): the text-to-video schema
-  // rejects `ratio` as an unrecognized key -- that field only exists
-  // on the image-to-video request shape. duration/promptText are the
-  // only inputs the text-to-video schema takes.
+  // The routed endpoint's input shape is model-agnostic, NOT the same
+  // shape as Runway's direct (non-router) /v1/image_to_video or
+  // /v1/text_to_video endpoints -- confirmed against two real 400s from
+  // Runway: one on 2026-09-11 (request zp8t5-1789117089311-ad0868abfb0a)
+  // rejecting `ratio` as unrecognized on a text-only request, and one on
+  // 2026-09-17 (request fb59f632-be02-4299-9f22-a58eae17e82b) rejecting
+  // BOTH `promptImage` and `ratio` as unrecognized keys once an image
+  // reference was added -- the router schema wants `referenceImages`
+  // (an array of {uri, role}, role "first" = starting frame) and
+  // `aspectRatio` (e.g. "16:9"), not `promptImage`/`ratio` at all.
   const input = custom
     ? { promptText: prompt, duration: 5 }
     : {
-        promptImage: `${siteOrigin(req)}${PERSONA_SCENES[persona][scene]}`,
         promptText: prompt,
-        ratio: "1280:720",
+        referenceImages: [
+          { uri: `${siteOrigin(req)}${PERSONA_SCENES[persona][scene]}`, role: "first" },
+        ],
+        aspectRatio: "16:9",
         duration: 5,
       };
 
