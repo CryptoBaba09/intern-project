@@ -61,6 +61,13 @@ export default function TradeView() {
             This is a chart, not a swap widget -- same reasoning as
             below for why the actual trade button still sends you to
             Pons rather than executing here. */}
+        {/* No loading="lazy" here on purpose -- this chart sits inside a
+            Framer Motion container that mounts at opacity:0 before its
+            reveal animation runs. A lazy iframe laid out at that initial
+            hidden state never gets marked "near viewport" by the browser
+            and never re-checks once visible, so it silently never loads
+            at all. Confirmed via a live audit (2026-09-17): zero network
+            requests fired to GeckoTerminal across repeated page loads. */}
         <iframe
           height="450"
           width="100%"
@@ -68,7 +75,6 @@ export default function TradeView() {
           src={GECKOTERMINAL_EMBED_URL}
           frameBorder="0"
           allow="clipboard-write"
-          loading="lazy"
           className="block w-full"
         />
         <p className="font-mono text-[10px] text-[var(--color-muted-2)] px-4 py-2 border-t border-[var(--color-line)]">

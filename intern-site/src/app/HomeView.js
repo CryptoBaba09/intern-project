@@ -84,7 +84,7 @@ function LiveStatStrip() {
     return (
       <motion.div
         variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         className="flex gap-4 font-mono text-xs text-[var(--color-space-muted)]"
       >
         <div>
@@ -108,7 +108,7 @@ function LiveStatStrip() {
   return (
     <motion.div
       variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
     >
       <p className="font-mono text-[10px] text-[var(--color-accent)] tracking-widest mb-3 flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
@@ -126,15 +126,19 @@ function LiveStatStrip() {
           <p className="text-[var(--color-space-fg)] text-sm tabular-nums">
             {staked === null ? "—" : <AnimatedNumber value={Math.round(staked)} />}
           </p>
-          <p>$INTERN STAKED (V1)</p>
+          <p>$INTERN STAKED (V2)</p>
         </div>
-        <div className="w-px bg-white/15" />
-        <div>
-          <p className="text-[var(--color-space-fg)] text-sm tabular-nums">
-            {volumeUsd === null ? "—" : `$${formatNumber(Math.round(volumeUsd))}`}
-          </p>
-          <p>24H VOLUME</p>
-        </div>
+        {volumeUsd !== null && (
+          <>
+            <div className="w-px bg-white/15" />
+            <div>
+              <p className="text-[var(--color-space-fg)] text-sm tabular-nums">
+                ${formatNumber(Math.round(volumeUsd))}
+              </p>
+              <p>24H VOLUME</p>
+            </div>
+          </>
+        )}
       </div>
     </motion.div>
   );
@@ -159,7 +163,13 @@ function Hero() {
           animate="show"
           variants={{
             hidden: {},
-            show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
+            // Tightened from staggerChildren:0.1/delayChildren:0.05 -- a
+            // live audit (2026-09-17) caught the homepage showing almost
+            // nothing but the update banner for ~2s on first paint. This
+            // choreography can't erase real network/hydration time before
+            // React mounts, but it stops adding another ~1s of staggered
+            // fade on top of it once JS does run.
+            show: { transition: { staggerChildren: 0.04, delayChildren: 0 } },
           }}
           className="max-w-xl"
         >
@@ -196,14 +206,14 @@ function Hero() {
             <motion.div
               key={i}
               variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
               {el}
             </motion.div>
           ))}
           <motion.div
             variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-wrap gap-4 mb-10"
           >
             <a
@@ -225,7 +235,7 @@ function Hero() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.45, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="relative shrink-0 w-56 sm:w-72"
         >
           <motion.div
