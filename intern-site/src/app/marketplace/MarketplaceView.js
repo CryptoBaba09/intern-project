@@ -137,7 +137,7 @@ export default function MarketplaceView() {
     <>
       <section className="px-6 pt-16 pb-12 max-w-6xl mx-auto w-full">
         <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
-          MARKETPLACE
+          INTERNS
         </Reveal>
         <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6 max-w-2xl">
           Hire an intern. Burn some $INTERN.
@@ -191,12 +191,20 @@ export default function MarketplaceView() {
             faster. Every new hire gets the same rule: real utility, a
             real $INTERN fee, or it doesn&apos;t launch.
           </p>
-          <Link
-            href="/roadmap"
-            className="inline-block rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
-          >
-            SEE THE FULL ROADMAP →
-          </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link
+              href="/roadmap"
+              className="inline-block rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
+            >
+              SEE THE FULL ROADMAP →
+            </Link>
+            <Link
+              href="/roster"
+              className="inline-block rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
+            >
+              PITCH INTERN #5 →
+            </Link>
+          </div>
         </Reveal>
       </section>
     </>
