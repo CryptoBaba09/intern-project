@@ -39,10 +39,44 @@ export default function TradeView() {
   // several seconds of black box still left). No way to read a
   // cross-origin frame's real render state, so this uses a fixed timer
   // matching the measured real-world load time (8-13s) instead.
+  //
+  // DISCLOSED LIMITATION found the same day this timer shipped: GeckoTerminal
+  // itself occasionally fails to render at all within the timer window (a
+  // real-world load, screenshotted live) -- a third-party dependency this
+  // site doesn't control. Rather than chase that with a longer timer, the
+  // price stat below is now the page's PRIMARY content: it's read straight
+  // from Pons's own on-chain reserves (see lib/ponsPrice.js), so the page is
+  // useful even if the chart never renders. The chart becomes a secondary
+  // element, not something the page's core value depends on.
   useEffect(() => {
     const id = setTimeout(() => setChartLoaded(true), 14000);
     return () => clearTimeout(id);
   }, []);
+
+  const [priceUsd, setPriceUsd] = useState(null);
+  const [priceError, setPriceError] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/promptly/price");
+        const data = await res.json();
+        if (!cancelled) {
+          if (typeof data.priceUsd === "number") setPriceUsd(data.priceUsd);
+          else setPriceError(true);
+        }
+      } catch {
+        if (!cancelled) setPriceError(true);
+      }
+    }
+    load();
+    const id = setInterval(load, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
   return (
     <section className="px-6 pt-16 pb-24 max-w-2xl mx-auto w-full">
       <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
@@ -59,6 +93,26 @@ export default function TradeView() {
         Trades live on Pons, paired against ETH, on Robinhood Chain. We
         send you there instead of running our own swap widget — see why
         below.
+      </Reveal>
+
+      {/* Read straight from Pons's own on-chain curve reserves (see
+          lib/ponsPrice.js) -- not GeckoTerminal, not a cached API. This is
+          the page's primary content now: it works even on the days the
+          chart iframe below doesn't. */}
+      <Reveal
+        delay={0.15}
+        className="border border-[var(--color-line)] rounded-2xl p-6 bg-[var(--color-surface)] mb-6 flex items-center justify-between gap-4"
+      >
+        <span className="font-mono text-xs text-[var(--color-muted)] tracking-widest">
+          LIVE PRICE
+        </span>
+        <span className="font-mono text-2xl tabular-nums">
+          {priceError
+            ? "—"
+            : priceUsd === null
+              ? "loading…"
+              : `$${priceUsd.toFixed(priceUsd < 0.01 ? 8 : 4)}`}
+        </span>
       </Reveal>
 
       <motion.div
@@ -84,11 +138,24 @@ export default function TradeView() {
             state below instead of touching the iframe itself. */}
         <div className="relative">
           {!chartLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-surface)]">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--color-surface)]">
               <p className="font-mono text-xs text-[var(--color-muted-2)] flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
                 LOADING LIVE CHART…
               </p>
+              {/* Visible immediately, not just after the timer -- no way to
+                  detect from here whether this genuinely resolves on any
+                  given load (see the disclosed limitation above), so the
+                  escape hatch is available the whole time, not gated behind
+                  a wait. */}
+              <a
+                href={GECKOTERMINAL_POOL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs text-[var(--color-accent)] hover:underline"
+              >
+                Taking a while? Open the chart directly ↗
+              </a>
             </div>
           )}
           <iframe
