@@ -166,3 +166,15 @@ export function isTradingLive() {
 // set, never a broken or fake-fee path.
 export const LIFI_INTEGRATOR_ID = process.env.NEXT_PUBLIC_LIFI_INTEGRATOR_ID || null;
 export const LIFI_FEE_PERCENT = process.env.NEXT_PUBLIC_LIFI_FEE_PERCENT || null;
+
+// Confirmed 2026-09-18: passing `fee` to the quote API without a real,
+// registered integrator hard-rejects the whole quote (error 1011,
+// "not configured for collecting fees") -- so there's no way to use
+// the aggregator's own fee-sharing today. This is the workaround: take
+// our own cut BEFORE routing anything through it. 1% of the input
+// amount is sent straight to DEAD_ADDRESS in the same swap flow (see
+// InterndexView.js), and only the remainder gets quoted/swapped. Since
+// the fee is already in $INTERN, there's nothing to "buy back" first --
+// it's a direct burn, same "fee eaten by holders" effect, immediately
+// real instead of waiting on anyone's approval.
+export const INTERNDEX_FEE_BPS = 100n; // 1%, out of 10_000

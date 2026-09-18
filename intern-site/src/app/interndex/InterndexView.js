@@ -8,14 +8,23 @@
 //
 // Real end to end today: a quote returns a fully-formed, executable
 // transaction (to/data/value/gasLimit) with zero registration required
-// -- confirmed live 2026-09-18 against $INTERN itself. Registration
-// only gates this project earning its own fee on top (see
-// lib/lifi.js's LIFI_INTEGRATOR_ID/LIFI_FEE_PERCENT) -- swapping itself
-// never depended on that, so there's no reason to gate the UI on it.
+// -- confirmed live 2026-09-18 against $INTERN itself.
+//
+// Earning our own fee on a swap is a separate thing entirely -- the
+// aggregator's own fee-sharing hard-rejects an unregistered integrator
+// (see chain.js's INTERNDEX_FEE_BPS comment), so this takes its own 1%
+// cut BEFORE routing anything through it: a direct transfer to
+// DEAD_ADDRESS for the fee, then a quote/swap for just the remainder.
+// Two sequential wallet-signed transactions, not one -- burn first,
+// then swap, so a failed swap never leaves a burn stranded without a
+// swap to go with it (the reverse order risks the opposite: a real
+// burn with no swap if the second tx fails, which is the safer
+// direction to fail in than a swap with a silently skipped fee).
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAccount,
   useReadContract,
+  useWriteContract,
   useSendTransaction,
   useWaitForTransactionReceipt,
 } from "wagmi";
@@ -23,7 +32,7 @@ import { formatUnits, parseUnits } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
-import { CONTRACTS } from "../lib/chain";
+import { CONTRACTS, DEAD_ADDRESS, INTERNDEX_FEE_BPS } from "../lib/chain";
 import { ERC20_ABI } from "../lib/abis";
 import { fetchInterndexQuote, NATIVE_ETH_SENTINEL } from "../lib/lifi";
 
@@ -69,6 +78,10 @@ export default function InterndexView() {
       return 0n;
     }
   }, [amount, internDecimals]);
+
+  const feeAmount = (parsedAmount * INTERNDEX_FEE_BPS) / 10_000n;
+  const swapAmount = parsedAmount - feeAmount;
+
   const { data: balance } = useReadContract({
     address: CONTRACTS.internToken,
     abi: ERC20_ABI,
@@ -88,7 +101,7 @@ export default function InterndexView() {
     const requestId = ++quoteRequestId.current;
     setQuote(null);
     setQuoteError(null);
-    if (!parsedAmount) return;
+    if (!swapAmount) return;
 
     const timer = setTimeout(async () => {
       setQuoting(true);
@@ -96,8 +109,8 @@ export default function InterndexView() {
         const data = await fetchInterndexQuote({
           fromToken: CONTRACTS.internToken,
           toToken: NATIVE_ETH_SENTINEL,
-          fromAmount: parsedAmount.toString(),
-          fromAddress: address || "0x000000000000000000000000000000000000dEaD",
+          fromAmount: swapAmount.toString(),
+          fromAddress: address || DEAD_ADDRESS,
         });
         if (quoteRequestId.current === requestId) setQuote(data);
       } catch (err) {
@@ -109,16 +122,37 @@ export default function InterndexView() {
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [parsedAmount, address]);
+  }, [swapAmount, address]);
 
-  const { sendTransaction, data: txHash, isPending, error: sendError, reset } = useSendTransaction();
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash: txHash,
+  const {
+    writeContract: burnFee,
+    data: burnTxHash,
+    isPending: burnPending,
+    error: burnError,
+    reset: resetBurn,
+  } = useWriteContract();
+  const { isLoading: burnConfirming, isSuccess: burnConfirmed } = useWaitForTransactionReceipt({
+    hash: burnTxHash,
   });
 
-  function handleSwap() {
-    if (!quote?.transactionRequest) return;
-    reset();
+  const {
+    sendTransaction,
+    data: swapTxHash,
+    isPending: swapPending,
+    error: swapError,
+    reset: resetSwap,
+  } = useSendTransaction();
+  const { isLoading: swapConfirming, isSuccess: swapConfirmed } = useWaitForTransactionReceipt({
+    hash: swapTxHash,
+  });
+
+  // Set the instant the burn is sent, cleared once the swap actually
+  // fires -- covers the gap between "burn confirmed" and "swap tx
+  // sent" so the button stays disabled through it instead of
+  // flickering back to clickable for a moment.
+  const [awaitingSwap, setAwaitingSwap] = useState(false);
+
+  function fireSwap() {
     const tx = quote.transactionRequest;
     sendTransaction({
       to: tx.to,
@@ -127,7 +161,36 @@ export default function InterndexView() {
     });
   }
 
-  const busy = isPending || isConfirming;
+  function handleSwap() {
+    if (!quote?.transactionRequest) return;
+    resetBurn();
+    resetSwap();
+    if (feeAmount > 0n) {
+      setAwaitingSwap(true);
+      burnFee({
+        address: CONTRACTS.internToken,
+        abi: ERC20_ABI,
+        functionName: "transfer",
+        args: [DEAD_ADDRESS, feeAmount],
+      });
+    } else {
+      fireSwap();
+    }
+  }
+
+  // Fires the swap the moment the burn confirms -- the two txs are
+  // sequential by construction (the swap amount is only ever quoted
+  // for the post-fee remainder), so there's nothing to reconcile here,
+  // just a trigger.
+  useEffect(() => {
+    if (awaitingSwap && burnConfirmed && quote?.transactionRequest) {
+      setAwaitingSwap(false);
+      fireSwap();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [awaitingSwap, burnConfirmed]);
+
+  const busy = burnPending || burnConfirming || awaitingSwap || swapPending || swapConfirming;
 
   return (
     <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full">
@@ -179,7 +242,7 @@ export default function InterndexView() {
           </span>
         </motion.div>
 
-        <motion.div variants={fadeUp} className="font-mono text-xs text-[var(--color-muted)] mb-5 min-h-[1.5em]">
+        <motion.div variants={fadeUp} className="font-mono text-xs text-[var(--color-muted)] mb-2 min-h-[1.5em]">
           {quoting
             ? "Getting a live quote…"
             : quoteError
@@ -190,6 +253,11 @@ export default function InterndexView() {
                   ? "Waiting for a quote…"
                   : "Enter an amount to see a real, live rate."}
         </motion.div>
+        {parsedAmount > 0n && (
+          <motion.div variants={fadeUp} className="font-mono text-[10px] text-[var(--color-ember)] mb-5">
+            {formatToken(feeAmount, internDecimals, 4)} $INTERN (1%) burns directly — {formatToken(swapAmount, internDecimals, 4)} $INTERN swapped.
+          </motion.div>
+        )}
 
         {!isConnected ? (
           <motion.div variants={fadeUp} className="flex justify-center">
@@ -203,24 +271,28 @@ export default function InterndexView() {
             disabled={busy || !quote?.transactionRequest}
             className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {busy
-              ? isConfirming
-                ? "CONFIRMING…"
-                : "CONFIRM IN WALLET…"
-              : "SWAP"}
+            {burnPending
+              ? "CONFIRM BURN IN WALLET…"
+              : burnConfirming
+                ? "BURNING FEE…"
+                : swapPending
+                  ? "CONFIRM SWAP IN WALLET…"
+                  : swapConfirming
+                    ? "CONFIRMING SWAP…"
+                    : "SWAP"}
           </motion.button>
         )}
 
-        {sendError && (
+        {(burnError || swapError) && (
           <p className="font-mono text-[10px] text-[var(--color-danger)] mt-3">
-            {sendError.shortMessage || sendError.message}
+            {(burnError || swapError).shortMessage || (burnError || swapError).message}
           </p>
         )}
-        {isConfirmed && (
+        {swapConfirmed && (
           <p className="font-mono text-[10px] text-[var(--color-accent)] mt-3 text-center">
             Swapped.{" "}
             <a
-              href={`https://robinhoodchain.blockscout.com/tx/${txHash}`}
+              href={`https://robinhoodchain.blockscout.com/tx/${swapTxHash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="underline"
