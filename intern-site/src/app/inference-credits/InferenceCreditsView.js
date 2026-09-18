@@ -167,20 +167,39 @@ function PromptlyTopUp() {
     priceUsd && amount ? Number(amount.replace(/,/g, "") || 0) * priceUsd : null;
   const minAmountNeeded = priceUsd ? MIN_CREDIT_USD / priceUsd : null;
 
-  // Redeem automatically the moment the burn confirms.
+  // Redeem automatically the moment the burn confirms. Continuity across
+  // top-ups is held in this browser's localStorage, not on our server --
+  // see route.js for why that's the actual privacy property, not just an
+  // implementation detail. Storage is best-effort: a private window or
+  // cleared site data just means the next burn creates a fresh key
+  // instead of topping up the old one, which is a safe fallback, not a
+  // broken one.
   useEffect(() => {
     if (!isConfirmed || !txHash || txHash === redeemedTx || !address) return;
     setRedeemedTx(txHash);
     setRedeeming(true);
     setApiError(null);
+    let existingKeyHash = null;
+    try {
+      existingKeyHash = localStorage.getItem("intern-promptly-keyhash") || null;
+    } catch {
+      // No access to storage -- proceed without continuity.
+    }
     fetch("/api/promptly/topup", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ address, txHash }),
+      body: JSON.stringify({ address, txHash, existingKeyHash }),
     })
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Redemption failed.");
+        if (data.keyHash) {
+          try {
+            localStorage.setItem("intern-promptly-keyhash", data.keyHash);
+          } catch {
+            // Best-effort only -- the key itself still works either way.
+          }
+        }
         setResult(data);
       })
       .catch((err) => setApiError(err.message))
@@ -290,7 +309,9 @@ function PromptlyTopUp() {
           </button>
           <p className="mt-4 font-mono text-[10px] text-[var(--color-muted-2)] leading-relaxed">
             Sends a real, irreversible transfer to the dead address, then provisions a real,
-            spend-capped OpenRouter key — no wrapper, nothing to install.
+            spend-capped OpenRouter key — no wrapper, nothing to install. No email or account
+            needed, and we don&apos;t keep a record linking your wallet to the key — continuity
+            across top-ups lives in this browser, not on our servers.
           </p>
         </>
       )}

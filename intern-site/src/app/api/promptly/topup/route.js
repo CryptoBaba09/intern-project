@@ -26,16 +26,20 @@ const publicClient = createPublicClient({ chain: robinhoodChain, transport: http
 // 3-topic log for a real transfer.
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
-// Known, disclosed limitation, same shape as Rendo's usage Map: no
-// database yet, so (a) which OpenRouter key belongs to which wallet and
-// (b) which burn tx hashes have already been redeemed both live in memory
-// only, and reset on every cold start/redeploy. Fine for a low-traffic v1
-// -- the burn itself is irreversible and already permanent on-chain
-// regardless of what this server remembers, so a "lost" mapping just means
-// contacting the team to manually re-link a wallet to its key, not a loss
-// of funds.
+// Which burn tx hashes have already been redeemed lives in memory only,
+// and resets on every cold start/redeploy -- fine for a low-traffic v1,
+// since the burn itself is irreversible and already permanent on-chain
+// regardless of what this server remembers.
+//
+// Deliberately NOT tracked server-side: which OpenRouter key belongs to
+// which wallet. The key's own `name` no longer embeds the address either
+// (see below). Continuity across top-ups is the client's job now -- it
+// hands back the keyHash it already has from a previous burn -- so
+// nothing here can answer "which key did wallet X get" even if asked.
+// That's the actual privacy property: the only durably-recorded fact
+// stays the burn tx itself, which was already public on-chain before
+// this route ever existed.
 const redeemedTxHashes = new Set();
-const openRouterKeyByAddress = new Map(); // lowercase address -> { hash }
 
 const MIN_CREDIT_USD = 0.1;
 
@@ -45,7 +49,7 @@ const MIN_CREDIT_USD = 0.1;
 
 export async function POST(req) {
   try {
-    const { address, txHash } = await req.json();
+    const { address, txHash, existingKeyHash } = await req.json();
 
     if (!address || !isAddress(address)) {
       return Response.json({ error: "A connected wallet address is required." }, { status: 400 });
@@ -124,13 +128,15 @@ export async function POST(req) {
       );
     }
 
-    const addressKey = normalizedAddress.toLowerCase();
-    const existing = openRouterKeyByAddress.get(addressKey);
-
-    if (existing) {
+    // Continuity across top-ups is opt-in and client-held: if the browser
+    // that's calling us already has a keyHash saved from a previous burn
+    // (see PromptlyTopUp's localStorage read), it sends it back here and
+    // we top that key up directly by hash -- no server-side lookup by
+    // wallet involved, because no such lookup exists anymore.
+    if (existingKeyHash && typeof existingKeyHash === "string") {
       // Top up: OpenRouter's PATCH replaces `limit` outright rather than
       // incrementing it, so read the current value first.
-      const getRes = await fetch(`https://openrouter.ai/api/v1/keys/${existing.hash}`, {
+      const getRes = await fetch(`https://openrouter.ai/api/v1/keys/${existingKeyHash}`, {
         headers: { Authorization: `Bearer ${process.env.OPENROUTER_PROVISIONING_KEY}` },
       });
       if (!getRes.ok) {
@@ -142,7 +148,7 @@ export async function POST(req) {
       const currentLimit = Number(getData.data?.limit ?? getData.limit ?? 0);
       const newLimit = currentLimit + creditUsd;
 
-      const patchRes = await fetch(`https://openrouter.ai/api/v1/keys/${existing.hash}`, {
+      const patchRes = await fetch(`https://openrouter.ai/api/v1/keys/${existingKeyHash}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${process.env.OPENROUTER_PROVISIONING_KEY}`,
@@ -161,6 +167,7 @@ export async function POST(req) {
 
       return Response.json({
         status: "topped_up",
+        keyHash: existingKeyHash,
         creditAddedUsd: creditUsd,
         newLimitUsd: newLimit,
         priceUsdAtBurn: priceUsd,
@@ -170,7 +177,11 @@ export async function POST(req) {
       });
     }
 
-    // First top-up for this wallet: create a new key.
+    // No existingKeyHash supplied: create a fresh, unlinked key. The name
+    // is a random tag, not the wallet address -- OpenRouter's own
+    // dashboard shouldn't be able to tell us which wallet this came from
+    // any more than this server can.
+    const anonTag = Math.random().toString(36).slice(2, 10);
     const createRes = await fetch("https://openrouter.ai/api/v1/keys", {
       method: "POST",
       headers: {
@@ -178,7 +189,7 @@ export async function POST(req) {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        name: `intern-${normalizedAddress}`,
+        name: `intern-topup-${anonTag}`,
         limit: creditUsd,
       }),
     });
@@ -196,16 +207,16 @@ export async function POST(req) {
       throw new Error("Unexpected response from OpenRouter");
     }
 
-    openRouterKeyByAddress.set(addressKey, { hash: keyHash });
     redeemedTxHashes.add(txHash.toLowerCase());
 
     return Response.json({
       status: "created",
+      keyHash,
       key: secretKey,
       creditUsd,
       priceUsdAtBurn: priceUsd,
       amountBurned,
-      message: "Save this key now — OpenRouter only shows it once. Future burns from this wallet top up the same key.",
+      message: "Save this key now — OpenRouter only shows it once. Your next burn from this browser tops the same key up automatically.",
     });
   } catch (err) {
     console.error("[promptly] topup error:", err);
