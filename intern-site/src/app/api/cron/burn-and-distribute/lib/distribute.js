@@ -83,9 +83,11 @@ async function sendDistributionAndTreasury({ wallet, config, distributionEth, tr
   if (distributionEth > 0n) {
     const beReceived = await swapEthForBe({ wallet, config, ethAmount: distributionEth, dryRun });
     await notifyDistributor({ wallet, config, beAmount: beReceived, dryRun });
-  } else {
-    console.log("[split] Nothing to swap/distribute this run.");
+    return { beDistributed: beReceived };
   }
+
+  console.log("[split] Nothing to swap/distribute this run.");
+  return { beDistributed: 0n };
 }
 
 async function sendEth({ wallet, config, amount, to, label, dryRun }) {

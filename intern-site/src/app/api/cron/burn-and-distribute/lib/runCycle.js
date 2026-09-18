@@ -35,10 +35,11 @@ async function runCycle(wallet, config) {
 
   if (ethClaimed === 0n && internCarryover === 0n) {
     console.log("=== Run complete: nothing to do ===\n");
-    return { ethClaimed: 0n, internBurned: 0n };
+    return { ethClaimed: 0n, internBurned: 0n, beDistributed: 0n };
   }
 
   let internToBurn = internCarryover;
+  let beDistributed = 0n;
 
   if (ethClaimed > 0n) {
     const distributor = config.distributorAddress
@@ -54,13 +55,14 @@ async function runCycle(wallet, config) {
     // throws, the cycle aborts here with ethClaimed's entire unsplit
     // amount left untouched in the wallet, never partially spent on a
     // buy that only covered part of the intended burn share.
-    await sendDistributionAndTreasury({
+    const { beDistributed: beSentThisCycle } = await sendDistributionAndTreasury({
       wallet,
       config,
       distributionEth,
       treasuryEth,
       dryRun: config.dryRun,
     });
+    beDistributed = beSentThisCycle;
 
     const burnedTokens = await buyAndBurn({
       wallet,
@@ -74,7 +76,7 @@ async function runCycle(wallet, config) {
   await burnIntern({ wallet, config, amount: internToBurn, dryRun: config.dryRun });
 
   console.log("=== Run complete ===\n");
-  return { ethClaimed, internBurned: internToBurn };
+  return { ethClaimed, internBurned: internToBurn, beDistributed };
 }
 
 module.exports = { runCycle };

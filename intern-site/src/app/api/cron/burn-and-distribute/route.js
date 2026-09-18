@@ -30,6 +30,9 @@ import { NextResponse } from "next/server";
 import { ethers } from "ethers";
 import { getConfig } from "./lib/config";
 import { runCycle } from "./lib/runCycle";
+import { recordDistribution } from "../../../lib/distributionHistory";
+
+const DISTRIBUTOR_TOTAL_STAKED_ABI = ["function totalStaked() view returns (uint256)"];
 
 export const runtime = "nodejs";
 // Hobby plan's actual ceiling. Several sequential on-chain
@@ -63,11 +66,38 @@ export async function GET(request) {
 
   try {
     const result = await runCycle(wallet, config);
+
+    // Record real distribution history for the /stake APY stat -- only
+    // when BE actually moved and only for a real (non-dry) run.
+    // swapEthForBe still returns a quoted amount under dryRun (see its
+    // own comments) with no swap ever executed, so persisting that
+    // would record BE that was never actually sent -- exactly the kind
+    // of fake-number-in-a-real-stat this project has spent this whole
+    // week stripping out elsewhere.
+    if (!config.dryRun && result.beDistributed > 0n && config.distributorAddress) {
+      try {
+        const distributor = new ethers.Contract(
+          config.distributorAddress,
+          DISTRIBUTOR_TOTAL_STAKED_ABI,
+          provider
+        );
+        const totalStakedWei = await distributor.totalStaked();
+        await recordDistribution({ beDistributedWei: result.beDistributed, totalStakedWei });
+      } catch (recordErr) {
+        // Never let a history-recording failure fail the cycle itself --
+        // the real distribution already happened on-chain regardless of
+        // whether this stat gets to see it. Logged loudly so it doesn't
+        // go unnoticed.
+        console.error("[cron/burn-and-distribute] Failed to record distribution history:", recordErr.message);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       dryRun: config.dryRun,
       ethClaimed: result.ethClaimed.toString(),
       internBurned: result.internBurned.toString(),
+      beDistributed: result.beDistributed.toString(),
     });
   } catch (err) {
     // Deliberately NOT swallowed here (unlike the standalone bot's own
