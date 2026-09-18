@@ -159,7 +159,7 @@ function Hero() {
     // section's own (now transparent) background fixes both at once.
     <section className="relative overflow-hidden w-full">
       <div className="relative px-6 pt-20 pb-24 max-w-6xl mx-auto w-full">
-        <div className="relative flex flex-col lg:flex-row items-center gap-14">
+        <div className="relative flex flex-col lg:flex-row items-start gap-14">
         <motion.div
           initial="hidden"
           animate="show"
