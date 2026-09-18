@@ -21,10 +21,26 @@ export const ROBINHOOD_CHAIN_LIFI_ID = 4663;
 // transaction that's simultaneously the buyback and the burn, not two.
 // Defaults to fromAddress (the normal "send me what I'm swapping for"
 // case) when omitted.
-export async function fetchInterndexQuote({ fromToken, toToken, fromAmount, fromAddress, toAddress }) {
+//
+// fromChainId/toChainId default to Robinhood Chain -- true cross-chain
+// (confirmed live 2026-09-18: a real Ethereum ETH -> Robinhood Chain
+// $INTERN quote resolved via a bridge tool called "Relay," one of
+// Robinhood Chain's own documented bridge partners, as a single
+// signable transaction) only happens when a caller passes a different
+// fromChainId, same "explicit, not assumed" default as everywhere else
+// real money moves in this file.
+export async function fetchInterndexQuote({
+  fromToken,
+  toToken,
+  fromAmount,
+  fromAddress,
+  toAddress,
+  fromChainId,
+  toChainId,
+}) {
   const params = new URLSearchParams({
-    fromChain: String(ROBINHOOD_CHAIN_LIFI_ID),
-    toChain: String(ROBINHOOD_CHAIN_LIFI_ID),
+    fromChain: String(fromChainId || ROBINHOOD_CHAIN_LIFI_ID),
+    toChain: String(toChainId || ROBINHOOD_CHAIN_LIFI_ID),
     fromToken,
     toToken,
     fromAmount,

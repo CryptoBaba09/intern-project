@@ -18,8 +18,20 @@ import {
 } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
+import { mainnet, arbitrum, base } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
 import { robinhoodChain } from "../lib/chain";
+
+// Ethereum/Arbitrum/Base -- the three chains $interndex's cross-chain
+// swaps support (see lib/chain.js's INTERNDEX_CHAINS), and not
+// arbitrarily: they're the same three named in Robinhood Chain's own
+// docs as canonical bridge-partner chains (LI.FI/Relay/Across/Stargate
+// all support routing between them and Robinhood Chain). A wallet has
+// to actually be connected to one of these to sign a transaction
+// sourced from it -- wagmi can only switch to a chain it already knows
+// about, so all four (Robinhood Chain plus these three) need to be
+// registered here up front, not just Robinhood Chain alone.
+const CROSS_CHAINS = [mainnet, arbitrum, base];
 
 // WalletConnect (and several of the branded wallets below, which fall back
 // to it for mobile/QR connections) need a real project ID from
@@ -35,9 +47,12 @@ import { robinhoodChain } from "../lib/chain";
 // Vercel to upgrade automatically.
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "";
 
+const allChains = [robinhoodChain, ...CROSS_CHAINS];
+const allTransports = Object.fromEntries(allChains.map((c) => [c.id, http()]));
+
 const config = projectId
   ? createConfig({
-      chains: [robinhoodChain],
+      chains: allChains,
       connectors: connectorsForWallets(
         [
           {
@@ -56,13 +71,13 @@ const config = projectId
         ],
         { appName: "$INTERN", projectId }
       ),
-      transports: { [robinhoodChain.id]: http() },
+      transports: allTransports,
       ssr: true,
     })
   : createConfig({
-      chains: [robinhoodChain],
+      chains: allChains,
       connectors: [injected()],
-      transports: { [robinhoodChain.id]: http() },
+      transports: allTransports,
       ssr: true,
     });
 
