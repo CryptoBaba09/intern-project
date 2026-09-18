@@ -1,22 +1,17 @@
 "use client";
 
-// $interndex -- $INTERN's own swap-facilitation front end, routed
-// through LI.FI rather than a swap contract this project would have to
-// build and audit itself. Confirmed live on Robinhood Chain from day
-// one (Robinhood's own wallet uses LI.FI here), and confirmed 2026-09-18
-// via a real li.quest/v1/quote call that it already routes $INTERN
-// itself through a real DEX ("fly") at a real price -- see lib/lifi.js.
+// $interndex -- $INTERN's own swap-facilitation front end. Routed
+// through a real, live third-party aggregator behind the scenes (see
+// lib/lifi.js for which one and why) -- deliberately not named here in
+// the UI; which backend does the routing is an implementation detail,
+// not something a user needs to know.
 //
-// Two real, separate gates, not one:
-//   1. Quotes are real and live *today* -- LI.FI's public API needs no
-//      registration for these, so this page always shows a genuine
-//      live rate, same discipline as every other live number on this
-//      site.
-//   2. Actually swapping (and this project earning its integrator fee
-//      on it) needs a real partner registration at portal.li.fi with a
-//      real fee-collection wallet -- a business step for the team, not
-//      an engineering one. isInterndexLive() gates on that, not on
-//      whether quoting works.
+// Real end to end today: a quote returns a fully-formed, executable
+// transaction (to/data/value/gasLimit) with zero registration required
+// -- confirmed live 2026-09-18 against $INTERN itself. Registration
+// only gates this project earning its own fee on top (see
+// lib/lifi.js's LIFI_INTEGRATOR_ID/LIFI_FEE_PERCENT) -- swapping itself
+// never depended on that, so there's no reason to gate the UI on it.
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAccount,
@@ -28,7 +23,7 @@ import { formatUnits, parseUnits } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
-import { CONTRACTS, isInterndexLive } from "../lib/chain";
+import { CONTRACTS } from "../lib/chain";
 import { ERC20_ABI } from "../lib/abis";
 import { fetchInterndexQuote, NATIVE_ETH_SENTINEL } from "../lib/lifi";
 
@@ -50,14 +45,6 @@ function LiveBadge({ children }) {
   );
 }
 
-function PreviewBadge({ children }) {
-  return (
-    <span className="font-mono text-[10px] text-[var(--color-ember)] border border-[var(--color-ember)]/30 rounded-full px-2.5 py-1 tracking-widest">
-      {children}
-    </span>
-  );
-}
-
 function formatToken(value, decimals = 18, maxFractionDigits = 6) {
   if (value === undefined || value === null) return "—";
   return Number(formatUnits(value, decimals)).toLocaleString(undefined, {
@@ -67,7 +54,6 @@ function formatToken(value, decimals = 18, maxFractionDigits = 6) {
 
 export default function InterndexView() {
   const { address, isConnected } = useAccount();
-  const live = isInterndexLive();
 
   const [amount, setAmount] = useState("");
   const [quote, setQuote] = useState(null);
@@ -147,10 +133,9 @@ export default function InterndexView() {
     <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full">
       <Reveal className="flex flex-wrap items-center gap-3 mb-4">
         <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest">
-          $INTERNDEX · POWERED BY LI.FI
+          $INTERNDEX
         </p>
-        <LiveBadge>LIVE QUOTES</LiveBadge>
-        {!live && <PreviewBadge>SWAP NOT LIVE</PreviewBadge>}
+        <LiveBadge>LIVE</LiveBadge>
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6 max-w-xl">
         Swap through $INTERN.
@@ -160,11 +145,8 @@ export default function InterndexView() {
         delay={0.1}
         className="text-[var(--color-muted)] text-lg leading-relaxed max-w-xl mb-10"
       >
-        Real routing via LI.FI — live on Robinhood Chain from day one,
-        the same infra Robinhood&apos;s own wallet uses. Quotes below are
-        real and live today. Executing a swap here, and this project
-        earning a fee on it, is gated on a real partner registration —
-        not live yet, see below.
+        Real, live rates for $INTERN, swapped straight from your
+        wallet.
       </Reveal>
 
       <motion.div
@@ -199,11 +181,11 @@ export default function InterndexView() {
 
         <motion.div variants={fadeUp} className="font-mono text-xs text-[var(--color-muted)] mb-5 min-h-[1.5em]">
           {quoting
-            ? "Getting a live quote from LI.FI…"
+            ? "Getting a live quote…"
             : quoteError
               ? quoteError
               : quote
-                ? `≈ ${formatToken(quote.estimate.toAmount)} ETH via ${quote.toolDetails?.name || quote.tool} — min ${formatToken(quote.estimate.toAmountMin)} after slippage`
+                ? `≈ ${formatToken(quote.estimate.toAmount)} ETH — min ${formatToken(quote.estimate.toAmountMin)} after slippage`
                 : parsedAmount > 0n
                   ? "Waiting for a quote…"
                   : "Enter an amount to see a real, live rate."}
@@ -218,16 +200,14 @@ export default function InterndexView() {
             variants={fadeUp}
             type="button"
             onClick={handleSwap}
-            disabled={!live || busy || !quote?.transactionRequest}
+            disabled={busy || !quote?.transactionRequest}
             className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {!live
-              ? "SWAP NOT LIVE — FEE REGISTRATION PENDING"
-              : busy
-                ? isConfirming
-                  ? "CONFIRMING…"
-                  : "CONFIRM IN WALLET…"
-                : "SWAP"}
+            {busy
+              ? isConfirming
+                ? "CONFIRMING…"
+                : "CONFIRM IN WALLET…"
+              : "SWAP"}
           </motion.button>
         )}
 
@@ -252,11 +232,9 @@ export default function InterndexView() {
       </motion.div>
 
       <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-6 leading-relaxed max-w-xl">
-        Quotes come straight from LI.FI&apos;s public API — real routing,
-        real price, no registration needed to look. The SWAP button
-        stays off until this project is a real, registered LI.FI
-        partner with a real fee-collection wallet, so no fee is ever
-        implied here before one actually exists.
+        Non-custodial — this swaps straight from your connected wallet.
+        Verify the contract address on Blockscout before connecting if
+        you&apos;re unsure.
       </p>
     </section>
   );

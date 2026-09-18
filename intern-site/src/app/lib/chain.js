@@ -154,22 +154,15 @@ export function isTradingLive() {
   return Boolean(CONTRACTS.internToken);
 }
 
-// interndex -- $INTERN's own swap-facilitation front end, routed through
-// LI.FI (confirmed live on Robinhood Chain from day one -- Robinhood's
-// own wallet uses it for Robinhood Chain swaps -- and confirmed 2026-09-18
-// via a real li.quest/v1/quote call that it already finds a route for
-// $INTERN itself, through a DEX called "fly," at a real price). Quotes
-// work against LI.FI's public API with no registration at all -- see
-// lib/lifi.js. Actually COLLECTING an integrator fee on top needs a real
-// partner registration at portal.li.fi with a real fee-collection wallet,
-// which is a business step for the team to do, not something this code
-// can do on its own. Deliberately no hardcoded fallback, same reasoning
-// as rewardsRouter above: leaving this unset is what keeps the real
-// swap/execute button showing NOT LIVE instead of a path nobody's
-// registered a fee for or tested with real funds.
+// interndex -- $INTERN's own swap-facilitation front end (see
+// interndex/InterndexView.js). Swapping itself needs no registration at
+// all -- confirmed 2026-09-18 that a quote already returns a fully
+// executable transaction with zero setup. These two only gate whether
+// this project earns its own fee on top of a swap; that's a real
+// partner registration with a real fee-collection wallet, a business
+// step for the team to do, not something this code can do on its own.
+// Deliberately no hardcoded fallback, same reasoning as rewardsRouter
+// above: leaving this unset just means swaps run fee-free until it's
+// set, never a broken or fake-fee path.
 export const LIFI_INTEGRATOR_ID = process.env.NEXT_PUBLIC_LIFI_INTEGRATOR_ID || null;
 export const LIFI_FEE_PERCENT = process.env.NEXT_PUBLIC_LIFI_FEE_PERCENT || null;
-
-export function isInterndexLive() {
-  return Boolean(LIFI_INTEGRATOR_ID);
-}
