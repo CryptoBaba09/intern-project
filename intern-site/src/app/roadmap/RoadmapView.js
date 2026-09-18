@@ -173,8 +173,8 @@ function Protocol() {
     },
     {
       title: "$interndex",
-      body: "Swap facilitation routed through LI.FI (confirmed live on Robinhood Chain from day one, already routing real $INTERN quotes). Quotes are live now. Actually swapping, and this project earning a fee on it, needs a real LI.FI partner registration with a real fee-collection wallet -- not live yet.",
-      status: "LIVE QUOTES",
+      body: "Swap $INTERN straight from the site, non-custodially, at a live real-time rate. This project earning its own fee on top of a swap is still in design.",
+      status: "LIVE",
       href: "/interndex",
     },
     {
