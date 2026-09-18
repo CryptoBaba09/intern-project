@@ -10,6 +10,7 @@ import ContractAddressBar from "./components/ContractAddressBar";
 import Mascot from "./components/Mascot";
 import AnimatedNumber from "./components/AnimatedNumber";
 import InternFamilyScene from "./components/InternFamilyScene";
+import InterndexWidget from "./components/InterndexWidget";
 import { Reveal, fadeUp, staggerContainer } from "./components/motion";
 import { formatNumber } from "./lib/format";
 import {
@@ -240,12 +241,13 @@ function Hero() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.45, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="relative shrink-0 w-56 sm:w-72"
+          className="relative shrink-0 w-full max-w-sm lg:w-[22rem]"
         >
+          <InterndexWidget />
           <motion.div
             animate={{ y: [0, -14, 0] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-            className="relative drop-shadow-[0_20px_50px_rgba(0,200,5,0.22)]"
+            className="relative w-28 sm:w-36 mx-auto -mt-4 opacity-90 drop-shadow-[0_20px_50px_rgba(0,200,5,0.22)]"
           >
             <Mascot className="w-full h-full" />
           </motion.div>

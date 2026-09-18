@@ -171,16 +171,22 @@ export const LIFI_FEE_PERCENT = process.env.NEXT_PUBLIC_LIFI_FEE_PERCENT || null
 // registered integrator hard-rejects the whole quote (error 1011,
 // "not configured for collecting fees") -- so there's no way to use
 // the aggregator's own fee-sharing today. This is the workaround: take
-// our own cut BEFORE routing anything through it. 1% of the input
-// amount is sent straight to DEAD_ADDRESS in the same swap flow (see
-// InterndexView.js), and only the remainder gets quoted/swapped.
-// When the fee-cut is already $INTERN, it's a direct burn -- nothing
-// to buy back. When it isn't (swapping FROM some other token), the
-// fee-cut gets quoted TO $INTERN with the swap's own `toAddress` set
-// to DEAD_ADDRESS -- one real transaction that's simultaneously the
-// buyback and the burn (confirmed live 2026-09-18: a real ETH->INTERN
-// quote with toAddress=dead returned a valid transactionRequest with
-// action.toAddress echoing the dead address back). Either way, "fee
+// our own 1% cut in whichever currency ISN'T $INTERN at the moment it
+// converts, then buy back and burn with it -- real buy pressure, not
+// just supply reduction (see useInterndexSwap.js's handleSwap):
+//   - Buying $INTERN, or swapping between two other tokens: the input
+//     already isn't $INTERN, so the cut is taken BEFORE the main swap
+//     and quoted straight to $INTERN with `toAddress` set to
+//     DEAD_ADDRESS -- one transaction, simultaneously the buyback and
+//     the burn.
+//   - Selling $INTERN: cutting the fee from the $INTERN being sold
+//     would just burn supply that was leaving anyway, no real buy
+//     order. So the FULL amount swaps out first, and the cut is taken
+//     AFTER, as 1% of what came back -- that's what actually creates
+//     buy pressure on $INTERN.
+// Confirmed live 2026-09-18: a real ETH->INTERN quote with
+// toAddress=dead returned a valid transactionRequest with
+// action.toAddress echoing the dead address back. Either way, "fee
 // eaten by holders" happens for real, immediately, without waiting on
 // anyone's approval.
 export const INTERNDEX_FEE_BPS = 100n; // 1%, out of 10_000
