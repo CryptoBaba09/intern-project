@@ -11,14 +11,21 @@ import Link from "next/link";
 // Hardcode the campaign here when it changes or ends -- there's exactly
 // one live campaign at a time, so a config array is more machinery than
 // this needs right now.
+//
+// Swapped in 2026-09-18 for the trading competition (ends 2026-09-25,
+// before the migration deadline) -- the migration reminder isn't gone,
+// it still surfaces automatically on /stake for any wallet actually
+// holding v1 (see MigrationBox), same pattern Nav.js's own comment
+// describes for why it dropped out of primary nav. Swap this object
+// back once the competition ends, or replace it with whatever's next.
 const CAMPAIGN = {
-  id: "migrate-v1-v2-sep-2026",
-  href: "/migrate",
-  start: "2026-09-16",
-  end: "2026-10-01",
-  label: "Now live on Pons",
-  copy: "$INTERN fully migrated off Pair.fund's broken route on Sep 10. Still holding v1 tokens? Migrate 1:1 before the Oct 1 deadline.",
-  noCountdown: true,
+  id: "trading-competition-sep-2026",
+  href: "/trade",
+  cta: "Go trade →",
+  start: "2026-09-18",
+  end: "2026-09-25",
+  label: "$INTERN Trading Competition",
+  copy: "Top 3 net-buyers win a real tokenized stock of their choice (TSLA, NVDA, BE, or SPCX) from treasury — $50 / $30 / $20, $100 minimum net-buy volume to qualify.",
 };
 
 function daysLeft() {
@@ -73,7 +80,7 @@ export default function AnnouncementBar() {
             <strong className="font-semibold">{CAMPAIGN.label}</strong> — {CAMPAIGN.copy}
           </span>
           <span className="font-mono text-xs text-[#D9A441] group-hover:underline shrink-0">
-            See the rules →
+            {CAMPAIGN.cta ?? "See the rules →"}
           </span>
         </div>
         <button
