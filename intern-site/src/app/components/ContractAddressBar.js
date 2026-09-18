@@ -22,7 +22,7 @@ export default function ContractAddressBar() {
 
   return (
     <div className="w-full max-w-md">
-      <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2 text-center">
+      <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">
         CONTRACT ADDRESS &mdash; VERIFY IT YOURSELF
       </p>
       <button
