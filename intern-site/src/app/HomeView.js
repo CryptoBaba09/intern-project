@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import BuyCta from "./components/BuyCta";
+import ContractAddressBar from "./components/ContractAddressBar";
 import Mascot from "./components/Mascot";
 import AnimatedNumber from "./components/AnimatedNumber";
 import InternFamilyScene from "./components/InternFamilyScene";
@@ -254,9 +255,10 @@ function Hero() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative mt-16 max-w-md"
+        className="relative mt-16 max-w-md flex flex-col items-center gap-6"
       >
         <BuyCta />
+        <ContractAddressBar />
       </motion.div>
       </div>
     </section>
