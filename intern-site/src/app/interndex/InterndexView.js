@@ -15,6 +15,7 @@ import Image from "next/image";
 import ConnectWalletButton from "../components/ConnectWalletButton";
 import PersonaIntroVideo from "../components/PersonaIntroVideo";
 import TokenSearchSelect from "../components/TokenSearchSelect";
+import Confetti from "../components/Confetti";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
 import { useInterndexSwap, formatToken, ROBINHOOD_CHAIN_ID } from "./useInterndexSwap";
@@ -204,6 +205,7 @@ export default function InterndexView() {
         {s.flowError && (
           <p className="font-mono text-[10px] text-[var(--color-danger)] mt-3">{s.flowError}</p>
         )}
+        <Confetti fire={s.flowStep === "done" ? s.lastTxHash : null} />
         {s.flowStep === "done" && s.lastTxHash && (
           <p className="font-mono text-[10px] text-[var(--color-accent)] mt-3 text-center">
             Swapped.{" "}

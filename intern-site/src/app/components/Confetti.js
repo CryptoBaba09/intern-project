@@ -1,87 +1,61 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
-// Fires a short, physical confetti burst -- purely decorative, no data
-// behind it, triggered imperatively right after a REAL confirmed
-// transaction (a stake, a burn) so the celebration always corresponds
-// to something that actually happened on-chain, never to an optimistic
-// guess. Mount once per page with a `burstKey` that changes (e.g. the
-// confirmed tx hash) to fire a new burst without remounting anything
-// else on the page.
-const COLORS = ["#00C805", "#D9A441", "#9B5DE5", "#2DD4BF", "#F5A623"];
+const COLORS = ["#00c805", "#ff6b35", "#ffd23f", "#ee4266", "#3bceac", "#ffffff"];
 
-export default function Confetti({ burstKey }) {
-  const canvasRef = useRef(null);
+// Fires a burst of falling confetti whenever `fire` changes to a new
+// truthy value (pass the swap's tx hash) -- used to celebrate a
+// completed $interndex swap.
+export default function Confetti({ fire }) {
+  const [pieces, setPieces] = useState([]);
 
   useEffect(() => {
-    if (!burstKey) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return; // a static burst would just be visual noise
+    if (!fire) return;
+    setPieces(
+      Array.from({ length: 44 }, (_, i) => ({
+        id: `${fire}-${i}`,
+        left: Math.random() * 100,
+        delay: Math.random() * 0.25,
+        duration: 0.9 + Math.random() * 0.6,
+        rotate: Math.random() * 360,
+        color: COLORS[i % COLORS.length],
+        drift: (Math.random() - 0.5) * 120,
+      }))
+    );
+    const timer = setTimeout(() => setPieces([]), 1800);
+    return () => clearTimeout(timer);
+  }, [fire]);
 
-    const width = (canvas.width = window.innerWidth * dpr);
-    const height = (canvas.height = window.innerHeight * dpr);
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
-
-    const originX = width / 2;
-    const originY = height * 0.35;
-    const pieces = Array.from({ length: 90 }, () => {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = (Math.random() * 6 + 3) * dpr;
-      return {
-        x: originX,
-        y: originY,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 4 * dpr,
-        size: (Math.random() * 5 + 3) * dpr,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        rotation: Math.random() * Math.PI,
-        spin: (Math.random() - 0.5) * 0.3,
-        life: 1,
-      };
-    });
-
-    let raf;
-    function frame() {
-      ctx.clearRect(0, 0, width, height);
-      let anyAlive = false;
-      for (const p of pieces) {
-        p.vy += 0.25 * dpr; // gravity
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rotation += p.spin;
-        p.life -= 0.012;
-        if (p.life <= 0) continue;
-        anyAlive = true;
-        ctx.save();
-        ctx.globalAlpha = Math.max(p.life, 0);
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rotation);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
-        ctx.restore();
-      }
-      if (anyAlive) {
-        raf = requestAnimationFrame(frame);
-      } else {
-        ctx.clearRect(0, 0, width, height);
-      }
-    }
-    frame();
-
-    return () => cancelAnimationFrame(raf);
-  }, [burstKey]);
+  if (pieces.length === 0) return null;
 
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden
-      className="fixed inset-0 z-[100] pointer-events-none"
-    />
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-[100] overflow-hidden">
+      {pieces.map((p) => (
+        <span
+          key={p.id}
+          className="absolute top-0 block w-2 h-2.5 rounded-sm"
+          style={{
+            left: `${p.left}%`,
+            backgroundColor: p.color,
+            animation: `confetti-fall ${p.duration}s ease-in ${p.delay}s forwards`,
+            "--confetti-rotate": `${p.rotate}deg`,
+            "--confetti-drift": `${p.drift}px`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes confetti-fall {
+          0% {
+            transform: translate(0, -10vh) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(var(--confetti-drift), 100vh) rotate(var(--confetti-rotate));
+            opacity: 0;
+          }
+        }
+      `}</style>
+    </div>
   );
 }

@@ -11,6 +11,7 @@
 import Link from "next/link";
 import ConnectWalletButton from "./ConnectWalletButton";
 import TokenSearchSelect from "./TokenSearchSelect";
+import Confetti from "./Confetti";
 import { useInterndexSwap, formatToken, ROBINHOOD_CHAIN_ID } from "../interndex/useInterndexSwap";
 
 function ChainSelect({ chains, selected, onChange, disabled }) {
@@ -152,6 +153,7 @@ export default function InterndexWidget({ className = "" }) {
       {s.flowError && (
         <p className="font-mono text-[10px] text-[var(--color-danger)] mt-2.5">{s.flowError}</p>
       )}
+      <Confetti fire={s.flowStep === "done" ? s.lastTxHash : null} />
       {s.flowStep === "done" && s.lastTxHash && (
         <p className="font-mono text-[10px] text-[var(--color-accent)] mt-2.5 text-center">
           Swapped.{" "}
