@@ -32,6 +32,26 @@ function useTokenDecimals(address) {
   return data ?? 18;
 }
 
+// Real, protocol-wide yield from /api/stake/apy -- computed server-side
+// from actual recorded distribution history, not a hardcoded promise.
+// See that route for why it's called APR (no compounding to claim
+// credit for) and why a thin sample gets flagged rather than smoothed
+// over.
+function useStakingApr() {
+  const [state, setState] = useState({ loading: true });
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/stake/apy")
+      .then((res) => res.json())
+      .then((data) => !cancelled && setState({ loading: false, ...data }))
+      .catch(() => !cancelled && setState({ loading: false, available: false }));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return state;
+}
+
 // Raw formatUnits() output is a full-precision decimal string ("1519071.9488818153...")
 // -- unreadable as a stat. This rounds for display only; every on-chain call still
 // uses the exact bigint values, never this formatted string.
@@ -54,6 +74,46 @@ function StatCard({ label, value, suffix, accent }) {
         className={`font-mono text-2xl truncate ${accent ? "text-[var(--color-ember)]" : "text-[var(--color-fg)]"}`}
       >
         {value} {suffix && <span className="text-sm text-[var(--color-muted)]">{suffix}</span>}
+      </p>
+    </div>
+  );
+}
+
+function LiveAprCard() {
+  const apr = useStakingApr();
+
+  if (apr.loading) {
+    return <StatCard label="LIVE STAKING APR" value="…" />;
+  }
+  if (!apr.available) {
+    return (
+      <div className="rounded-2xl border border-[var(--color-line)] p-5 bg-[var(--color-surface)]">
+        <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-2">
+          LIVE STAKING APR
+        </p>
+        <p className="font-mono text-sm text-[var(--color-muted-2)] leading-snug">
+          {apr.reason || "Not available yet."}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-2xl border border-[var(--color-accent)]/30 p-5 bg-[var(--color-surface)]">
+      <div className="flex items-center justify-between mb-2">
+        <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide">LIVE STAKING APR</p>
+        {apr.lowConfidence && (
+          <span className="font-mono text-[9px] text-[var(--color-ember)] border border-[var(--color-ember)]/30 rounded-full px-1.5 py-0.5 shrink-0">
+            EARLY DATA
+          </span>
+        )}
+      </div>
+      <p className="font-mono text-2xl text-[var(--color-accent)] truncate">
+        {apr.aprPct.toLocaleString(undefined, { maximumFractionDigits: 1 })}%
+      </p>
+      <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2 leading-snug">
+        Annualized from {apr.cycleCount} real distribution{apr.cycleCount === 1 ? "" : "s"} over{" "}
+        {apr.sampleDays < 1 ? "under a day" : `${apr.sampleDays.toFixed(1)}d`}
+        {apr.lowConfidence ? " — will be noisy until more volume flows through." : "."}
       </p>
     </div>
   );
@@ -349,7 +409,7 @@ function StakeDashboard() {
         initial="hidden"
         animate="show"
         variants={staggerContainer}
-        className="grid sm:grid-cols-3 gap-4 mb-10"
+        className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10"
       >
         <motion.div variants={fadeUp}>
           <StatCard
@@ -369,6 +429,9 @@ function StakeDashboard() {
             value={formatToken(earned, beDecimals, 6)}
             accent
           />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <LiveAprCard />
         </motion.div>
       </motion.div>
 
