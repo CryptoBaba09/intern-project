@@ -171,7 +171,7 @@ export const LIFI_FEE_PERCENT = process.env.NEXT_PUBLIC_LIFI_FEE_PERCENT || null
 // registered integrator hard-rejects the whole quote (error 1011,
 // "not configured for collecting fees") -- so there's no way to use
 // the aggregator's own fee-sharing today. This is the workaround: take
-// our own 1% cut in whichever currency ISN'T $INTERN at the moment it
+// our own cut in whichever currency ISN'T $INTERN at the moment it
 // converts, then buy back and burn with it -- real buy pressure, not
 // just supply reduction (see useInterndexSwap.js's handleSwap):
 //   - Buying $INTERN, or swapping between two other tokens: the input
@@ -189,12 +189,19 @@ export const LIFI_FEE_PERCENT = process.env.NEXT_PUBLIC_LIFI_FEE_PERCENT || null
 // action.toAddress echoing the dead address back. Either way, "fee
 // eaten by holders" happens for real, immediately, without waiting on
 // anyone's approval.
-export const INTERNDEX_FEE_BPS = 100n; // 1%, out of 10_000
+//
+// Lowered from 100n (1%) to 20n (0.2%) 2026-09-19 to make this
+// genuinely competitive as a general-purpose any-to-any swap front
+// end (see INTERNDEX_CHAINS/lifiCatalog.js) rather than a 1%-fee
+// funnel people would only tolerate for reaching $INTERN specifically.
+export const INTERNDEX_FEE_BPS = 20n; // 0.2%, out of 10_000
 
-// Curated token list for $interndex's token pickers -- deliberately
-// not free-text address entry for v1 (wrong address = wrong/no quote
-// with no way for a user to sanity-check it themselves). Native ETH
-// uses LI.FI's own all-zero sentinel (see lib/lifi.js); the four
+// Pinned/default tokens -- not the only tokens $interndex can swap
+// anymore (see lib/lifiCatalog.js: the pickers now search LI.FI's own
+// live token list per chain, thousands deep), but these are what show
+// up first/by default for Robinhood Chain specifically, and what the
+// rest of this file's fee/burn logic reasons about directly. Native
+// ETH uses LI.FI's own all-zero sentinel (see lib/lifi.js); the four
 // Robinhood Stock Tokens and USDG are the same real, deployed
 // addresses REWARD_TARGET_ASSETS/CONTRACTS.usdgToken already trust.
 const NATIVE_SENTINEL = "0x0000000000000000000000000000000000000000";
@@ -206,14 +213,18 @@ export const INTERNDEX_TOKENS = [
   ...REWARD_TARGET_ASSETS,
 ];
 
-// Cross-chain source chains + their tokens -- what actually exists on
-// Ethereum/Arbitrum/Base is obviously not $INTERN/BE/TSLA (those only
-// exist on Robinhood Chain), so this is a separate, chain-specific
-// token list, not INTERNDEX_TOKENS reused. Every address here was
-// confirmed directly against LI.FI's own /v1/tokens endpoint
-// (2026-09-18), not typed from memory -- the kind of thing worth
-// getting from a live source when it's a real contract address real
-// money will be sent through.
+// Pinned/default chains -- Robinhood Chain plus the three other chains
+// it officially bridges with (LI.FI/Relay/Across/Stargate all support
+// routing between them and Robinhood Chain). The picker's real chain
+// list comes live from lifiCatalog.js's fetchLifiChains() (70 real EVM
+// chains as of 2026-09-19) -- these four just get pinned to the top
+// since they're the ones $interndex's own copy/defaults talk about,
+// and Robinhood Chain's token list here (INTERNDEX_TOKENS) is what the
+// rest of this file's fee/burn logic reasons about directly. Every
+// address below was confirmed directly against LI.FI's own /v1/tokens
+// endpoint (2026-09-18), not typed from memory -- the kind of thing
+// worth getting from a live source when it's a real contract address
+// real money will be sent through.
 export const INTERNDEX_CHAINS = [
   {
     id: 4663,
