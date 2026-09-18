@@ -416,7 +416,7 @@ function MeetTheInterns() {
             THE CREW
           </Reveal>
           <Reveal as="h2" delay={0.05} className="text-3xl sm:text-4xl font-semibold max-w-xl">
-            One family, four jobs, all real.
+            One family, five jobs, all real.
           </Reveal>
         </div>
         <Reveal delay={0.1}>
@@ -436,7 +436,7 @@ function MeetTheInterns() {
           href="/roster"
           className="font-mono text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
         >
-          Got an idea for intern #5? Pitch it →
+          Got an idea for intern #6? Pitch it →
         </Link>
       </Reveal>
     </section>

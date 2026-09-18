@@ -167,7 +167,7 @@ export default function RosterView() {
               They get burned.
             </Reveal>
             <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed mb-6">
-              Four interns are live. More are coming, and the community picks what they do. Pitch a
+              Five interns are live. More are coming, and the community picks what they do. Pitch a
               role you&apos;d actually want $INTERN to do for you — content, trading, capital
               management, whatever — and if treasury picks it up, the winner gets paid in $INTERN
               from the treasury wallet.
@@ -187,7 +187,7 @@ export default function RosterView() {
           THE CREW TODAY
         </Reveal>
         <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-10 max-w-xl">
-          Four jobs, all real. Yours could be the fifth.
+          Five jobs, all real. Yours could be the sixth.
         </Reveal>
         <Reveal delay={0.1}>
           <InternFamilyScene />

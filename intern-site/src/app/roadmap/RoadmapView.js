@@ -173,7 +173,7 @@ function Protocol() {
     },
     {
       title: "$interndex",
-      body: "Swap $INTERN straight from the site, non-custodially, at a live real-time rate. This project earning its own fee on top of a swap is still in design.",
+      body: "Fronted by Hush, the privacy intern: genuinely any-chain-to-any-token swaps, non-custodially, at a live real-time rate. Every swap's 0.2% fee cut really does buy back and burn $INTERN — confirmed live, not just designed. The confidential-swap privacy tech Hush is named for is the next target, still in the lab, no date yet.",
       status: "LIVE",
       href: "/interndex",
     },

@@ -159,7 +159,7 @@ export default function MarketplaceView() {
           The goal isn&apos;t one token you hold and hope. It&apos;s a place
           people come to actually build and run agents — where every real
           utility spends $INTERN, and that spend burns supply or rewards
-          the people staking it. Three are live today, in different
+          the people staking it. Five are live today, in different
           forms. The rest are being built in the open — check each
           one&apos;s real status before you plan around it.
         </Reveal>
@@ -211,7 +211,7 @@ export default function MarketplaceView() {
               href="/roster"
               className="inline-block rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
             >
-              PITCH INTERN #5 →
+              PITCH INTERN #6 →
             </Link>
           </div>
         </Reveal>
