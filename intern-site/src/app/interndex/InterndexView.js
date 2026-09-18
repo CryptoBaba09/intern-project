@@ -1,14 +1,23 @@
 "use client";
 
-// $interndex -- a general swap front end for $INTERN and a curated set
-// of other real tokens (see lib/chain.js's INTERNDEX_TOKENS), routed
-// through a real, live third-party aggregator behind the scenes (see
-// lib/lifi.js for which one and why) -- deliberately not named here in
-// the UI; which backend does the routing is an implementation detail,
-// not something a user needs to know.
+// $interndex -- a cross-chain swap front end into $INTERN and a
+// curated set of other real Robinhood Chain tokens (see
+// lib/chain.js's INTERNDEX_CHAINS), routed through a real, live
+// third-party aggregator behind the scenes (see lib/lifi.js for which
+// one and why) -- deliberately not named here in the UI; which backend
+// does the routing is an implementation detail, not something a user
+// needs to know.
 //
-// Real end to end today: a quote returns a fully-formed, executable
-// transaction (to/data/value/gasLimit) with zero registration required.
+// TO is always Robinhood Chain -- that's where $INTERN and the dead
+// address live, and this product's real job is funneling liquidity
+// FROM anywhere INTO it, not being a fully generic any-chain router.
+// FROM can be Robinhood Chain itself, or Ethereum/Arbitrum/Base --
+// confirmed live 2026-09-18 that a real Ethereum ETH -> Robinhood
+// Chain $INTERN quote resolves via "Relay" (one of Robinhood Chain's
+// own documented bridge partners) as a single signable transaction.
+// Swapping FROM a non-Robinhood chain needs the wallet actually
+// switched to that chain to sign anything sourced from it -- that's
+// what useSwitchChain below is for.
 //
 // Earning our own fee is a separate thing entirely -- the aggregator's
 // own fee-sharing hard-rejects an unregistered integrator (see
@@ -16,19 +25,18 @@
 // BEFORE routing the rest through it:
 //   - If you're swapping FROM $INTERN, the fee-cut is already $INTERN
 //     -- straight transfer to the dead address, no swap needed.
-//   - Otherwise, the fee-cut gets its own quote (fromToken -> $INTERN)
-//     with `toAddress` set to the dead address -- LI.FI's own executed
-//     swap delivers the bought-back $INTERN straight into it. One
-//     transaction, simultaneously the buyback and the burn. Confirmed
-//     live 2026-09-18 (ETH -> INTERN quote, toAddress=dead, real
-//     transactionRequest returned).
-// Either way, the main swap only ever covers the post-fee remainder.
+//   - Otherwise, the fee-cut gets its own quote (fromToken -> $INTERN,
+//     same fromChain, toChain always Robinhood Chain) with `toAddress`
+//     set to the dead address -- LI.FI's own executed swap delivers
+//     the bought-back $INTERN straight into it, cross-chain or not.
+//     One transaction, simultaneously the buyback and the burn.
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAccount,
   useBalance,
   usePublicClient,
   useReadContract,
+  useSwitchChain,
   useWriteContract,
   useSendTransaction,
 } from "wagmi";
@@ -36,9 +44,11 @@ import { formatUnits, parseUnits, maxUint256 } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
-import { CONTRACTS, DEAD_ADDRESS, INTERNDEX_FEE_BPS, INTERNDEX_TOKENS } from "../lib/chain";
+import { CONTRACTS, DEAD_ADDRESS, INTERNDEX_FEE_BPS, INTERNDEX_CHAINS, INTERNDEX_TOKENS } from "../lib/chain";
 import { ERC20_ABI } from "../lib/abis";
 import { fetchInterndexQuote, NATIVE_ETH_SENTINEL } from "../lib/lifi";
+
+const ROBINHOOD_CHAIN_ID = INTERNDEX_CHAINS[0].id;
 
 function isNativeToken(address) {
   return address.toLowerCase() === NATIVE_ETH_SENTINEL.toLowerCase();
@@ -59,24 +69,24 @@ function formatToken(value, decimals = 18, maxFractionDigits = 6) {
   });
 }
 
-function TokenPicker({ label, tokens, selected, onSelect, disabled }) {
+function PillPicker({ label, options, selected, onSelect, disabled, renderLabel }) {
   return (
     <div>
       <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-wide mb-2">{label}</p>
       <div className="flex flex-wrap gap-2">
-        {tokens.map((t) => (
+        {options.map((opt) => (
           <button
-            key={t.symbol}
+            key={opt.symbol || opt.id}
             type="button"
             disabled={disabled}
-            onClick={() => onSelect(t.symbol)}
+            onClick={() => onSelect(opt)}
             className={`font-mono text-xs rounded-lg px-3 py-1.5 border transition-colors disabled:opacity-40 ${
-              selected === t.symbol
+              selected === (opt.symbol || opt.id)
                 ? "border-[var(--color-accent)]/50 bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
                 : "border-[var(--color-line)] text-[var(--color-muted)] hover:text-[var(--color-fg)]"
             }`}
           >
-            {t.symbol}
+            {renderLabel ? renderLabel(opt) : opt.symbol}
           </button>
         ))}
       </div>
@@ -85,9 +95,12 @@ function TokenPicker({ label, tokens, selected, onSelect, disabled }) {
 }
 
 export default function InterndexView() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId: walletChainId } = useAccount();
   const publicClient = usePublicClient();
+  const { switchChainAsync } = useSwitchChain();
 
+  const [fromChainId, setFromChainId] = useState(ROBINHOOD_CHAIN_ID);
+  const fromChain = INTERNDEX_CHAINS.find((c) => c.id === fromChainId);
   const [fromSymbol, setFromSymbol] = useState("INTERN");
   const [toSymbol, setToSymbol] = useState("ETH");
   const [amount, setAmount] = useState("");
@@ -95,30 +108,41 @@ export default function InterndexView() {
   const [quoting, setQuoting] = useState(false);
   const [quoteError, setQuoteError] = useState(null);
 
-  const [flowStep, setFlowStep] = useState("idle"); // idle | approving | burning | swapping | done
+  const [flowStep, setFlowStep] = useState("idle"); // idle | switching | approving | burning | swapping | done
   const [flowError, setFlowError] = useState(null);
   const [lastTxHash, setLastTxHash] = useState(null);
 
-  const fromToken = INTERNDEX_TOKENS.find((t) => t.symbol === fromSymbol);
+  const fromToken = fromChain.tokens.find((t) => t.symbol === fromSymbol) || fromChain.tokens[0];
   const toToken = INTERNDEX_TOKENS.find((t) => t.symbol === toSymbol);
   const isFromNative = isNativeToken(fromToken.address);
-  const isFromIntern = fromToken.address.toLowerCase() === CONTRACTS.internToken.toLowerCase();
+  const isFromIntern =
+    fromChainId === ROBINHOOD_CHAIN_ID && fromToken.address.toLowerCase() === CONTRACTS.internToken.toLowerCase();
+  const isCrossChain = fromChainId !== ROBINHOOD_CHAIN_ID;
 
-  function selectFrom(symbol) {
+  function selectChain(chain) {
     setFlowError(null);
-    setFromSymbol(symbol);
-    if (symbol === toSymbol) setToSymbol(fromSymbol);
+    setFromChainId(chain.id);
+    // Token lists differ per chain -- reset FROM to that chain's first
+    // token rather than risk carrying over a symbol that doesn't exist
+    // there.
+    setFromSymbol(chain.tokens[0].symbol);
   }
-  function selectTo(symbol) {
+  function selectFrom(token) {
     setFlowError(null);
-    setToSymbol(symbol);
-    if (symbol === fromSymbol) setFromSymbol(toSymbol);
+    setFromSymbol(token.symbol);
+    if (fromChainId === ROBINHOOD_CHAIN_ID && token.symbol === toSymbol) setToSymbol(fromSymbol);
+  }
+  function selectTo(token) {
+    setFlowError(null);
+    setToSymbol(token.symbol);
+    if (fromChainId === ROBINHOOD_CHAIN_ID && token.symbol === fromSymbol) setFromSymbol(toSymbol);
   }
 
   const { data: fromDecimalsData } = useReadContract({
     address: isFromNative ? undefined : fromToken.address,
     abi: ERC20_ABI,
     functionName: "decimals",
+    chainId: fromChainId,
     query: { enabled: !isFromNative },
   });
   const fromDecimals = isFromNative ? 18 : fromDecimalsData ?? 18;
@@ -139,25 +163,29 @@ export default function InterndexView() {
     abi: ERC20_ABI,
     functionName: "balanceOf",
     args: [address],
+    chainId: fromChainId,
     query: { enabled: Boolean(address) && !isFromNative, refetchInterval: 8000 },
   });
   const { data: nativeBalance } = useBalance({
     address,
+    chainId: fromChainId,
     query: { enabled: Boolean(address) && isFromNative, refetchInterval: 8000 },
   });
   const balance = isFromNative ? nativeBalance?.value : erc20Balance;
 
   // Debounced live quote for the MAIN swap (the post-fee remainder,
   // delivered to the user's own wallet) -- same pattern
-  // RewardChoicePreview.js already uses. The fee-buyback quote (when
-  // needed) is fetched fresh at swap time instead, since it's a
-  // mechanical backend step, not something shown live in the UI.
+  // RewardChoicePreview.js already uses. TO is always Robinhood Chain;
+  // FROM chain/token follow whatever's picked above, cross-chain or
+  // not. The fee-buyback quote (when needed) is fetched fresh at swap
+  // time instead, since it's a mechanical backend step, not something
+  // shown live in the UI.
   const quoteRequestId = useRef(0);
   useEffect(() => {
     const requestId = ++quoteRequestId.current;
     setQuote(null);
     setQuoteError(null);
-    if (!swapAmount || fromSymbol === toSymbol) return;
+    if (!swapAmount || (fromChainId === ROBINHOOD_CHAIN_ID && fromSymbol === toSymbol)) return;
 
     const timer = setTimeout(async () => {
       setQuoting(true);
@@ -167,6 +195,8 @@ export default function InterndexView() {
           toToken: toToken.address,
           fromAmount: swapAmount.toString(),
           fromAddress: address || DEAD_ADDRESS,
+          fromChainId,
+          toChainId: ROBINHOOD_CHAIN_ID,
         });
         if (quoteRequestId.current === requestId) setQuote(data);
       } catch (err) {
@@ -178,10 +208,17 @@ export default function InterndexView() {
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [swapAmount, fromToken.address, toToken.address, fromSymbol, toSymbol, address]);
+  }, [swapAmount, fromToken.address, toToken.address, fromChainId, fromSymbol, toSymbol, address]);
 
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
+
+  async function ensureOnFromChain() {
+    if (walletChainId !== fromChainId) {
+      setFlowStep("switching");
+      await switchChainAsync({ chainId: fromChainId });
+    }
+  }
 
   async function ensureApproval(spender, requiredAmount) {
     const allowance = await publicClient.readContract({
@@ -189,6 +226,7 @@ export default function InterndexView() {
       abi: ERC20_ABI,
       functionName: "allowance",
       args: [address, spender],
+      chainId: fromChainId,
     });
     if (allowance < requiredAmount) {
       setFlowStep("approving");
@@ -197,6 +235,7 @@ export default function InterndexView() {
         abi: ERC20_ABI,
         functionName: "approve",
         args: [spender, maxUint256],
+        chainId: fromChainId,
       });
       await publicClient.waitForTransactionReceipt({ hash });
     }
@@ -207,8 +246,9 @@ export default function InterndexView() {
       to: transactionRequest.to,
       data: transactionRequest.data,
       value: transactionRequest.value ? BigInt(transactionRequest.value) : undefined,
+      chainId: fromChainId,
     });
-    await publicClient.waitForTransactionReceipt({ hash });
+    await publicClient.waitForTransactionReceipt({ hash, chainId: fromChainId });
     return hash;
   }
 
@@ -217,6 +257,8 @@ export default function InterndexView() {
     setFlowError(null);
     setLastTxHash(null);
     try {
+      await ensureOnFromChain();
+
       if (feeAmount > 0n) {
         if (isFromIntern) {
           setFlowStep("burning");
@@ -225,8 +267,9 @@ export default function InterndexView() {
             abi: ERC20_ABI,
             functionName: "transfer",
             args: [DEAD_ADDRESS, feeAmount],
+            chainId: fromChainId,
           });
-          await publicClient.waitForTransactionReceipt({ hash });
+          await publicClient.waitForTransactionReceipt({ hash, chainId: fromChainId });
         } else {
           const feeQuote = await fetchInterndexQuote({
             fromToken: fromToken.address,
@@ -234,6 +277,8 @@ export default function InterndexView() {
             fromAmount: feeAmount.toString(),
             fromAddress: address,
             toAddress: DEAD_ADDRESS,
+            fromChainId,
+            toChainId: ROBINHOOD_CHAIN_ID,
           });
           if (!isFromNative) {
             await ensureApproval(feeQuote.estimate.approvalAddress, feeAmount);
@@ -256,15 +301,17 @@ export default function InterndexView() {
     }
   }
 
-  const busy = flowStep === "approving" || flowStep === "burning" || flowStep === "swapping";
+  const busy = ["switching", "approving", "burning", "swapping"].includes(flowStep);
   const buttonLabel =
-    flowStep === "approving"
-      ? "APPROVE IN WALLET…"
-      : flowStep === "burning"
-        ? "BURNING FEE…"
-        : flowStep === "swapping"
-          ? "CONFIRM SWAP IN WALLET…"
-          : "SWAP";
+    flowStep === "switching"
+      ? `SWITCH TO ${fromChain.name.toUpperCase()} IN WALLET…`
+      : flowStep === "approving"
+        ? "APPROVE IN WALLET…"
+        : flowStep === "burning"
+          ? "BURNING FEE…"
+          : flowStep === "swapping"
+            ? "CONFIRM SWAP IN WALLET…"
+            : "SWAP";
 
   return (
     <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full">
@@ -273,12 +320,13 @@ export default function InterndexView() {
         <LiveBadge>LIVE</LiveBadge>
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6 max-w-xl">
-        Swap anything. Burn $INTERN.
+        Swap in from anywhere. Burn $INTERN.
       </Reveal>
       <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-xl mb-10">
-        Real, live rates, swapped straight from your wallet. Every
-        swap&apos;s fee buys back and burns $INTERN — automatically,
-        whatever you&apos;re trading.
+        Real, live rates — from Robinhood Chain itself, or straight
+        from Ethereum, Arbitrum, or Base. Every swap&apos;s fee buys
+        back and burns $INTERN automatically, whatever you&apos;re
+        trading.
       </Reveal>
 
       <motion.div
@@ -287,14 +335,25 @@ export default function InterndexView() {
         variants={staggerContainer}
         className="border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6"
       >
+        <motion.div variants={fadeUp} className="mb-5">
+          <PillPicker
+            label="FROM CHAIN"
+            options={INTERNDEX_CHAINS}
+            selected={fromChainId}
+            onSelect={selectChain}
+            disabled={busy}
+            renderLabel={(c) => c.name}
+          />
+        </motion.div>
+
         <motion.div variants={fadeUp} className="grid sm:grid-cols-2 gap-4 mb-5">
-          <TokenPicker label="FROM" tokens={INTERNDEX_TOKENS} selected={fromSymbol} onSelect={selectFrom} disabled={busy} />
-          <TokenPicker label="TO" tokens={INTERNDEX_TOKENS} selected={toSymbol} onSelect={selectTo} disabled={busy} />
+          <PillPicker label="FROM TOKEN" options={fromChain.tokens} selected={fromSymbol} onSelect={selectFrom} disabled={busy} />
+          <PillPicker label="TO (ROBINHOOD CHAIN)" options={INTERNDEX_TOKENS} selected={toSymbol} onSelect={selectTo} disabled={busy} />
         </motion.div>
 
         <motion.div variants={fadeUp} className="flex items-center justify-between mb-2">
           <span className="font-mono text-xs text-[var(--color-muted)] tracking-wide">
-            YOUR {fromSymbol} BALANCE
+            YOUR {fromSymbol} BALANCE ({fromChain.name})
           </span>
           <span className="font-mono text-sm text-[var(--color-fg)]">
             {isConnected ? formatToken(balance, fromDecimals, 2) : "—"}
@@ -317,7 +376,7 @@ export default function InterndexView() {
         </motion.div>
 
         <motion.div variants={fadeUp} className="font-mono text-xs text-[var(--color-muted)] mb-2 min-h-[1.5em]">
-          {fromSymbol === toSymbol
+          {!isCrossChain && fromSymbol === toSymbol
             ? "Pick two different tokens."
             : quoting
               ? "Getting a live quote…"
@@ -329,7 +388,7 @@ export default function InterndexView() {
                     ? "Waiting for a quote…"
                     : "Enter an amount to see a real, live rate."}
         </motion.div>
-        {parsedAmount > 0n && fromSymbol !== toSymbol && (
+        {parsedAmount > 0n && (isCrossChain || fromSymbol !== toSymbol) && (
           <motion.div variants={fadeUp} className="font-mono text-[10px] text-[var(--color-ember)] mb-5">
             {formatToken(feeAmount, fromDecimals, 4)} {fromSymbol} (1%) buys back &amp; burns $INTERN —{" "}
             {formatToken(swapAmount, fromDecimals, 4)} {fromSymbol} swapped to {toSymbol}.
@@ -345,7 +404,7 @@ export default function InterndexView() {
             variants={fadeUp}
             type="button"
             onClick={handleSwap}
-            disabled={busy || fromSymbol === toSymbol || !quote?.transactionRequest}
+            disabled={busy || (!isCrossChain && fromSymbol === toSymbol) || !quote?.transactionRequest}
             className="w-full rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium py-3 hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {buttonLabel}
@@ -359,12 +418,16 @@ export default function InterndexView() {
           <p className="font-mono text-[10px] text-[var(--color-accent)] mt-3 text-center">
             Swapped.{" "}
             <a
-              href={`https://robinhoodchain.blockscout.com/tx/${lastTxHash}`}
+              href={
+                isCrossChain
+                  ? undefined
+                  : `https://robinhoodchain.blockscout.com/tx/${lastTxHash}`
+              }
               target="_blank"
               rel="noopener noreferrer"
               className="underline"
             >
-              View on Blockscout ↗
+              {isCrossChain ? `Tx: ${lastTxHash}` : "View on Blockscout ↗"}
             </a>
           </p>
         )}
@@ -372,8 +435,9 @@ export default function InterndexView() {
 
       <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-6 leading-relaxed max-w-xl">
         Non-custodial — this swaps straight from your connected wallet.
-        Verify the contract address on Blockscout before connecting if
-        you&apos;re unsure.
+        A cross-chain swap needs your wallet switched to the FROM
+        chain to sign; you&apos;ll be prompted. Verify the contract
+        address on Blockscout before connecting if you&apos;re unsure.
       </p>
     </section>
   );

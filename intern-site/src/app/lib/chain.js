@@ -191,9 +191,53 @@ export const INTERNDEX_FEE_BPS = 100n; // 1%, out of 10_000
 // uses LI.FI's own all-zero sentinel (see lib/lifi.js); the four
 // Robinhood Stock Tokens and USDG are the same real, deployed
 // addresses REWARD_TARGET_ASSETS/CONTRACTS.usdgToken already trust.
+const NATIVE_SENTINEL = "0x0000000000000000000000000000000000000000";
+
 export const INTERNDEX_TOKENS = [
   { symbol: "INTERN", name: "$INTERN", address: CONTRACTS.internToken },
-  { symbol: "ETH", name: "Ether", address: "0x0000000000000000000000000000000000000000" },
+  { symbol: "ETH", name: "Ether", address: NATIVE_SENTINEL },
   { symbol: "USDG", name: "USDG", address: CONTRACTS.usdgToken },
   ...REWARD_TARGET_ASSETS,
+];
+
+// Cross-chain source chains + their tokens -- what actually exists on
+// Ethereum/Arbitrum/Base is obviously not $INTERN/BE/TSLA (those only
+// exist on Robinhood Chain), so this is a separate, chain-specific
+// token list, not INTERNDEX_TOKENS reused. Every address here was
+// confirmed directly against LI.FI's own /v1/tokens endpoint
+// (2026-09-18), not typed from memory -- the kind of thing worth
+// getting from a live source when it's a real contract address real
+// money will be sent through.
+export const INTERNDEX_CHAINS = [
+  {
+    id: 4663,
+    name: "Robinhood Chain",
+    tokens: INTERNDEX_TOKENS,
+  },
+  {
+    id: 1,
+    name: "Ethereum",
+    tokens: [
+      { symbol: "ETH", name: "Ether", address: NATIVE_SENTINEL },
+      { symbol: "USDC", name: "USD Coin", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },
+      { symbol: "USDT", name: "Tether", address: "0xdAC17F958D2ee523a2206206994597C13D831ec7" },
+    ],
+  },
+  {
+    id: 42161,
+    name: "Arbitrum",
+    tokens: [
+      { symbol: "ETH", name: "Ether", address: NATIVE_SENTINEL },
+      { symbol: "USDC", name: "USD Coin", address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831" },
+    ],
+  },
+  {
+    id: 8453,
+    name: "Base",
+    tokens: [
+      { symbol: "ETH", name: "Ether", address: NATIVE_SENTINEL },
+      { symbol: "USDC", name: "USD Coin", address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" },
+      { symbol: "USDT", name: "Tether", address: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2" },
+    ],
+  },
 ];
