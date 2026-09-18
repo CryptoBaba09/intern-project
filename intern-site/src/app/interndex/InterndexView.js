@@ -51,7 +51,7 @@ export default function InterndexView() {
   const s = useInterndexSwap();
 
   return (
-    <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full">
+    <section className="px-6 pt-16 pb-24 max-w-5xl mx-auto w-full">
       <Reveal className="flex items-center gap-4 mb-6 flex-wrap">
         <Image
           src="/personas/hush-icon.png"
@@ -67,25 +67,26 @@ export default function InterndexView() {
           <LiveBadge>LIVE</LiveBadge>
         </div>
       </Reveal>
-      <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6 max-w-xl">
+      <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6 max-w-2xl">
         Swap anything to anything. Burn $INTERN.
       </Reveal>
-      <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-xl mb-10">
-        Real, live rates across any of LI.FI&apos;s real chains and
-        tokens — not just a handful we&apos;ve hardcoded. Every
-        swap&apos;s 0.2% fee buys back and burns $INTERN automatically,
-        whatever you&apos;re trading. The confidential-swap privacy
-        tech Hush is named for is her direction, not a shipped feature
-        yet — no date.
+      <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-10">
+        Real rates across any of LI.FI&apos;s live chains and tokens —
+        not just a handful we&apos;ve hardcoded. Behind every trade, a
+        slice quietly buys back and burns $INTERN. Hush&apos;s real
+        target is further out: swaps with no wallet-to-trade trail, no
+        amounts sitting in the open — genuinely private. Still in the
+        lab, no date yet, but that&apos;s where this is headed.
       </Reveal>
 
-      <Reveal delay={0.12} className="mb-10">
-        <PersonaIntroVideo
-          src="/personas/videos/hush-intro.mp4"
-          poster="/personas/hush.png"
-          label="Hush idle animation"
-        />
-      </Reveal>
+      <div className="grid lg:grid-cols-2 gap-8 items-start mb-6">
+        <Reveal delay={0.12}>
+          <PersonaIntroVideo
+            src="/personas/videos/hush-intro.mp4"
+            poster="/personas/hush.png"
+            label="Hush idle animation"
+          />
+        </Reveal>
 
       <motion.div
         initial="hidden"
@@ -221,8 +222,9 @@ export default function InterndexView() {
           </p>
         )}
       </motion.div>
+      </div>
 
-      <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-6 leading-relaxed max-w-xl">
+      <p className="font-mono text-[10px] text-[var(--color-muted-2)] max-w-2xl">
         Non-custodial — this swaps straight from your connected wallet.
         A swap sourced from a chain other than the one your wallet is
         currently on needs it switched first; you&apos;ll be prompted.
