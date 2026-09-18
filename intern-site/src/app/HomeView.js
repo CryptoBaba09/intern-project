@@ -175,6 +175,9 @@ function Hero() {
           className="max-w-xl"
         >
           {[
+            <div key="ca" className="mb-6">
+              <ContractAddressBar />
+            </div>,
             <p
               key="eyebrow"
               className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-4"
@@ -255,10 +258,9 @@ function Hero() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative mt-16 max-w-md flex flex-col items-center gap-6"
+        className="relative mt-16 max-w-md"
       >
         <BuyCta />
-        <ContractAddressBar />
       </motion.div>
       </div>
     </section>
