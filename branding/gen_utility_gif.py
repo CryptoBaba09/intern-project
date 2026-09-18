@@ -108,3 +108,9 @@ if __name__ == "__main__":
         "Pons bonding curve today — a real pool once it graduates.",
         "/trade",
     )
+    build_gif(
+        "synapse", "Synapse", "READ CHAIN", "MAP NODES", "SEE IT LIVE",
+        "Burn and stake, mapped as a network",
+        "v1 live now, real numbers, no fee.",
+        "/synapse",
+    )
