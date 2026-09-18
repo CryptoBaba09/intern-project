@@ -266,7 +266,7 @@ function Hero() {
 function TrustStrip() {
   const items = [
     "1,000,000,000 FIXED SUPPLY",
-    "LIQUIDITY LOCKED FOREVER",
+    "NO MINT FUNCTION, EVER",
     "TWO INTERNAL SECURITY REVIEWS",
     "OPEN-SOURCE CONTRACTS ON GITHUB",
   ];

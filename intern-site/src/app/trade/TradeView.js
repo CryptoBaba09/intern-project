@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import {
   INTERN_ADDRESS,
   PONS_TRADE_URL,
+  FOMO_TRADE_URL,
   GECKOTERMINAL_POOL_URL,
   GECKOTERMINAL_EMBED_URL,
 } from "../lib/pools";
@@ -191,15 +192,26 @@ export default function TradeView() {
         <motion.p variants={fadeUp} className="font-mono text-xs text-[var(--color-muted-2)] mb-4">
           {INTERN_ADDRESS}
         </motion.p>
-        <motion.a
-          variants={fadeUp}
-          href={PONS_TRADE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3.5 hover:bg-[var(--color-accent-hover)] transition-colors"
-        >
-          TRADE ON PONS ↗
-        </motion.a>
+        <div className="flex flex-wrap gap-3">
+          <motion.a
+            variants={fadeUp}
+            href={PONS_TRADE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3.5 hover:bg-[var(--color-accent-hover)] transition-colors"
+          >
+            TRADE ON PONS ↗
+          </motion.a>
+          <motion.a
+            variants={fadeUp}
+            href={FOMO_TRADE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3.5 hover:bg-[var(--color-surface)] transition-colors"
+          >
+            TRADE ON FOMO ↗
+          </motion.a>
+        </div>
       </motion.div>
 
       <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-8 leading-relaxed max-w-xl">
