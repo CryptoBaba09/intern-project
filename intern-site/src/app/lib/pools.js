@@ -28,3 +28,12 @@ export const PONS_TRADE_URL = `https://www.ponsfamily.com/launchpad/${INTERN_ADD
 const GECKOTERMINAL_POOL_ADDRESS = "0x68da86af39b8d5347264d588f1ec6e8f31860400";
 export const GECKOTERMINAL_POOL_URL = `https://www.geckoterminal.com/robinhood/pools/${GECKOTERMINAL_POOL_ADDRESS}`;
 export const GECKOTERMINAL_EMBED_URL = `${GECKOTERMINAL_POOL_URL}?embed=1&info=1&swaps=1`;
+
+// fomo (fomo.family, FOMO Labs -- the real trading-app one, not a
+// memecoin) added Robinhood Chain support and is one of the chain's
+// biggest trading terminals. Confirmed 2026-09-18: this exact URL
+// pattern resolves to a live page showing $INTERN's real market cap
+// (checked the browser tab title read back "$4.3K MC | INTERN | fomo",
+// matching GeckoTerminal's FDV for this pool). "robinhood" is the same
+// network slug GeckoTerminal uses above, not guessed independently.
+export const FOMO_TRADE_URL = `https://fomo.family/tokens/robinhood/${INTERN_ADDRESS}`;
