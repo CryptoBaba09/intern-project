@@ -31,6 +31,7 @@
 //     the bought-back $INTERN straight into it, cross-chain or not.
 //     One transaction, simultaneously the buyback and the burn.
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import {
   useAccount,
   useBalance,
@@ -42,6 +43,7 @@ import {
 } from "wagmi";
 import { formatUnits, parseUnits, maxUint256 } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
+import PersonaIntroVideo from "../components/PersonaIntroVideo";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
 import { CONTRACTS, DEAD_ADDRESS, INTERNDEX_FEE_BPS, INTERNDEX_CHAINS, INTERNDEX_TOKENS } from "../lib/chain";
@@ -315,9 +317,20 @@ export default function InterndexView() {
 
   return (
     <section className="px-6 pt-16 pb-24 max-w-3xl mx-auto w-full">
-      <Reveal className="flex flex-wrap items-center gap-3 mb-4">
-        <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest">$INTERNDEX</p>
-        <LiveBadge>LIVE</LiveBadge>
+      <Reveal className="flex items-center gap-4 mb-6 flex-wrap">
+        <Image
+          src="/personas/hush-icon.png"
+          alt="Hush icon"
+          width={64}
+          height={64}
+          className="rounded-full border border-[var(--color-line)] w-14 h-14"
+        />
+        <div className="flex items-center gap-3 flex-wrap">
+          <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest">
+            MEET HUSH · PRIVACY INTERN
+          </p>
+          <LiveBadge>LIVE</LiveBadge>
+        </div>
       </Reveal>
       <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6 max-w-xl">
         Swap in from anywhere. Burn $INTERN.
@@ -326,7 +339,16 @@ export default function InterndexView() {
         Real, live rates — from Robinhood Chain itself, or straight
         from Ethereum, Arbitrum, or Base. Every swap&apos;s fee buys
         back and burns $INTERN automatically, whatever you&apos;re
-        trading.
+        trading. The confidential-swap privacy tech Hush is named for
+        is her direction, not a shipped feature yet — no date.
+      </Reveal>
+
+      <Reveal delay={0.12} className="mb-10">
+        <PersonaIntroVideo
+          src="/personas/videos/hush-intro.mp4"
+          poster="/personas/hush.png"
+          label="Hush idle animation"
+        />
       </Reveal>
 
       <motion.div

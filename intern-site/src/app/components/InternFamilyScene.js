@@ -148,6 +148,18 @@ export default function InternFamilyScene({ title, subtitle, ctaHref, ctaLabel }
           : null,
       href: "/synapse",
     },
+    {
+      id: "hush",
+      name: "Hush",
+      role: "Privacy Intern",
+      icon: "/personas/hush-icon.png",
+      glow: "#34D399",
+      floatOffset: 1.6,
+      status: "LIVE",
+      blurb: "Fronts $interndex — cross-chain swaps into $INTERN with every fee cut auto-bought-back and burned. The confidential-swap privacy tech she's named for is the direction, not shipped yet.",
+      stat: null,
+      href: "/interndex",
+    },
   ];
 
   const active = CREW.find((m) => m.id === activeId) ?? null;

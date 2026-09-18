@@ -44,6 +44,15 @@ const INTERNS = [
     href: "/synapse",
   },
   {
+    name: "Hush",
+    role: "Privacy Intern",
+    icon: "/personas/hush-icon.png",
+    status: "LIVE",
+    body: "The face of $interndex — swap into $INTERN from Robinhood Chain, Ethereum, Arbitrum, or Base, with every swap's fee cut auto-bought-back and burned. The confidential-swaps privacy tech she's named for is the direction she's built toward, not a shipped feature — no date yet.",
+    fee: "1% fee cut per swap, auto-buyback-and-burn — no separate charge on top",
+    href: "/interndex",
+  },
+  {
     name: "Perky",
     role: "Rewards Intern",
     status: "IN DESIGN",

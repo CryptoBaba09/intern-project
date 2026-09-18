@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { motion } from "framer-motion";
 import {
@@ -212,6 +213,31 @@ export default function TradeView() {
             TRADE ON FOMO ↗
           </motion.a>
         </div>
+      </motion.div>
+
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={staggerContainer}
+        className="border border-[var(--color-line)] rounded-2xl p-6 sm:p-8 bg-[var(--color-surface)] mt-6"
+      >
+        <motion.p variants={fadeUp} className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-2">
+          $INTERNDEX · LIVE
+        </motion.p>
+        <motion.p variants={fadeUp} className="text-[var(--color-muted)] text-sm leading-relaxed mb-4 max-w-xl">
+          Coming in from another chain? Swap straight into $INTERN from
+          Ethereum, Arbitrum, or Base — no bridging by hand. Every
+          swap&apos;s fee cut auto-buys-back and burns $INTERN,
+          whatever you&apos;re trading.
+        </motion.p>
+        <motion.div variants={fadeUp}>
+          <Link
+            href="/interndex"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3.5 hover:border-[var(--color-accent)]/50 transition-colors"
+          >
+            SWAP CROSS-CHAIN VIA $INTERNDEX →
+          </Link>
+        </motion.div>
       </motion.div>
 
       <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-8 leading-relaxed max-w-xl">
