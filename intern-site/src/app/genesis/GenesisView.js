@@ -120,9 +120,10 @@ export default function GenesisView() {
           </p>
           {progress?.isRolling24h && (
             <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-2 leading-relaxed">
-              Rolling 24h volume, not lifetime cumulative — equivalent for now since $INTERN
-              is under a day old, but this will need to become a true running total once
-              older volume starts aging out of that window.
+              Rolling 24h volume, not lifetime cumulative — $INTERN is well past a day old
+              now, so this under-counts real cumulative volume (older volume ages out of
+              the window instead of staying counted). The bar is behind where real progress
+              actually is. Needs a real Swap-event indexer to fix properly.
             </p>
           )}
         </Reveal>

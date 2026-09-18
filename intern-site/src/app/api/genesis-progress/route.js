@@ -1,3 +1,5 @@
+import { GECKOTERMINAL_POOL_ADDRESS } from "../../lib/pools";
+
 // Server-side proxy for the Genesis NFT page's live volume gate.
 //
 // Originally summed PAIR's /trades history to get true cumulative volume
@@ -9,42 +11,43 @@
 // indexed there (yet). Confirmed by cross-checking: /trades = 0 items,
 // but /api/tokens/:address's combinedVolume24hUsd was nonzero.
 //
-// So this uses that same 24h figure instead. It is NOT true
-// cumulative-since-launch volume -- it's a rolling 24h window. That's
-// fine and effectively equivalent for now (the token is under a day old,
-// so nothing has rolled off the window yet), but it will start
-// UNDER-counting real cumulative volume once $INTERN is older than 24h
-// (old volume ages out of the window instead of staying counted). Revisit
-// this once that matters -- e.g. a small persisted counter this route
-// increments on each poll, rather than trusting a rolling window as a
-// stand-in for a lifetime total.
 // BROKEN as of the 2026-09-10 migration off PAIR to Pons -- pair.fund's
 // API is dead for this purpose regardless of address (see
 // AnnouncementBar.js/BurnToCreateView.js for the migration story). Pons
 // doesn't publish a documented public REST API the way PAIR did (see
 // docs.ponsfamily.com/v2's Integration section -- it's all direct
 // on-chain reads: TokenLaunched/Swap events, slot0, graduationStatus).
-// The honest fix is indexing $INTERN's own Swap events directly (Pons's
-// own docs recommend exactly this as the trust-minimized approach) and
-// summing volume ourselves, not depending on a third party's endpoint.
-// That's real work, not done here -- this route currently 502s and the
-// Genesis page's volume gate goes quiet rather than showing stale/wrong
-// numbers (see the catch in HomeView.js's useLiveStats and
-// GenesisView.js). Left the v2 address in so whoever builds the real
-// indexer starts from the right token.
-const TOKEN_ADDRESS = "0x1293a4A3F090c091C7DA6dcca6a3bA9201B0E1C8";
+//
+// Fixed by pointing at GeckoTerminal's pool endpoint instead -- the same
+// trusted source TradeView/pools.js already link out to for the live
+// chart, and confirmed live (2026-09-18) to return this pool's real
+// volume_usd.h24 figure.
+//
+// This is STILL a rolling 24h window, not true cumulative-since-launch
+// volume -- that was an acceptable stand-in when this route was written
+// and $INTERN was under a day old (nothing had rolled off the window
+// yet). It no longer is: $INTERN migrated to this address on 2026-09-10,
+// more than a day ago, so a 24h window now UNDER-counts real cumulative
+// volume (older volume ages out instead of staying counted) rather than
+// approximating it. The honest fix is indexing $INTERN's own Swap events
+// on Pons directly (Pons's own docs recommend exactly this as the
+// trust-minimized approach) and summing volume ourselves -- real work,
+// not done here. Until then this route reports what it actually has
+// (real, live, but rolling) and GenesisView.js discloses the gap rather
+// than presenting it as the true lifetime total.
 const TARGET_USD = 1_000_000;
 
 export const revalidate = 60;
 
 export async function GET() {
   try {
-    const res = await fetch(`https://pair.fund/api/tokens/${TOKEN_ADDRESS}`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) throw new Error(`PAIR tokens API returned ${res.status} -- this route needs a Pons-based rewrite, see file header`);
+    const res = await fetch(
+      `https://api.geckoterminal.com/api/v2/networks/robinhood/pools/${GECKOTERMINAL_POOL_ADDRESS}`,
+      { next: { revalidate: 60 } }
+    );
+    if (!res.ok) throw new Error(`GeckoTerminal pools API returned ${res.status}`);
     const data = await res.json();
-    const volumeUsd = Number(data.combinedVolume24hUsd ?? data.volume24hUsd ?? 0) || 0;
+    const volumeUsd = Number(data?.data?.attributes?.volume_usd?.h24 ?? 0) || 0;
     const progressPct = Math.min(100, (volumeUsd / TARGET_USD) * 100);
 
     return Response.json({
