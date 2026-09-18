@@ -1,8 +1,34 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import dynamic from "next/dynamic";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
+
+// Code-split, not eagerly bundled -- RainbowKit's own modal/UI package is
+// one of the heavier pieces of every page's JS (see the 2026-09-19 audit:
+// ~25 separate chunks loading before any wallet button is even clicked).
+// Every page renders ConnectWalletButton via Nav.js, so a static import
+// here meant RainbowKit's UI bundle was part of the critical path for
+// visitors who never touch a wallet. ssr:false is correct, not just
+// permitted: RainbowKit's modal reads window/localStorage on init and has
+// no meaningful server-rendered form anyway. ConnectButtonSkeleton below
+// is what paints instead while the real chunk streams in -- same size and
+// shape as the eventual button so there's no layout jump when it swaps in.
+const ConnectButton = dynamic(
+  () => import("@rainbow-me/rainbowkit").then((mod) => mod.ConnectButton),
+  { ssr: false, loading: () => <ConnectButtonSkeleton /> }
+);
+
+function ConnectButtonSkeleton() {
+  return (
+    <div
+      aria-hidden
+      className="font-mono text-sm font-medium px-4 py-2 rounded-xl bg-[var(--color-accent)]/40 text-transparent select-none"
+    >
+      Connect Wallet
+    </div>
+  );
+}
 
 const HAS_PROJECT_ID = Boolean(process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID);
 
