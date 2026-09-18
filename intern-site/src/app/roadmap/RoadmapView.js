@@ -172,6 +172,12 @@ function Protocol() {
       status: "PLANNED",
     },
     {
+      title: "$interndex",
+      body: "Swap facilitation routed through LI.FI (confirmed live on Robinhood Chain from day one, already routing real $INTERN quotes). Quotes are live now. Actually swapping, and this project earning a fee on it, needs a real LI.FI partner registration with a real fee-collection wallet -- not live yet.",
+      status: "LIVE QUOTES",
+      href: "/interndex",
+    },
+    {
       title: "Genesis Interns (NFTs)",
       body: "500 Blaze-based NFTs, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further. The live volume gauge on the preview page is currently broken (PAIR's API died in the Pons migration) — shows honestly, not silently.",
       status: "IN DESIGN",
