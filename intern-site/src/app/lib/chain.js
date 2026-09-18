@@ -173,8 +173,27 @@ export const LIFI_FEE_PERCENT = process.env.NEXT_PUBLIC_LIFI_FEE_PERCENT || null
 // the aggregator's own fee-sharing today. This is the workaround: take
 // our own cut BEFORE routing anything through it. 1% of the input
 // amount is sent straight to DEAD_ADDRESS in the same swap flow (see
-// InterndexView.js), and only the remainder gets quoted/swapped. Since
-// the fee is already in $INTERN, there's nothing to "buy back" first --
-// it's a direct burn, same "fee eaten by holders" effect, immediately
-// real instead of waiting on anyone's approval.
+// InterndexView.js), and only the remainder gets quoted/swapped.
+// When the fee-cut is already $INTERN, it's a direct burn -- nothing
+// to buy back. When it isn't (swapping FROM some other token), the
+// fee-cut gets quoted TO $INTERN with the swap's own `toAddress` set
+// to DEAD_ADDRESS -- one real transaction that's simultaneously the
+// buyback and the burn (confirmed live 2026-09-18: a real ETH->INTERN
+// quote with toAddress=dead returned a valid transactionRequest with
+// action.toAddress echoing the dead address back). Either way, "fee
+// eaten by holders" happens for real, immediately, without waiting on
+// anyone's approval.
 export const INTERNDEX_FEE_BPS = 100n; // 1%, out of 10_000
+
+// Curated token list for $interndex's token pickers -- deliberately
+// not free-text address entry for v1 (wrong address = wrong/no quote
+// with no way for a user to sanity-check it themselves). Native ETH
+// uses LI.FI's own all-zero sentinel (see lib/lifi.js); the four
+// Robinhood Stock Tokens and USDG are the same real, deployed
+// addresses REWARD_TARGET_ASSETS/CONTRACTS.usdgToken already trust.
+export const INTERNDEX_TOKENS = [
+  { symbol: "INTERN", name: "$INTERN", address: CONTRACTS.internToken },
+  { symbol: "ETH", name: "Ether", address: "0x0000000000000000000000000000000000000000" },
+  { symbol: "USDG", name: "USDG", address: CONTRACTS.usdgToken },
+  ...REWARD_TARGET_ASSETS,
+];

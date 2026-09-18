@@ -14,7 +14,14 @@ export const ROBINHOOD_CHAIN_LIFI_ID = 4663;
 // actually registers at portal.li.fi) -- an unregistered `integrator`
 // string still gets a quote back, just with integratorFee forced to 0,
 // so this never silently promises a fee cut that isn't real.
-export async function fetchInterndexQuote({ fromToken, toToken, fromAmount, fromAddress }) {
+// `toAddress` is what makes the buyback-and-burn trick work (see
+// InterndexView.js): when the fee-cut isn't already $INTERN, quoting
+// fromToken -> $INTERN with toAddress set to the dead address makes
+// LI.FI's own executed swap deliver straight into it -- one
+// transaction that's simultaneously the buyback and the burn, not two.
+// Defaults to fromAddress (the normal "send me what I'm swapping for"
+// case) when omitted.
+export async function fetchInterndexQuote({ fromToken, toToken, fromAmount, fromAddress, toAddress }) {
   const params = new URLSearchParams({
     fromChain: String(ROBINHOOD_CHAIN_LIFI_ID),
     toChain: String(ROBINHOOD_CHAIN_LIFI_ID),
@@ -22,6 +29,7 @@ export async function fetchInterndexQuote({ fromToken, toToken, fromAmount, from
     toToken,
     fromAmount,
     fromAddress,
+    toAddress: toAddress || fromAddress,
     integrator: LIFI_INTEGRATOR_ID || "intern-preview",
   });
   if (LIFI_INTEGRATOR_ID && LIFI_FEE_PERCENT) {
