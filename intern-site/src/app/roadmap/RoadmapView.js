@@ -204,7 +204,10 @@ function Protocol() {
         className="text-[var(--color-muted)] text-base leading-relaxed max-w-2xl mb-10"
       >
         $INTERN is the settlement layer for a growing set of things you can
-        do with it — starting with hiring an AI agent, and going from there.
+        do with it — starting with hiring an AI agent, and going from there.{" "}
+        <Link href="/learn/buyback-and-burn" className="text-[var(--color-accent)] hover:underline">
+          Here&apos;s the on-chain proof the burn mechanics actually work →
+        </Link>
       </Reveal>
       <motion.div
         initial="hidden"

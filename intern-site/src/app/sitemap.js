@@ -11,6 +11,7 @@ const ROUTES = [
   { path: "/stake", priority: 0.9, changeFrequency: "daily" },
   { path: "/tokenomics", priority: 0.8, changeFrequency: "weekly" },
   { path: "/marketplace", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/learn/buyback-and-burn", priority: 0.8, changeFrequency: "monthly" },
   { path: "/roadmap", priority: 0.7, changeFrequency: "weekly" },
   { path: "/genesis", priority: 0.7, changeFrequency: "daily" },
   { path: "/blaze", priority: 0.6, changeFrequency: "daily" },

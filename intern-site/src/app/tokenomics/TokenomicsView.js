@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useReadContract } from "wagmi";
@@ -288,6 +289,14 @@ function HowItWorks() {
           </motion.div>
         ))}
       </motion.div>
+      <Reveal delay={0.1} className="mt-6">
+        <Link
+          href="/learn/buyback-and-burn"
+          className="font-mono text-xs text-[var(--color-accent)] hover:underline"
+        >
+          Read the full breakdown, with the on-chain proof →
+        </Link>
+      </Reveal>
     </section>
   );
 }
