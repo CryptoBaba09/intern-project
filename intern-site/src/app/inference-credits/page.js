@@ -14,7 +14,7 @@ const OG_IMAGE = {
 };
 
 export const metadata = {
-  title: "Inference Credits",
+  title: "AI Inference Credits — Burn $INTERN for API Access",
   description:
     "Burn $INTERN for a real, spend-capped OpenRouter credit top-up — live today. Staked $INTERN earning a pro-rata share of a treasury-funded credit pool is still in design.",
   openGraph: { images: [OG_IMAGE] },

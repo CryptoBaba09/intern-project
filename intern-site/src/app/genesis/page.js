@@ -1,7 +1,7 @@
 import GenesisView from "./GenesisView";
 
 export const metadata = {
-  title: "Genesis Interns",
+  title: "Genesis Intern NFTs — 500 Mint, Gated at $1M Volume",
   description:
     "500 Genesis Intern NFTs, Blaze-based, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further.",
 };

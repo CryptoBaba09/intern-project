@@ -1,9 +1,9 @@
 import InterndexView from "./InterndexView";
 
 export const metadata = {
-  title: "$interndex",
+  title: "$interndex — Any-Chain Token Swap That Burns $INTERN",
   description:
-    "Swap through $INTERN, routed via LI.FI — live on Robinhood Chain from day one. Real, live quotes today; the swap button goes live once this project is a real, registered LI.FI partner.",
+    "Swap any token, any chain, into $INTERN or anything else — live now, routed via LI.FI. Every swap's 0.2% fee auto-buys-back and burns $INTERN, confirmed on-chain.",
 };
 
 export default function InterndexPage() {

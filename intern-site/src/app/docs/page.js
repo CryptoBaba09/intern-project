@@ -1,7 +1,7 @@
 import DocsView from "./DocsView";
 
 export const metadata = {
-  title: "Docs",
+  title: "$INTERN Developer Docs — Contracts on Robinhood Chain",
   description:
     "$INTERN technical docs: network details, verified contract addresses on Robinhood Chain, tokenomics, and code snippets for reading on-chain state directly.",
 };
