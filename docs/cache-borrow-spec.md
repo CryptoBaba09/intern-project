@@ -1,11 +1,25 @@
-# Cache Borrow — lending against stock-token collateral (spec, reviewed, NOT deployed)
+# Cache Borrow — a real two-sided market for tokenized-stock collateral (spec, reviewed, NOT deployed)
 
-**Status as of 2026-09-23: contract written, 27/27 tests passing,
-Slither clean (zero High/Medium -- one informational unused-return
-finding reviewed and documented inline, see the contract itself).
-Same review bar `CacheVaultDeposit` cleared.** Neither contract is
-deployed. Market selection (no market allowlisted yet) and an
-independent professional audit are still open -- see below.
+**Status as of 2026-09-23: contract written, both sides of the market
+(borrow AND supply), 33/33 tests passing, Slither clean (zero
+High/Medium -- one informational unused-return finding reviewed and
+documented inline, see the contract itself). Same review bar
+`CacheVaultDeposit` cleared.** Neither contract is deployed. Market
+selection (no market allowlisted yet) and an independent professional
+audit are still open -- see below.
+
+**Two-sided, on purpose.** Earlier drafts of this spec only covered
+the borrow side, assuming liquidity would need to be bootstrapped
+externally (by Cache's own treasury, or by waiting for it to show up).
+Per direct instruction, the real model is simpler and more honest: any
+user can `supply()` USDG directly into one of these same allowlisted
+markets and earn yield from whoever borrows against the posted
+collateral -- an actual two-sided market, not a borrow-only feature
+waiting on someone else's capital. This is what "an Aave for tokenized
+assets" actually means in practice, and it's why `CacheBorrow.sol` now
+has `supply()`/`withdrawSupply()` alongside `depositCollateral()`/
+`borrow()`/`repay()`/`withdrawCollateral()` -- same contract, same
+allowlist, same non-custodial pattern, both sides of the trade.
 
 ## How this relates to Cache v1 (`CacheVaultDeposit.sol`)
 
@@ -59,7 +73,9 @@ COST, MRNA, TTWO, IONQ, PLTR, and more, each with an oracle and a fixed
 LLTV. **We would not need to create a new market or deploy a new
 oracle to ship this** — the primitives are already live. The work is
 choosing which existing market to point a contract at, and building the
-supply-collateral/borrow/repay/withdraw flow against it.
+full two-sided flow (supply/withdraw on the lender side,
+depositCollateral/borrow/repay/withdrawCollateral on the borrower
+side) against it.
 
 ### Finding 2: liquidity is thin and scattered, and multiple competing markets exist per ticker
 
@@ -97,11 +113,13 @@ oracle address, cross-checked against `api.morpho.org/graphql`.)
   collateralToken, oracle, irm, lltv) by full tuple, not by ticker.
 - **Every one of these pools is currently too shallow to support real
   consumer borrow volume.** Even AAPL's $239K is sitting almost
-  entirely idle ($101 borrowed — a 0.04% utilization rate). Shipping a
-  "borrow against your TSLA" UI today would either show users an empty
-  market, or work for genuinely small amounts only. This is a real
-  liquidity-bootstrap problem, not just a UI problem — see "Open
-  questions" below.
+  entirely idle ($101 borrowed — a 0.04% utilization rate). This is
+  less of a blocker than it first looks, though: with `supply()` now
+  live in the contract, real liquidity doesn't have to come from Cache's
+  own treasury — any user can supply USDG directly and start earning
+  yield the moment a market is allowlisted. The bootstrap problem is
+  "will the first suppliers show up," not "do we have to fund it
+  ourselves."
 
 ## Contract, tests, in-house review — done, 2026-09-23
 
@@ -115,23 +133,27 @@ oracle address, cross-checked against `api.morpho.org/graphql`.)
   it.
 - **Every function selector confirmed live on-chain, not assumed from
   docs.** `supplyCollateral`, `borrow`, `repay`, `withdrawCollateral`,
-  `isAuthorized` -- all five present in the real deployed bytecode at
-  Morpho's core singleton (`0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010`),
-  plus a live `isAuthorized(dead, dead)` read that executed
-  successfully and returned `false` as expected. Same verification
-  standard `CacheVaultDeposit`'s vault address got.
-- **27/27 tests passing** (`contracts/test/CacheBorrow.test.js`) --
-  allowlist gating, non-custody (every position lands under the
-  caller's own address in Morpho's ledger, never this contract's),
-  the fee skim + `minReceived` slippage floor (including the
-  feeBps-changes-mid-flight scenario), the repay-refund-leftover path,
-  and every owner-only admin function.
+  `isAuthorized`, `supply`, `withdraw` -- all seven present in the real
+  deployed bytecode at Morpho's core singleton
+  (`0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010`), plus a live
+  `isAuthorized(dead, dead)` read that executed successfully and
+  returned `false` as expected. Same verification standard
+  `CacheVaultDeposit`'s vault address got.
+- **33/33 tests passing** (`contracts/test/CacheBorrow.test.js`) --
+  allowlist gating, non-custody on both sides (every position, whether
+  collateral, debt, or supplied liquidity, lands under the caller's
+  own address in Morpho's ledger, never this contract's), the fee skim
+  + slippage floor on both `borrow()` (`minReceived`) and `supply()`
+  (`minSharesOut`), including the feeBps-changes-mid-flight scenario,
+  the repay-refund-leftover path, and every owner-only admin function.
 - **Slither: zero High/Medium findings.** One informational
   `unused-return` flag on `borrow()`'s discarded `sharesBorrowed`
   value -- reviewed and documented inline in the contract: this
   contract's fee math only needs `assetsBorrowed`, and Morpho tracks
   the caller's share-denominated debt internally regardless. Same
-  cosmetic-only result class `CacheVaultDeposit` got.
+  cosmetic-only result class `CacheVaultDeposit` got. `supply()`'s and
+  `withdrawSupply()`'s own return values are both fully used (returned
+  and emitted), so neither triggered the same flag.
 - **Still not an independent professional audit.** Same floor-not-
   substitute honesty as everywhere else real money moves in this
   codebase -- and given the liquidation/oracle risk here is
@@ -161,13 +183,21 @@ That's the whole mechanism this design leans on:
   marketParams, assets, onBehalf: msg.sender, data: "")`. Collateral
   position is the user's own from the instant it posts; the contract
   holds the token for one transaction only, same as always.
-- `repay(MarketParams, uint256 assets)` / `withdrawCollateral(MarketParams,
-  uint256 assets)` — same direct `onBehalf: msg.sender` pattern. No
-  fee on either (see below). These two could arguably be called
-  straight against Morpho from the frontend with no contract in the
-  middle at all, since there's no fee to intercept — worth deciding
-  once the frontend framework for this exists, not a contract-design
-  question.
+- `CacheBorrow.supply(MarketParams, uint256 assets, uint256 minSharesOut)`
+  — the lender side, symmetric to `borrow()`: pulls USDG from the
+  caller, skims 0.2%, calls `Morpho.supply(marketParams, netAssets, 0,
+  onBehalf: msg.sender, data: "")`. The supply position (Morpho shares)
+  is the caller's own from the instant it's created. `minSharesOut`
+  guards the same share-price-movement risk `CacheVaultDeposit`'s
+  `minShares` already guards.
+- `repay(MarketParams, uint256 assets, uint256 shares, uint256 maxAssetsIn)`
+  / `withdrawCollateral(MarketParams, uint256 assets)` /
+  `withdrawSupply(MarketParams, uint256 assets, uint256 shares)` — same
+  direct `onBehalf: msg.sender` pattern. No fee on any of the three
+  (see below). These could arguably be called straight against Morpho
+  from the frontend with no contract in the middle at all, since
+  there's no fee to intercept — worth deciding once the frontend
+  framework for this exists, not a contract-design question.
 
 **Explicitly rejected: the delegated-operator model.** Morpho also
 supports `setAuthorization(address operator, bool)`, letting a user
@@ -183,11 +213,13 @@ more; this preserves that exact bar). Every action here needs the
 user's own signature on that specific transaction, same UX bar as
 deposit/swap/convert already ship at.
 
-**Fee — proposed, mirroring the existing deposit fee exactly (pending confirmation):**
+**Fee — confirmed, mirroring the existing deposit fee exactly:**
 
-One-time 0.2% skim on the amount actually borrowed (borrow 1,000 USDG
-→ user receives 998, 2 goes to `feeRecipient`), not an ongoing spread
-on the interest rate. Rejected the interest-rate-markup shape
+One-time 0.2% skim, applied symmetrically on both sides where capital
+actually enters to do work: on `borrow()` (borrow 1,000 USDG → user
+receives 998, 2 goes to `feeRecipient`), and on `supply()` (supply
+1,000 USDG → 998 actually earns yield). Not an ongoing spread on the
+interest rate either way. Rejected the interest-rate-markup shape
 deliberately: Morpho's interest rate model is fixed per market at
 creation, so a spread on top would mean `CacheBorrow` independently
 tracking accrued interest per position outside Morpho's own
@@ -199,17 +231,18 @@ swaps, 0.2% on $interndex swaps, 0.2% on Cache deposits).
 
 Skimmed USDG accumulates at `feeRecipient` and gets swapped-and-burned
 via the same existing manual cycle `CacheVaultDeposit` already uses —
-not an inline USDG→ETH swap-and-burn inside the borrow transaction
-itself, same reasoning as `CacheVaultDeposit`'s own NatSpec: $INTERN
-v2 only trades against native ETH pre-graduation, so bolting a swap
-router onto a borrow contract for a fee that's a rounding error isn't
-worth the widened audit surface.
+not an inline USDG→ETH swap-and-burn inside the transaction itself,
+same reasoning as `CacheVaultDeposit`'s own NatSpec: $INTERN v2 only
+trades against native ETH pre-graduation, so bolting a swap router on
+for a fee that's a rounding error isn't worth the widened audit
+surface.
 
-**No fee on `supplyCollateral()`, `repay()`, or `withdrawCollateral()`.**
-Posting collateral isn't extracting value — it's a prerequisite step
-before borrowing — so charging there would tax participation, not
-utility. Same principle Cache v1 already applies (fee at deposit, none
-at withdrawal).
+**No fee on `supplyCollateral()`, `repay()`, `withdrawCollateral()`, or
+`withdrawSupply()`.** Posting collateral isn't extracting value — it's
+a prerequisite step before borrowing. Withdrawing (either side) is
+just closing a position already paid for at entry, not a new
+value-creating action. Same principle Cache v1 already applies (fee at
+deposit, none at withdrawal).
 
 ## Risk surface this introduces (does not exist in Cache v1)
 
@@ -249,11 +282,11 @@ at withdrawal).
    `receiver = address(this)` only on `borrow()` to intercept the fee.
    No `setAuthorization()`, no standing custody.
 2. ~~Fee model — skim on borrow, on repay, neither?~~ **Confirmed
-   2026-09-23** — one-time 0.2% skim on the borrowed amount at
-   `borrow()` only, mirroring the existing deposit fee exactly. No
-   ongoing interest-rate spread, no inline buy-and-burn (accumulates
-   and burns via the existing cycle, same as the deposit fee). See
-   Architecture above.
+   2026-09-23** — one-time 0.2% skim, symmetric on both `borrow()` and
+   `supply()`, mirroring the existing deposit fee exactly. No ongoing
+   interest-rate spread, no inline buy-and-burn (accumulates and burns
+   via the existing cycle, same as the deposit fee). See Architecture
+   above.
 3. ~~Ship straight to production for live testing, skipping review?~~
    **Explicitly declined, 2026-09-23** — same bar as every other live
    contract here: build, unit-test, Slither + manual review, then a
@@ -261,6 +294,11 @@ at withdrawal).
    of the above. `CacheVaultDeposit.sol`'s own deployment stays paired
    with `CacheBorrow.sol`'s rather than shipping the already-reviewed
    one alone, per instruction.
+4. ~~Do we supply our own liquidity into these markets?~~ **Resolved
+   2026-09-23** — no treasury bootstrap needed. `supply()` lets any
+   user park their own USDG directly into an allowlisted market and
+   earn yield from real borrowers — a genuine two-sided market, not a
+   borrow-only feature waiting on Cache's own capital.
 
 ## Open questions — still need answers before this becomes a real spec
 
@@ -272,14 +310,10 @@ at withdrawal).
    oracle vetting or waiting for real liquidity to show up. The
    contract's owner-controlled allowlist (`setMarketAllowed`) is built
    for exactly this — no market is reachable until explicitly approved.
-2. **Do we supply our own liquidity** into whichever markets we pick
-   (bootstrapping the borrow side with Cache's own or treasury USDG),
-   or only build the UI and accept it may show near-empty markets at
-   launch?
-3. **Liquidation UX** — health factor display, warning thresholds,
+2. **Liquidation UX** — health factor display, warning thresholds,
    whether this project's frontend proactively warns users approaching
    liquidation (a real UX/ops commitment, not just a contract feature).
-4. **Audit bar** — Slither + manual review in progress now. Given the
+3. **Audit bar** — Slither + manual review in progress now. Given the
    liquidation/oracle risk is categorically new to this codebase, an
    outside review before any real user funds touch it is a much
    stronger recommendation here than it was for Cache v1's pure
