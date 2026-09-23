@@ -12,10 +12,11 @@ Named 2026-09-23 (was "Vault" as a working name) — Cache, a cache/cash
 pun, matches the crew's existing wordplay naming (Promptly = prompt +
 promptly) rather than a flat literal name.
 
-**Status as of 2026-09-23:** name, scope, and mechanic decided
-(recorded below). No contract or frontend code written yet. Two real
-things confirmed, one still open — see "What's confirmed" and "What's
-NOT confirmed yet".
+**Status as of 2026-09-23:** name, scope, mechanic, and the real target
+vault are all decided/confirmed (recorded below). No contract or
+frontend code written yet — that, plus a security review, is what's
+actually left before this can touch real funds. See "What's confirmed",
+"The USDG vault address", and "What's still NOT done".
 
 ## Decided scope (v1)
 
@@ -77,22 +78,32 @@ routing withdrawals through a custom contract too.
   general search; Morpho is the only lending protocol confirmed live
   there, and it's the one Robinhood itself already uses.
 
-## What's NOT confirmed yet — the real next step before any code
+## The USDG vault address — found, 2026-09-23
 
-- **The specific MetaMorpho vault address for USDG** that Robinhood
-  Earn actually deposits into. Morpho Blue above is the base layer
-  (isolated markets, no single "vault" of its own) — the real
-  depositor-facing vault is a separate MetaMorpho contract built on top
-  of it, and that address hasn't been found yet. Needed before writing
-  a single line of the deposit contract; without it there's nothing
-  real to point at.
-- Whether that vault's `deposit()` supports a distinct `receiver`
-  argument (see Architecture above) — standard ERC-4626, expected, but
-  "expected" isn't "confirmed against the real ABI", same discipline
-  this project already applies everywhere else (e.g. lib/ponsPrice.js's
-  own comment: "viem returns the decoded tuple directly... confirmed by
-  testing the live endpoint before announcing this fixed, not assumed
-  from the code alone").
+**Steakhouse USDG**, the real MetaMorpho vault Robinhood Earn deposits
+into: `0xBeEff033F34C046626B8D0A041844C5d1A5409dd` on Robinhood Chain,
+curated by Steakhouse Financial. Verified directly against its live
+page at `app.morpho.org/robinhood-chain/vault/0xBeEff033F34C046626B8D0A041844C5d1A5409dd/steakhouse-usdg`
+(not just a search snippet) -- real deposits shown, $493.4M TVL, 3.91%
+net APY at time of check. This closes the address gap; the contract
+now has something real to point at.
+
+## What's still NOT done — the real gate before this touches real funds
+
+- **No contract written yet.** Finding the vault address doesn't
+  create the deposit-skim-forward contract described above -- that's
+  real Solidity + tests, not written.
+- **Whether the vault's `deposit()` supports a distinct `receiver`
+  argument** (see Architecture above) -- standard ERC-4626, expected,
+  but not yet confirmed against this vault's actual deployed ABI. Check
+  this before writing the contract, not after.
+- **No security review.** Same bar as `InternRewardsRouter` and
+  `InternStakingRewards`: an in-house Slither pass plus manual review,
+  minimum, before any real deposit -- not a step that gets skipped
+  because a human tests the happy path by hand. Testing with a real
+  wallet is a valid FINAL step (a small canary deposit, after the
+  contract exists and has been reviewed) -- it is not a substitute for
+  the contract existing or being reviewed in the first place.
 - Real APY/TVL for that vault, to show honest live numbers on the
   frontend preview instead of a placeholder.
 
