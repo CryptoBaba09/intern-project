@@ -178,6 +178,67 @@ export const REWARDS_ROUTER_ABI = [
   },
 ];
 
+// CacheVaultDeposit -- deposit()'s minShares matches convert()'s
+// minAmountOut above (same slippage-floor shape, see
+// contracts/contracts/CacheVaultDeposit.sol). Read-only getters below
+// are for the live preview (fee rate, vault/USDG addresses) --
+// previewDeposit/asset/etc. are read straight off the vault itself via
+// ERC4626_VAULT_ABI, not duplicated here.
+export const CACHE_VAULT_DEPOSIT_ABI = [
+  {
+    type: "function",
+    name: "deposit",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "assets", type: "uint256" },
+      { name: "minShares", type: "uint256" },
+    ],
+    outputs: [{ name: "shares", type: "uint256" }],
+  },
+  { type: "function", name: "usdgToken", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "vault", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "feeBps", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "feeRecipient", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+];
+
+// A minimal, standard ERC-4626 read surface -- used to read the real
+// Steakhouse USDG vault directly (live share price/TVL for the
+// preview), not routed through CacheVaultDeposit for reads since the
+// vault itself is the source of truth and deposit() doesn't wrap any
+// getters.
+export const ERC4626_VAULT_ABI = [
+  { type: "function", name: "asset", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "totalAssets", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  {
+    type: "function",
+    name: "convertToShares",
+    stateMutability: "view",
+    inputs: [{ name: "assets", type: "uint256" }],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "previewDeposit",
+    stateMutability: "view",
+    inputs: [{ name: "assets", type: "uint256" }],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "balanceOf",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "convertToAssets",
+    stateMutability: "view",
+    inputs: [{ name: "shares", type: "uint256" }],
+    outputs: [{ type: "uint256" }],
+  },
+];
+
 // Uniswap V3's QuoterV2 -- the same live deployment
 // intern-burn-bot/lib/swapEthForBe.js already calls for its own
 // single-hop quote. quoteExactInput is the multi-hop variant this site

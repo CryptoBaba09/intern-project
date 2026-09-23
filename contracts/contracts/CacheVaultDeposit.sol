@@ -83,6 +83,7 @@ contract CacheVaultDeposit is ReentrancyGuard, Ownable {
 
     error ZeroAmount();
     error FeeTooHigh(uint256 requested, uint256 max);
+    error SlippageTooHigh(uint256 sharesOut, uint256 minShares);
 
     constructor(address _usdgToken, address _vault, address _feeRecipient, uint256 _feeBps, address _owner)
         Ownable(_owner)
@@ -107,7 +108,14 @@ contract CacheVaultDeposit is ReentrancyGuard, Ownable {
     /// as receiver -- the caller holds the resulting vault shares
     /// directly, this contract never does. Requires an ERC-20 approval
     /// on usdgToken for at least `assets` beforehand.
-    function deposit(uint256 assets) external nonReentrant returns (uint256 shares) {
+    /// @param minShares Slippage floor: reverts if the vault mints fewer
+    /// shares than this. Same shape as InternRewardsRouter.convert()'s
+    /// minAmountOut -- without it, a share-price move between signing and
+    /// mining (another depositor, a withdrawal, or a sandwich) could hand
+    /// the caller fewer shares than expected with no recourse, since the
+    /// vault call has no slippage awareness of its own. Pass 0 to accept
+    /// any amount (not recommended for anything but a dust-sized test).
+    function deposit(uint256 assets, uint256 minShares) external nonReentrant returns (uint256 shares) {
         if (assets == 0) revert ZeroAmount();
 
         usdgToken.safeTransferFrom(msg.sender, address(this), assets);
@@ -121,6 +129,7 @@ contract CacheVaultDeposit is ReentrancyGuard, Ownable {
 
         usdgToken.forceApprove(address(vault), netAssets);
         shares = vault.deposit(netAssets, msg.sender);
+        if (shares < minShares) revert SlippageTooHigh(shares, minShares);
 
         emit Deposited(msg.sender, assets, fee, netAssets, shares);
     }

@@ -83,7 +83,7 @@ describe("CacheVaultDeposit", function () {
       const expectedFee = (assets * BigInt(FEE_BPS)) / 10_000n;
       const expectedNet = assets - expectedFee;
 
-      await expect(cache.connect(alice).deposit(assets))
+      await expect(cache.connect(alice).deposit(assets, 0))
         .to.emit(cache, "Deposited")
         .withArgs(alice.address, assets, expectedFee, expectedNet, expectedNet); // mock vault is 1:1 shares on first deposit
 
@@ -99,13 +99,13 @@ describe("CacheVaultDeposit", function () {
 
     it("never leaves USDG sitting in the contract between transactions", async function () {
       const { alice, cache, usdgToken } = await loadFixture(deployFixture);
-      await cache.connect(alice).deposit(ethers.parseEther("100"));
+      await cache.connect(alice).deposit(ethers.parseEther("100"), 0);
       expect(await usdgToken.balanceOf(await cache.getAddress())).to.equal(0);
     });
 
     it("rejects a zero-amount deposit", async function () {
       const { alice, cache } = await loadFixture(deployFixture);
-      await expect(cache.connect(alice).deposit(0)).to.be.revertedWithCustomError(cache, "ZeroAmount");
+      await expect(cache.connect(alice).deposit(0, 0)).to.be.revertedWithCustomError(cache, "ZeroAmount");
     });
 
     it("does not let one caller's deposit spend another caller's USDG", async function () {
@@ -113,7 +113,7 @@ describe("CacheVaultDeposit", function () {
       // Bob never sent this deposit -- deposit() pulls from msg.sender,
       // never from an address passed as an argument, so there's no way
       // for Alice's call to reach Bob's balance at all.
-      await cache.connect(alice).deposit(ethers.parseEther("50"));
+      await cache.connect(alice).deposit(ethers.parseEther("50"), 0);
       expect(await usdgToken.balanceOf(bob.address)).to.equal(ethers.parseEther("1000"));
     });
 
@@ -130,10 +130,30 @@ describe("CacheVaultDeposit", function () {
       await usdgToken.connect(alice).approve(await zeroFeeCache.getAddress(), ethers.MaxUint256);
 
       const assets = ethers.parseEther("100");
-      await zeroFeeCache.connect(alice).deposit(assets);
+      await zeroFeeCache.connect(alice).deposit(assets, 0);
 
       expect(await usdgToken.balanceOf(treasury.address)).to.equal(0);
       expect(await vault.balanceOf(alice.address)).to.equal(assets);
+    });
+
+    it("reverts if the vault would mint fewer shares than minShares -- the slippage floor", async function () {
+      const { alice, cache } = await loadFixture(deployFixture);
+      const assets = ethers.parseEther("100");
+      const expectedNet = assets - (assets * BigInt(FEE_BPS)) / 10_000n; // mock vault is 1:1, so net == shares out
+
+      // Ask for one more share than the mock vault will actually mint --
+      // must revert instead of silently accepting the shortfall.
+      await expect(cache.connect(alice).deposit(assets, expectedNet + 1n))
+        .to.be.revertedWithCustomError(cache, "SlippageTooHigh")
+        .withArgs(expectedNet, expectedNet + 1n);
+    });
+
+    it("succeeds when minShares is exactly met", async function () {
+      const { alice, cache, vault } = await loadFixture(deployFixture);
+      const assets = ethers.parseEther("100");
+      const expectedNet = assets - (assets * BigInt(FEE_BPS)) / 10_000n;
+      await cache.connect(alice).deposit(assets, expectedNet);
+      expect(await vault.balanceOf(alice.address)).to.equal(expectedNet);
     });
   });
 
@@ -154,13 +174,13 @@ describe("CacheVaultDeposit", function () {
 
     it("lets the owner repoint where the fee cut goes, without affecting shares already minted", async function () {
       const { owner, alice, cache, usdgToken, vault, stranger } = await loadFixture(deployFixture);
-      await cache.connect(alice).deposit(ethers.parseEther("100"));
+      await cache.connect(alice).deposit(ethers.parseEther("100"), 0);
       const aliceShares = await vault.balanceOf(alice.address);
 
       await cache.connect(owner).setFeeRecipient(stranger.address);
       expect(await cache.feeRecipient()).to.equal(stranger.address);
 
-      await cache.connect(alice).deposit(ethers.parseEther("100"));
+      await cache.connect(alice).deposit(ethers.parseEther("100"), 0);
       expect(await usdgToken.balanceOf(stranger.address)).to.be.gt(0);
       // Alice's earlier position is untouched by the recipient change.
       expect(await vault.balanceOf(alice.address)).to.be.gt(aliceShares);

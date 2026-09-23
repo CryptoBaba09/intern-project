@@ -87,6 +87,22 @@ export const CONTRACTS = {
   usdgToken:
     process.env.NEXT_PUBLIC_USDG_TOKEN_ADDRESS ||
     "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  // Cache's CacheVaultDeposit -- same deliberate pattern as
+  // rewardsRouter above: NO hardcoded fallback. Contract is written,
+  // unit-tested (19/19), and passed an in-house Slither + manual
+  // review (see docs/cache-intern-spec.md), but is not yet deployed
+  // anywhere. Leaving this unset is what keeps /cache rendering its
+  // honest, non-interactive preview instead of a real deposit() flow.
+  // Only set this once a real deployment exists on Robinhood Chain --
+  // see contracts/scripts/deploy-cache-vault-deposit-direct.js.
+  cacheVaultDeposit: process.env.NEXT_PUBLIC_CACHE_VAULT_ADDRESS || null,
+  // The real, live Steakhouse USDG Morpho vault itself -- confirmed
+  // live on Robinhood Chain 2026-09-23 (bytecode selector check +
+  // live asset() read, see docs/cache-intern-spec.md). Safe to
+  // hardcode: this site doesn't own or deploy it, same as usdgToken/
+  // beToken above, and reading it directly (TVL, share price) doesn't
+  // depend on CacheVaultDeposit being deployed at all.
+  cacheVault: process.env.NEXT_PUBLIC_CACHE_VAULT_MORPHO_ADDRESS || "0xBeEff033F34C046626B8D0A041844C5d1A5409dd",
 };
 
 // Real, deployed Robinhood Stock Token addresses (confirmed against
@@ -104,6 +120,15 @@ export const REWARD_TARGET_ASSETS = [
 
 export function isRewardsRouterLive() {
   return Boolean(CONTRACTS.rewardsRouter);
+}
+
+// Same shape as isRewardsRouterLive() above -- true only once
+// CacheVaultDeposit is actually deployed and NEXT_PUBLIC_CACHE_VAULT_ADDRESS
+// is set. Cache's own real Morpho vault (CONTRACTS.cacheVault) is
+// always readable regardless -- this only gates the deposit() write
+// flow, not the live TVL/APY preview.
+export function isCacheVaultLive() {
+  return Boolean(CONTRACTS.cacheVaultDeposit);
 }
 
 // Same live Uniswap V3 infra intern-burn-bot/lib/swapEthForBe.js and
