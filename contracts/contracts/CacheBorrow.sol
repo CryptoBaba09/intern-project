@@ -30,11 +30,31 @@ import {IMorpho} from "./interfaces/IMorpho.sol";
 /// directly in Morpho's own ledger, from the instant it exists. This
 /// contract only ever receives `receiver = address(this)` on the
 /// borrow() leg specifically, to intercept the fee, and forwards the
-/// net amount in the same transaction. It never holds a position, never
-/// calls setAuthorization, and never gains standing authority over
-/// anyone's collateral or debt -- every action needs the caller's own
-/// signature on that specific transaction, same UX/trust bar as every
-/// other flow in this codebase (deposit, swap, convert).
+/// net amount in the same transaction.
+///
+/// CORRECTED 2026-09-23, post-deployment (see IMorpho.sol's own note):
+/// Morpho Blue's real borrow()/withdraw()/withdrawCollateral() require
+/// `msg.sender == onBehalf || isAuthorized[onBehalf][msg.sender]` --
+/// supplyCollateral()/supply()/repay() never do. The first deployed
+/// version of this contract called the first three the same naive way
+/// as the last three (onBehalf = msg.sender, no authorization step),
+/// which is unconditionally UNAUTHORIZED on real Morpho: this
+/// contract's own address is the real caller Morpho sees, never the
+/// user's. Standing authorization (one setAuthorization call, good
+/// forever) was already explicitly rejected elsewhere in this codebase
+/// as too large a blast radius for a delegated operator -- so instead,
+/// borrow()/withdrawCollateral()/withdrawSupply() below take an
+/// AuthBundle: two Morpho-native signed Authorizations (grant at nonce
+/// N, revoke at nonce N+1), both free off-chain EIP-712 signs, applied
+/// via setAuthorizationWithSig immediately before and after the gated
+/// Morpho call, inside this same transaction. Authorization exists for
+/// exactly the duration of that one call and never outlives it -- this
+/// contract still never holds a position, never gains standing
+/// authority over anyone's collateral or debt, and every action still
+/// needs the caller's own signature(s) on that specific transaction,
+/// same trust bar as every other flow in this codebase (deposit, swap,
+/// convert), just satisfied through Morpho's own signature primitive
+/// instead of a bare call that (incorrectly) assumed none was needed.
 ///
 /// MARKET ALLOWLIST, NOT A GENERAL-PURPOSE ROUTER. Morpho Blue markets
 /// are permissionless -- anyone can create one, with any oracle, any
@@ -119,6 +139,26 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
     /// what's actually passed to Morpho.
     mapping(bytes32 => IMorpho.MarketParams) public marketParamsById;
 
+    /// @notice The two signed Morpho Authorizations a caller must
+    /// produce (off-chain, free, via e.g. viem's signTypedData -- never
+    /// a gas transaction) to use borrow()/withdrawCollateral()/
+    /// withdrawSupply(), Morpho's three authorization-gated functions.
+    /// `grant` must have isAuthorized = true, authorizer = the caller,
+    /// authorized = address(this), nonce = morpho.nonce(caller) at the
+    /// moment it's signed. `revoke` must be identical except
+    /// isAuthorized = false and nonce = grant.nonce + 1. Both are
+    /// checked in _grantAuth/_revokeAuth below before being trusted;
+    /// Morpho's own setAuthorizationWithSig separately verifies the
+    /// signatures themselves and enforces the nonce match, so a forged
+    /// or stale bundle fails there even if it somehow passed this
+    /// contract's own checks.
+    struct AuthBundle {
+        IMorpho.Authorization grant;
+        IMorpho.Signature grantSig;
+        IMorpho.Authorization revoke;
+        IMorpho.Signature revokeSig;
+    }
+
     event MarketAllowed(bytes32 indexed marketId, address indexed collateralToken, uint256 lltv, address oracle);
     event MarketDisallowed(bytes32 indexed marketId);
     event CollateralDeposited(address indexed user, bytes32 indexed marketId, uint256 assets);
@@ -138,6 +178,11 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
     /// (shares vs. minSharesOut) -- both are "you set a floor and
     /// didn't get at least that much," just different units.
     error SlippageTooHigh(uint256 got, uint256 min);
+    /// @notice An AuthBundle's grant/revoke don't shape up as a matched
+    /// pair for the caller and this contract -- caught here, with a
+    /// clear reason, before ever reaching Morpho's own (more cryptic,
+    /// signature-level) revert.
+    error InvalidAuthBundle();
 
     constructor(address _morpho, address _usdgToken, address _feeRecipient, uint256 _feeBps, address _owner)
         Ownable(_owner)
@@ -188,6 +233,29 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
         _;
     }
 
+    /// @notice Sanity-checks an AuthBundle shapes up as a real grant
+    /// for (msg.sender -> this contract), then submits it to Morpho --
+    /// after this call, isAuthorized[msg.sender][address(this)] is
+    /// true, for as long as this transaction keeps running.
+    function _grantAuth(AuthBundle calldata auth) internal {
+        if (
+            auth.grant.authorizer != msg.sender || auth.grant.authorized != address(this) || !auth.grant.isAuthorized
+                || auth.revoke.authorizer != msg.sender || auth.revoke.authorized != address(this)
+                || auth.revoke.isAuthorized || auth.revoke.nonce != auth.grant.nonce + 1
+        ) revert InvalidAuthBundle();
+        morpho.setAuthorizationWithSig(auth.grant, auth.grantSig);
+    }
+
+    /// @notice Submits the matching revoke half of an already-validated
+    /// AuthBundle -- after this call, isAuthorized[msg.sender][address(this)]
+    /// is false again, same as before _grantAuth ran. Always called in
+    /// the same transaction as _grantAuth, right after the one gated
+    /// Morpho call that needed it -- this contract is never left
+    /// holding standing authorization past the call that used it.
+    function _revokeAuth(AuthBundle calldata auth) internal {
+        morpho.setAuthorizationWithSig(auth.revoke, auth.revokeSig);
+    }
+
     /// @notice Post `assets` of marketParams.collateralToken as
     /// collateral. The resulting position is recorded under the
     /// CALLER's own address in Morpho -- this contract holds the
@@ -212,14 +280,19 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
     /// rate itself changing between signing and mining (feeBps is
     /// owner-adjustable) -- there's no price/exchange-rate slippage on
     /// a fixed-assets borrow the way there is on an ERC-4626 deposit,
-    /// so this is the one variable actually worth a floor here.
-    function borrow(IMorpho.MarketParams calldata marketParams, uint256 assets, uint256 minReceived)
+    /// so this is the one variable actually worth a floor here. `auth`
+    /// is required -- Morpho's real borrow() is authorization-gated
+    /// (see this contract's own NatSpec); the caller must sign a
+    /// grant/revoke AuthBundle for this specific call.
+    function borrow(IMorpho.MarketParams calldata marketParams, uint256 assets, uint256 minReceived, AuthBundle calldata auth)
         external
         nonReentrant
         onlyAllowedMarket(marketParams)
         returns (uint256 assetsReceived)
     {
         if (assets == 0) revert ZeroAmount();
+
+        _grantAuth(auth);
 
         // sharesBorrowed (the second return value) is deliberately
         // unused, not overlooked -- flagged by Slither's unused-return
@@ -228,6 +301,8 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
         // since Morpho itself tracks the caller's share-denominated
         // debt position internally. Nothing here depends on shares.
         (uint256 assetsBorrowed,) = morpho.borrow(marketParams, assets, 0, msg.sender, address(this));
+
+        _revokeAuth(auth);
 
         uint256 fee = (assetsBorrowed * feeBps) / BPS_DENOMINATOR;
         assetsReceived = assetsBorrowed - fee;
@@ -277,13 +352,18 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
     /// `receiver` param, so this contract never touches the withdrawn
     /// collateral at all, not even for one transaction. Reverts inside
     /// Morpho itself if withdrawing would leave the position unhealthy.
-    function withdrawCollateral(IMorpho.MarketParams calldata marketParams, uint256 assets)
+    /// `auth` is required -- Morpho's real withdrawCollateral() is
+    /// authorization-gated (see this contract's own NatSpec); the
+    /// caller must sign a grant/revoke AuthBundle for this specific call.
+    function withdrawCollateral(IMorpho.MarketParams calldata marketParams, uint256 assets, AuthBundle calldata auth)
         external
         nonReentrant
         onlyAllowedMarket(marketParams)
     {
         if (assets == 0) revert ZeroAmount();
+        _grantAuth(auth);
         morpho.withdrawCollateral(marketParams, assets, msg.sender, msg.sender);
+        _revokeAuth(auth);
         emit CollateralWithdrawn(msg.sender, id(marketParams), assets);
     }
 
@@ -327,14 +407,19 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
     /// to withdraw an exact share amount, e.g. the caller's full
     /// position, without needing to predict interest accrued since
     /// their last read). No fee -- withdrawing isn't a new value-
-    /// creating action, it's closing one already paid for at supply time.
-    function withdrawSupply(IMorpho.MarketParams calldata marketParams, uint256 assets, uint256 shares)
+    /// creating action, it's closing one already paid for at supply
+    /// time. `auth` is required -- Morpho's real withdraw() is
+    /// authorization-gated (see this contract's own NatSpec); the
+    /// caller must sign a grant/revoke AuthBundle for this specific call.
+    function withdrawSupply(IMorpho.MarketParams calldata marketParams, uint256 assets, uint256 shares, AuthBundle calldata auth)
         external
         nonReentrant
         onlyAllowedMarket(marketParams)
         returns (uint256 assetsWithdrawn, uint256 sharesWithdrawn)
     {
+        _grantAuth(auth);
         (assetsWithdrawn, sharesWithdrawn) = morpho.withdraw(marketParams, assets, shares, msg.sender, msg.sender);
+        _revokeAuth(auth);
         emit SupplyWithdrawn(msg.sender, id(marketParams), assetsWithdrawn, sharesWithdrawn);
     }
 

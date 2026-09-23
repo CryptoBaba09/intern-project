@@ -8,10 +8,61 @@ pragma solidity 0.8.24;
 /// Base, etc., documented at docs.morpho.org). Confirmed against the
 /// real deployment on Robinhood Chain (0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010):
 /// every selector below (supplyCollateral, borrow, repay,
-/// withdrawCollateral, isAuthorized, supply, withdraw) is present in
-/// the live deployed bytecode, and a live isAuthorized() read executed
-/// successfully -- not assumed from docs alone.
+/// withdrawCollateral, isAuthorized, supply, withdraw,
+/// setAuthorizationWithSig, setAuthorization, nonce) is present in the
+/// live deployed bytecode -- not assumed from docs alone.
+///
+/// CORRECTED 2026-09-23, post-deployment: borrow(), withdraw(), and
+/// withdrawCollateral() are NOT permissionless the way supply(),
+/// supplyCollateral(), and repay() are -- verified directly against
+/// Morpho Blue's own real source. Each of the three checks
+/// `msg.sender == onBehalf || isAuthorized[onBehalf][msg.sender]`
+/// before running; the other three never do (giving value to someone
+/// else's position needs no permission, taking it out does). This
+/// means a bare call from THIS contract with onBehalf = the real user
+/// -- which is exactly what the first deployed version of
+/// CacheBorrow.sol did for all three -- reverts UNAUTHORIZED every
+/// time, since Morpho's real msg.sender is CacheBorrow's own address,
+/// never the user's. See CacheBorrow.sol's AuthBundle for the fix:
+/// grant + act + revoke, atomically, via setAuthorizationWithSig,
+/// so no STANDING authorization is ever created (preserving the
+/// "hold funds/authority for one transaction only" bar this codebase
+/// already holds itself to) while still satisfying Morpho's real
+/// authorization check.
 interface IMorpho {
+    /// @notice Morpho's own signed-authorization message, EIP-712 over
+    /// this exact struct (per Morpho Blue's real DOMAIN_SEPARATOR).
+    /// `nonce` must equal `nonce(authorizer)` at call time and strictly
+    /// increments after each use -- this is what makes grant (nonce N)
+    /// and revoke (nonce N+1) unambiguously ordered within one
+    /// transaction, and unreplayable afterward.
+    struct Authorization {
+        address authorizer;
+        address authorized;
+        bool isAuthorized;
+        uint256 nonce;
+        uint256 deadline;
+    }
+
+    /// @notice A raw ECDSA signature over an Authorization's EIP-712
+    /// digest -- produced off-chain (e.g. viem's signTypedData), never
+    /// a gas transaction itself.
+    struct Signature {
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+    }
+
+    /// @notice Submit a signed Authorization on the signer's behalf --
+    /// this is what lets CacheBorrow grant (and later revoke) itself
+    /// permission to act as `authorization.authorizer` for exactly one
+    /// call, without that user ever sending a separate on-chain
+    /// setAuthorization transaction themselves.
+    function setAuthorizationWithSig(Authorization calldata authorization, Signature calldata signature) external;
+
+    /// @notice The authorizer's current nonce -- what a fresh
+    /// Authorization to be signed must set as its own `nonce` field.
+    function nonce(address authorizer) external view returns (uint256);
     /// @notice The five-tuple that identifies a Morpho Blue market.
     /// Order matters -- Morpho derives the market's id as
     /// keccak256(abi.encode(marketParams)), so passing the same five
@@ -74,9 +125,9 @@ interface IMorpho {
         returns (uint256 assetsWithdrawn, uint256 sharesWithdrawn);
 
     /// @notice Whether `authorizee` can act as `onBehalf` for
-    /// `authorizer`. CacheBorrow deliberately never calls
-    /// setAuthorization and never relies on this being true for
-    /// itself -- see docs/cache-borrow-spec.md's "Explicitly rejected"
-    /// section. Included here only for completeness/testability.
+    /// `authorizer`. CacheBorrow never leaves this true for itself
+    /// once a transaction ends -- see AuthBundle in CacheBorrow.sol.
+    /// Used in tests to assert exactly that (false before, true only
+    /// mid-call, false again after).
     function isAuthorized(address authorizer, address authorizee) external view returns (bool);
 }

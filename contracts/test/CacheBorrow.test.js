@@ -5,6 +5,30 @@ const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const FEE_BPS = 20; // 0.2%, matches the proposed real deployment default
 const LLTV_625 = ethers.parseEther("0.625"); // 62.5%, a real LLTV used on-chain
 
+// Builds a valid AuthBundle for `signer` to authorize `cacheAddress` --
+// grant at signer's current nonce, revoke at nonce+1, exactly what
+// CacheBorrow's _grantAuth/_revokeAuth require. MockMorpho skips real
+// EIP-712 signature verification (documented on the mock itself), so
+// the signature fields are dummy zeros here -- what's actually under
+// test is CacheBorrow's own bundle validation and Morpho's real nonce
+// semantics (both faithfully modeled), not cryptography.
+const DUMMY_SIG = { v: 0, r: ethers.ZeroHash, s: ethers.ZeroHash };
+async function buildAuthBundle(morpho, cacheAddress, signer) {
+  const nonce = await morpho.nonce(signer.address);
+  return {
+    grant: { authorizer: signer.address, authorized: cacheAddress, isAuthorized: true, nonce, deadline: ethers.MaxUint256 },
+    grantSig: DUMMY_SIG,
+    revoke: {
+      authorizer: signer.address,
+      authorized: cacheAddress,
+      isAuthorized: false,
+      nonce: nonce + 1n,
+      deadline: ethers.MaxUint256,
+    },
+    revokeSig: DUMMY_SIG,
+  };
+}
+
 describe("CacheBorrow", function () {
   async function deployFixture() {
     const [owner, alice, bob, stranger, treasury] = await ethers.getSigners();
@@ -192,57 +216,65 @@ describe("CacheBorrow", function () {
     }
 
     it("rejects a market that isn't allowlisted", async function () {
-      const { bob, cache, wrongLoanMarket } = await loadFixture(deployFixture);
+      const { bob, cache, morpho, wrongLoanMarket } = await loadFixture(deployFixture);
+      const auth = await buildAuthBundle(morpho, await cache.getAddress(), bob);
       // wrongLoanMarket was never allowlisted (setMarketAllowed itself
       // would reject it too, but this checks the borrow-time gate
       // independently).
-      await expect(cache.connect(bob).borrow(wrongLoanMarket, ethers.parseEther("10"), 0)).to.be.revertedWithCustomError(
-        cache,
-        "MarketNotAllowed"
-      );
+      await expect(
+        cache.connect(bob).borrow(wrongLoanMarket, ethers.parseEther("10"), 0, auth)
+      ).to.be.revertedWithCustomError(cache, "MarketNotAllowed");
     });
 
     it("skims the fee, borrows on the CALLER's own Morpho position, and sends the net amount to the caller", async function () {
       const fx = await withCollateral();
       const { alice, cache, morpho, usdgToken, treasury, marketParams } = fx;
       const marketId = await cache.id(marketParams);
+      const cacheAddress = await cache.getAddress();
 
       const borrowAmount = ethers.parseEther("50");
       const expectedFee = (borrowAmount * BigInt(FEE_BPS)) / 10_000n;
       const expectedNet = borrowAmount - expectedFee;
 
       const aliceBalanceBefore = await usdgToken.balanceOf(alice.address);
+      const auth = await buildAuthBundle(morpho, cacheAddress, alice);
 
-      await expect(cache.connect(alice).borrow(marketParams, borrowAmount, 0))
+      await expect(cache.connect(alice).borrow(marketParams, borrowAmount, 0, auth))
         .to.emit(cache, "Borrowed")
         .withArgs(alice.address, marketId, borrowAmount, expectedFee, expectedNet);
 
       // The DEBT position is Alice's, in Morpho's own ledger.
       expect(await morpho.borrowShares(marketId, alice.address)).to.equal(borrowAmount);
-      expect(await morpho.borrowShares(marketId, await cache.getAddress())).to.equal(0);
+      expect(await morpho.borrowShares(marketId, cacheAddress)).to.equal(0);
 
       expect(await usdgToken.balanceOf(treasury.address)).to.equal(expectedFee);
       expect(await usdgToken.balanceOf(alice.address)).to.equal(aliceBalanceBefore + expectedNet);
       // Never leaves USDG sitting in the contract between transactions.
-      expect(await usdgToken.balanceOf(await cache.getAddress())).to.equal(0);
+      expect(await usdgToken.balanceOf(cacheAddress)).to.equal(0);
+      // And never leaves CacheBorrow with standing authorization over
+      // Alice's Morpho account -- exactly the gap the first deployed
+      // version of this contract got wrong.
+      expect(await morpho.isAuthorized(alice.address, cacheAddress)).to.equal(false);
     });
 
     it("reverts if the fee rate would leave the caller with less than minReceived", async function () {
       const fx = await withCollateral();
-      const { alice, cache, marketParams } = fx;
+      const { alice, cache, morpho, marketParams } = fx;
       const borrowAmount = ethers.parseEther("50");
       const expectedNet = borrowAmount - (borrowAmount * BigInt(FEE_BPS)) / 10_000n;
+      const auth = await buildAuthBundle(morpho, await cache.getAddress(), alice);
 
-      await expect(cache.connect(alice).borrow(marketParams, borrowAmount, expectedNet + 1n))
+      await expect(cache.connect(alice).borrow(marketParams, borrowAmount, expectedNet + 1n, auth))
         .to.be.revertedWithCustomError(cache, "SlippageTooHigh")
         .withArgs(expectedNet, expectedNet + 1n);
     });
 
     it("protects against a feeBps change landing between signing and mining", async function () {
       const fx = await withCollateral();
-      const { owner, alice, cache, marketParams } = fx;
+      const { owner, alice, cache, morpho, marketParams } = fx;
       const borrowAmount = ethers.parseEther("50");
       const originalNet = borrowAmount - (borrowAmount * BigInt(FEE_BPS)) / 10_000n;
+      const auth = await buildAuthBundle(morpho, await cache.getAddress(), alice);
 
       // Owner bumps the fee to the max right before Alice's tx would land.
       await cache.connect(owner).setFeeBps(200);
@@ -250,18 +282,40 @@ describe("CacheBorrow", function () {
       // Alice's minReceived was computed against the ORIGINAL fee rate
       // -- the higher fee now in effect must cause a revert, not a
       // silent worse deal.
-      await expect(cache.connect(alice).borrow(marketParams, borrowAmount, originalNet)).to.be.revertedWithCustomError(
-        cache,
-        "SlippageTooHigh"
-      );
+      await expect(
+        cache.connect(alice).borrow(marketParams, borrowAmount, originalNet, auth)
+      ).to.be.revertedWithCustomError(cache, "SlippageTooHigh");
     });
 
     it("rejects a zero-amount borrow", async function () {
       const fx = await withCollateral();
-      await expect(fx.cache.connect(fx.alice).borrow(fx.marketParams, 0, 0)).to.be.revertedWithCustomError(
+      const auth = await buildAuthBundle(fx.morpho, await fx.cache.getAddress(), fx.alice);
+      await expect(fx.cache.connect(fx.alice).borrow(fx.marketParams, 0, 0, auth)).to.be.revertedWithCustomError(
         fx.cache,
         "ZeroAmount"
       );
+    });
+
+    it("rejects an AuthBundle signed by someone other than the caller", async function () {
+      const fx = await withCollateral();
+      const { alice, bob, cache, morpho, marketParams } = fx;
+      // Bob's own valid bundle, used while Alice is the actual caller --
+      // must be rejected, not silently authorize Alice's borrow with
+      // Bob's signature.
+      const bobsAuth = await buildAuthBundle(morpho, await cache.getAddress(), bob);
+      await expect(
+        cache.connect(alice).borrow(marketParams, ethers.parseEther("10"), 0, bobsAuth)
+      ).to.be.revertedWithCustomError(cache, "InvalidAuthBundle");
+    });
+
+    it("rejects a bundle whose revoke nonce doesn't immediately follow the grant's", async function () {
+      const fx = await withCollateral();
+      const { alice, cache, morpho, marketParams } = fx;
+      const auth = await buildAuthBundle(morpho, await cache.getAddress(), alice);
+      auth.revoke.nonce = auth.grant.nonce + 2n; // skips a nonce -- not a real matched pair
+      await expect(
+        cache.connect(alice).borrow(marketParams, ethers.parseEther("10"), 0, auth)
+      ).to.be.revertedWithCustomError(cache, "InvalidAuthBundle");
     });
   });
 
@@ -270,7 +324,8 @@ describe("CacheBorrow", function () {
       const fx = await deployFixture();
       await fx.cache.connect(fx.owner).setMarketAllowed(fx.marketParams, true);
       await fx.cache.connect(fx.alice).depositCollateral(fx.marketParams, ethers.parseEther("100"));
-      await fx.cache.connect(fx.alice).borrow(fx.marketParams, ethers.parseEther("50"), 0);
+      const auth = await buildAuthBundle(fx.morpho, await fx.cache.getAddress(), fx.alice);
+      await fx.cache.connect(fx.alice).borrow(fx.marketParams, ethers.parseEther("50"), 0, auth);
       return fx;
     }
 
@@ -314,20 +369,32 @@ describe("CacheBorrow", function () {
       const fx = await withCollateral();
       const { alice, cache, morpho, tslaToken, marketParams } = fx;
       const marketId = await cache.id(marketParams);
+      const cacheAddress = await cache.getAddress();
+      const auth = await buildAuthBundle(morpho, cacheAddress, alice);
 
-      await cache.connect(alice).withdrawCollateral(marketParams, ethers.parseEther("40"));
+      await cache.connect(alice).withdrawCollateral(marketParams, ethers.parseEther("40"), auth);
 
       expect(await morpho.collateral(marketId, alice.address)).to.equal(ethers.parseEther("60"));
       expect(await tslaToken.balanceOf(alice.address)).to.equal(ethers.parseEther("940")); // 1000 - 100 + 40
-      expect(await tslaToken.balanceOf(await cache.getAddress())).to.equal(0);
+      expect(await tslaToken.balanceOf(cacheAddress)).to.equal(0);
+      expect(await morpho.isAuthorized(alice.address, cacheAddress)).to.equal(false);
     });
 
     it("rejects a zero-amount withdrawal", async function () {
       const fx = await withCollateral();
-      await expect(fx.cache.connect(fx.alice).withdrawCollateral(fx.marketParams, 0)).to.be.revertedWithCustomError(
-        fx.cache,
-        "ZeroAmount"
-      );
+      const auth = await buildAuthBundle(fx.morpho, await fx.cache.getAddress(), fx.alice);
+      await expect(
+        fx.cache.connect(fx.alice).withdrawCollateral(fx.marketParams, 0, auth)
+      ).to.be.revertedWithCustomError(fx.cache, "ZeroAmount");
+    });
+
+    it("rejects an AuthBundle signed by someone other than the caller", async function () {
+      const fx = await withCollateral();
+      const { alice, bob, cache, morpho, marketParams } = fx;
+      const bobsAuth = await buildAuthBundle(morpho, await cache.getAddress(), bob);
+      await expect(
+        cache.connect(alice).withdrawCollateral(marketParams, ethers.parseEther("10"), bobsAuth)
+      ).to.be.revertedWithCustomError(cache, "InvalidAuthBundle");
     });
   });
 
@@ -391,22 +458,34 @@ describe("CacheBorrow", function () {
       const fx = await withSupply();
       const { alice, cache, morpho, usdgToken, marketParams } = fx;
       const marketId = await cache.id(marketParams);
+      const cacheAddress = await cache.getAddress();
       const suppliedShares = await morpho.supplyShares(marketId, alice.address); // 99.8 (post-fee)
       const aliceBalanceBefore = await usdgToken.balanceOf(alice.address);
+      const auth = await buildAuthBundle(morpho, cacheAddress, alice);
 
-      await cache.connect(alice).withdrawSupply(marketParams, 0, suppliedShares);
+      await cache.connect(alice).withdrawSupply(marketParams, 0, suppliedShares, auth);
 
       expect(await morpho.supplyShares(marketId, alice.address)).to.equal(0);
       expect(await usdgToken.balanceOf(alice.address)).to.equal(aliceBalanceBefore + suppliedShares);
-      expect(await usdgToken.balanceOf(await cache.getAddress())).to.equal(0);
+      expect(await usdgToken.balanceOf(cacheAddress)).to.equal(0);
+      expect(await morpho.isAuthorized(alice.address, cacheAddress)).to.equal(false);
     });
 
     it("rejects a market that isn't allowlisted", async function () {
-      const { bob, cache, wrongLoanMarket } = await loadFixture(deployFixture);
-      await expect(cache.connect(bob).withdrawSupply(wrongLoanMarket, 0, ethers.parseEther("1"))).to.be.revertedWithCustomError(
-        cache,
-        "MarketNotAllowed"
-      );
+      const { bob, cache, morpho, wrongLoanMarket } = await loadFixture(deployFixture);
+      const auth = await buildAuthBundle(morpho, await cache.getAddress(), bob);
+      await expect(
+        cache.connect(bob).withdrawSupply(wrongLoanMarket, 0, ethers.parseEther("1"), auth)
+      ).to.be.revertedWithCustomError(cache, "MarketNotAllowed");
+    });
+
+    it("rejects an AuthBundle signed by someone other than the caller", async function () {
+      const fx = await withSupply();
+      const { alice, bob, cache, morpho, marketParams } = fx;
+      const bobsAuth = await buildAuthBundle(morpho, await cache.getAddress(), bob);
+      await expect(
+        cache.connect(alice).withdrawSupply(marketParams, 0, ethers.parseEther("1"), bobsAuth)
+      ).to.be.revertedWithCustomError(cache, "InvalidAuthBundle");
     });
   });
 
