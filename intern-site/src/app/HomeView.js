@@ -436,7 +436,7 @@ function MeetTheInterns() {
           href="/roster"
           className="font-mono text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
         >
-          Got an idea for intern #6? Pitch it →
+          Got an idea for intern #7? Pitch it →
         </Link>
       </Reveal>
     </section>

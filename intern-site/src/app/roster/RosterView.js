@@ -187,7 +187,7 @@ export default function RosterView() {
           THE CREW TODAY
         </Reveal>
         <Reveal as="h2" delay={0.05} className="text-3xl font-semibold mb-10 max-w-xl">
-          Five jobs, all real. Yours could be the sixth.
+          Five jobs, all real. Yours could be the seventh.
         </Reveal>
         <Reveal delay={0.1}>
           <InternFamilyScene />

@@ -220,7 +220,7 @@ export default function MarketplaceView() {
               href="/roster"
               className="inline-block rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-mono text-sm font-medium px-6 py-3 hover:bg-[var(--color-accent-hover)] transition-colors"
             >
-              PITCH INTERN #6 →
+              PITCH INTERN #7 →
             </Link>
           </div>
         </Reveal>
