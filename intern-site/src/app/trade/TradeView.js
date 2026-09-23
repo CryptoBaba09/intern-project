@@ -142,24 +142,48 @@ export default function TradeView() {
                 state below instead of touching the iframe itself. */}
             <div className="relative">
               {!chartLoaded && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--color-surface)]">
-                  <p className="font-mono text-xs text-[var(--color-muted-2)] flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
-                    LOADING LIVE CHART…
-                  </p>
-                  {/* Visible immediately, not just after the timer -- no way to
-                      detect from here whether this genuinely resolves on any
-                      given load (see the disclosed limitation above), so the
-                      escape hatch is available the whole time, not gated behind
-                      a wait. */}
-                  <a
-                    href={GECKOTERMINAL_POOL_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-xs text-[var(--color-accent)] hover:underline"
+                <div className="absolute inset-0 flex flex-col bg-[var(--color-surface)] overflow-hidden">
+                  {/* A skeleton silhouette shaped roughly like a real price
+                      chart (a rising line + faded area beneath it), not just
+                      a blank rectangle -- reads as "your chart is drawing
+                      itself in," not "this area is broken." */}
+                  <div className="chart-shimmer absolute inset-0" />
+                  <svg
+                    className="absolute inset-0 w-full h-full opacity-[0.14]"
+                    viewBox="0 0 400 200"
+                    preserveAspectRatio="none"
+                    aria-hidden
                   >
-                    Taking a while? Open the chart directly ↗
-                  </a>
+                    <polyline
+                      points="0,150 40,140 80,155 120,110 160,120 200,80 240,95 280,60 320,70 360,35 400,45"
+                      fill="none"
+                      stroke="var(--color-accent)"
+                      strokeWidth="2"
+                    />
+                    <polygon
+                      points="0,150 40,140 80,155 120,110 160,120 200,80 240,95 280,60 320,70 360,35 400,45 400,200 0,200"
+                      fill="var(--color-accent)"
+                    />
+                  </svg>
+                  <div className="relative flex-1 flex flex-col items-center justify-center gap-3">
+                    <p className="font-mono text-xs text-[var(--color-muted-2)] flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] ember-pulse" />
+                      LOADING LIVE CHART…
+                    </p>
+                    {/* Visible immediately, not just after the timer -- no way to
+                        detect from here whether this genuinely resolves on any
+                        given load (see the disclosed limitation above), so the
+                        escape hatch is available the whole time, not gated behind
+                        a wait. */}
+                    <a
+                      href={GECKOTERMINAL_POOL_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-xs text-[var(--color-accent)] hover:underline"
+                    >
+                      Taking a while? Open the chart directly ↗
+                    </a>
+                  </div>
                 </div>
               )}
               <iframe

@@ -201,6 +201,214 @@ export const CACHE_VAULT_DEPOSIT_ABI = [
   { type: "function", name: "feeRecipient", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
 ];
 
+// CacheBorrow -- the real two-sided Morpho Blue wrapper (see
+// contracts/contracts/CacheBorrow.sol, docs/cache-borrow-spec.md).
+// MarketParams is passed as a tuple matching Morpho's own struct
+// exactly (loanToken/collateralToken/oracle/irm/lltv) -- every write
+// function below takes it first, same shape the deployed contract
+// itself expects. id()/isMarketAllowed() let the front end check a
+// given market is actually allowlisted before ever showing it as
+// choosable, rather than trusting a hardcoded assumption.
+export const CACHE_BORROW_ABI = [
+  {
+    type: "function",
+    name: "depositCollateral",
+    stateMutability: "nonpayable",
+    inputs: [
+      {
+        name: "marketParams",
+        type: "tuple",
+        components: [
+          { name: "loanToken", type: "address" },
+          { name: "collateralToken", type: "address" },
+          { name: "oracle", type: "address" },
+          { name: "irm", type: "address" },
+          { name: "lltv", type: "uint256" },
+        ],
+      },
+      { name: "assets", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "withdrawCollateral",
+    stateMutability: "nonpayable",
+    inputs: [
+      {
+        name: "marketParams",
+        type: "tuple",
+        components: [
+          { name: "loanToken", type: "address" },
+          { name: "collateralToken", type: "address" },
+          { name: "oracle", type: "address" },
+          { name: "irm", type: "address" },
+          { name: "lltv", type: "uint256" },
+        ],
+      },
+      { name: "assets", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "borrow",
+    stateMutability: "nonpayable",
+    inputs: [
+      {
+        name: "marketParams",
+        type: "tuple",
+        components: [
+          { name: "loanToken", type: "address" },
+          { name: "collateralToken", type: "address" },
+          { name: "oracle", type: "address" },
+          { name: "irm", type: "address" },
+          { name: "lltv", type: "uint256" },
+        ],
+      },
+      { name: "assets", type: "uint256" },
+      { name: "minReceived", type: "uint256" },
+    ],
+    outputs: [{ name: "assetsReceived", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "repay",
+    stateMutability: "nonpayable",
+    inputs: [
+      {
+        name: "marketParams",
+        type: "tuple",
+        components: [
+          { name: "loanToken", type: "address" },
+          { name: "collateralToken", type: "address" },
+          { name: "oracle", type: "address" },
+          { name: "irm", type: "address" },
+          { name: "lltv", type: "uint256" },
+        ],
+      },
+      { name: "assets", type: "uint256" },
+      { name: "shares", type: "uint256" },
+      { name: "maxAssetsIn", type: "uint256" },
+    ],
+    outputs: [
+      { name: "assetsRepaid", type: "uint256" },
+      { name: "sharesRepaid", type: "uint256" },
+    ],
+  },
+  {
+    type: "function",
+    name: "supply",
+    stateMutability: "nonpayable",
+    inputs: [
+      {
+        name: "marketParams",
+        type: "tuple",
+        components: [
+          { name: "loanToken", type: "address" },
+          { name: "collateralToken", type: "address" },
+          { name: "oracle", type: "address" },
+          { name: "irm", type: "address" },
+          { name: "lltv", type: "uint256" },
+        ],
+      },
+      { name: "assets", type: "uint256" },
+      { name: "minSharesOut", type: "uint256" },
+    ],
+    outputs: [{ name: "sharesSupplied", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "withdrawSupply",
+    stateMutability: "nonpayable",
+    inputs: [
+      {
+        name: "marketParams",
+        type: "tuple",
+        components: [
+          { name: "loanToken", type: "address" },
+          { name: "collateralToken", type: "address" },
+          { name: "oracle", type: "address" },
+          { name: "irm", type: "address" },
+          { name: "lltv", type: "uint256" },
+        ],
+      },
+      { name: "assets", type: "uint256" },
+      { name: "shares", type: "uint256" },
+    ],
+    outputs: [
+      { name: "assetsWithdrawn", type: "uint256" },
+      { name: "sharesWithdrawn", type: "uint256" },
+    ],
+  },
+  { type: "function", name: "feeBps", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  {
+    type: "function",
+    name: "isMarketAllowed",
+    stateMutability: "view",
+    inputs: [{ name: "", type: "bytes32" }],
+    outputs: [{ type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "id",
+    stateMutability: "pure",
+    inputs: [
+      {
+        name: "marketParams",
+        type: "tuple",
+        components: [
+          { name: "loanToken", type: "address" },
+          { name: "collateralToken", type: "address" },
+          { name: "oracle", type: "address" },
+          { name: "irm", type: "address" },
+          { name: "lltv", type: "uint256" },
+        ],
+      },
+    ],
+    outputs: [{ type: "bytes32" }],
+  },
+];
+
+// Morpho Blue's own core read surface -- position()/market() give the
+// real per-user and per-market state (collateral, borrow shares/assets,
+// supply shares/assets) CacheBorrow itself doesn't duplicate, since the
+// user's position lives directly on Morpho, not custodied by
+// CacheBorrow at all (see docs/cache-borrow-spec.md's non-custody
+// architecture). Position/market ids are Morpho's own keccak256 of the
+// MarketParams tuple -- same id() CacheBorrow's own ABI exposes above,
+// so both always agree.
+export const MORPHO_ABI = [
+  {
+    type: "function",
+    name: "position",
+    stateMutability: "view",
+    inputs: [
+      { name: "id", type: "bytes32" },
+      { name: "user", type: "address" },
+    ],
+    outputs: [
+      { name: "supplyShares", type: "uint256" },
+      { name: "borrowShares", type: "uint128" },
+      { name: "collateral", type: "uint128" },
+    ],
+  },
+  {
+    type: "function",
+    name: "market",
+    stateMutability: "view",
+    inputs: [{ name: "id", type: "bytes32" }],
+    outputs: [
+      { name: "totalSupplyAssets", type: "uint128" },
+      { name: "totalSupplyShares", type: "uint128" },
+      { name: "totalBorrowAssets", type: "uint128" },
+      { name: "totalBorrowShares", type: "uint128" },
+      { name: "lastUpdate", type: "uint128" },
+      { name: "fee", type: "uint128" },
+    ],
+  },
+];
+
 // A minimal, standard ERC-4626 read surface -- used to read the real
 // Steakhouse USDG vault directly (live share price/TVL for the
 // preview), not routed through CacheVaultDeposit for reads since the

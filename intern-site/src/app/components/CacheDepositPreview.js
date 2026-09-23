@@ -27,27 +27,16 @@ function StaticPreview() {
   return (
     <>
       <p className="font-mono text-xs text-[var(--color-fg)] text-center mb-3">
-        Deposit USDG straight into the real Steakhouse USDG Morpho vault
-        Robinhood Earn itself deposits into. Non-custodial — the vault
-        shares land in your wallet directly, this site never holds
-        them.
+        Deposit USDG and earn real yield, non-custodially — your deposit and everything it earns land
+        straight in your own wallet. This site never holds it.
       </p>
       <p className="font-mono text-[9px] text-[var(--color-muted-2)] leading-relaxed text-center">
-        0.2% skimmed once, at deposit, auto-bought-back into $INTERN and
-        burned — same rate as $interndex, no separate charge on top.
-        The contract exists, is unit-tested (19/19), and has cleared an
-        in-house Slither + manual review — waiting on a deployment
-        decision, not a review, before any real deposit flows through
-        it. See{" "}
-        <a
-          href="https://github.com/CryptoBaba09/intern-project/blob/main/docs/cache-intern-spec.md"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          docs/cache-intern-spec.md
-        </a>{" "}
-        for the real architecture.
+        0.2% skimmed once, at deposit, auto-bought-back into $INTERN and burned — same rate as $interndex,
+        no separate charge on top. Coming soon —{" "}
+        <a href="/docs" className="underline">
+          full technical detail on the docs page
+        </a>
+        .
       </p>
     </>
   );

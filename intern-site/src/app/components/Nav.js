@@ -8,32 +8,39 @@ import { fadeUp, staggerContainer } from "./motion";
 import ConnectWalletButton from "./ConnectWalletButton";
 import Mascot from "./Mascot";
 
-// Simplified 2026-09-17 from a flat 6-item "$INTERN" dropdown (Meet the
-// Crew, Roster Call, Personas, Video Credits, Burn to Create, Migrate) that
-// a live user screenshot flagged as confusing -- "Personas" was really just
-// Rendo's own page (parallel to Blaze/Promptly/Synapse, which never had
-// their own nav entries), and Video Credits/Burn to Create are one burn-
-// for-generation mechanic wearing two names. Rather than build new hub
-// pages duplicating 700+ lines of live wallet logic, this points straight
-// at the existing pages that already do the job:
-//   - Interns -> /marketplace, which already grids all four personas
-//     (including Rendo, via its card) and now links out to Roster Call too.
-//   - Create -> /video-credits, which already cross-links prominently to
-//     Burn to Create as "part of the same campaign."
-// Migrate v1 -> v2 drops out of primary nav entirely -- it's a dated
-// campaign (ends Oct 1) already surfaced via the announcement banner and
-// automatically on /stake for any wallet holding v1, so a permanent nav
-// slot for it just becomes dead weight after the deadline. The route
-// itself is untouched, just no longer linked from here.
-const TOP_LINKS = [
-  { href: "/trade", label: "Trade" },
-  { href: "/stake", label: "Stake" },
-  { href: "/marketplace", label: "Interns" },
-  { href: "/video-credits", label: "Create" },
-];
-
-const CATEGORIES = [
+// Simplified 2026-09-17 from a flat 6-item "$INTERN" dropdown, then
+// given "Interns" its own dropdown 2026-09-23 once there were six real
+// persona pages worth a direct link each (Blaze/Rendo/Promptly/
+// Synapse/Hush/Cache) rather than routing everyone through the
+// marketplace grid first. Create -> /video-credits still cross-links
+// prominently to Burn to Create as "part of the same campaign," so
+// that one stays a flat link. Migrate v1 -> v2 stays out of primary
+// nav entirely -- surfaced via the announcement banner and
+// automatically on /stake for any wallet holding v1 instead.
+//
+// NAV_ITEMS is one ordered list (not separate "top links" vs.
+// "categories" arrays) so a dropdown can sit between two plain links
+// in the actual visual order, instead of every dropdown being forced
+// to render after every plain link.
+const NAV_ITEMS = [
+  { type: "link", href: "/trade", label: "Trade" },
+  { type: "link", href: "/stake", label: "Stake" },
   {
+    type: "dropdown",
+    label: "Interns",
+    items: [
+      { href: "/marketplace", label: "All Interns" },
+      { href: "/blaze", label: "Blaze — Burn Tracker" },
+      { href: "/personas", label: "Rendo — Media" },
+      { href: "/inference-credits", label: "Promptly — Inference" },
+      { href: "/synapse", label: "Synapse — Research" },
+      { href: "/interndex", label: "Hush — Privacy" },
+      { href: "/cache", label: "Cache — Yield & Borrow" },
+    ],
+  },
+  { type: "link", href: "/video-credits", label: "Create" },
+  {
+    type: "dropdown",
     label: "About",
     items: [
       { href: "/tokenomics", label: "Tokenomics" },
@@ -272,19 +279,20 @@ export default function Nav() {
           {/* Horizontal tabs -- desktop/tablet only. Mobile keeps the
               hamburger panel below since there's no room for this row. */}
           <div className="hidden md:flex items-center gap-1">
-            {TOP_LINKS.map((link) => (
-              <NavTab key={link.href} href={link.href} label={link.label} active={pathname === link.href} />
-            ))}
-            {CATEGORIES.map((cat) => (
-              <NavDropdown
-                key={cat.label}
-                label={cat.label}
-                items={cat.items}
-                pathname={pathname}
-                openId={openDropdown}
-                setOpenId={setOpenDropdown}
-              />
-            ))}
+            {NAV_ITEMS.map((item) =>
+              item.type === "dropdown" ? (
+                <NavDropdown
+                  key={item.label}
+                  label={item.label}
+                  items={item.items}
+                  pathname={pathname}
+                  openId={openDropdown}
+                  setOpenId={setOpenDropdown}
+                />
+              ) : (
+                <NavTab key={item.href} href={item.href} label={item.label} active={pathname === item.href} />
+              )
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -347,39 +355,37 @@ export default function Nav() {
                 animate="show"
                 className="px-6 py-8 max-w-2xl mx-auto w-full"
               >
-                <div>
-                  {TOP_LINKS.map((link) => (
+                {NAV_ITEMS.map((item) =>
+                  item.type === "dropdown" ? (
+                    <div key={item.label}>
+                      <motion.p
+                        variants={fadeUp}
+                        className="font-mono text-xs text-[var(--color-muted-2)] tracking-widest mt-8 mb-1"
+                      >
+                        {item.label.toUpperCase()}
+                      </motion.p>
+                      {item.items.map((link) => (
+                        <PanelLink
+                          key={link.href}
+                          href={link.href}
+                          active={pathname === link.href}
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          {link.label}
+                        </PanelLink>
+                      ))}
+                    </div>
+                  ) : (
                     <PanelLink
-                      key={link.href}
-                      href={link.href}
-                      active={pathname === link.href}
+                      key={item.href}
+                      href={item.href}
+                      active={pathname === item.href}
                       onClick={() => setMenuOpen(false)}
                     >
-                      {link.label}
+                      {item.label}
                     </PanelLink>
-                  ))}
-                </div>
-
-                {CATEGORIES.map((cat) => (
-                  <div key={cat.label}>
-                    <motion.p
-                      variants={fadeUp}
-                      className="font-mono text-xs text-[var(--color-muted-2)] tracking-widest mt-8 mb-1"
-                    >
-                      {cat.label.toUpperCase()}
-                    </motion.p>
-                    {cat.items.map((link) => (
-                      <PanelLink
-                        key={link.href}
-                        href={link.href}
-                        active={pathname === link.href}
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        {link.label}
-                      </PanelLink>
-                    ))}
-                  </div>
-                ))}
+                  )
+                )}
 
                 <motion.p
                   variants={fadeUp}

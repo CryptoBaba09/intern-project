@@ -168,8 +168,9 @@ function Protocol() {
     },
     {
       title: "Lending & borrowing",
-      body: "Post $INTERN as collateral, or borrow against it.",
-      status: "PLANNED",
+      body: "Cache, the Yield & Borrow Intern: post a real tokenized stock as collateral and borrow USDG, or supply USDG directly and earn yield from real borrowers.",
+      status: "COMING SOON",
+      href: "/cache",
     },
     {
       title: "$interndex",
