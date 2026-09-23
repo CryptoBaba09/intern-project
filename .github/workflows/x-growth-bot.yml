@@ -1,0 +1,49 @@
+name: X growth bot
+
+# Runs intern-x-bot once an hour. GitHub Actions instead of Vercel Cron
+# deliberately -- this project's Vercel account is on the Hobby plan,
+# which caps cron schedules at once/day (confirmed against the single
+# existing entry in intern-site/vercel.json, which already runs daily).
+# GitHub Actions' scheduler supports hourly for free on a private repo
+# well within the included minutes (a run here takes well under a
+# minute of actual compute).
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch: {} # lets you trigger a run manually from the Actions tab, e.g. to test DRY_RUN output
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: intern-x-bot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+        if: ${{ secrets.X_BEARER_TOKEN != '' }}
+      # Skips cleanly (green check, not a failure) instead of erroring
+      # every hour while X API keys haven't been set up yet -- that step
+      # is deliberately deferred for now (see docs/x-growth-bot.md).
+      # Flip on automatically the moment X_BEARER_TOKEN is added as a
+      # repo secret; nothing else needs to change.
+      - run: echo "X_BEARER_TOKEN not set -- skipping this run. See docs/x-growth-bot.md to enable."
+        if: ${{ secrets.X_BEARER_TOKEN == '' }}
+      - run: npm install
+        if: ${{ secrets.X_BEARER_TOKEN != '' }}
+      - run: node index.js
+        if: ${{ secrets.X_BEARER_TOKEN != '' }}
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          # Flip to "false" as a repo secret once you've reviewed dry-run
+          # output in the Actions logs and are ready to go fully live.
+          DRY_RUN: ${{ secrets.X_BOT_DRY_RUN || 'true' }}
