@@ -1,0 +1,22 @@
+name: Telegram game ticker
+
+# Posts a fresh /trivia round into the $INTERN Community group every 3
+# hours, so the game is a constant ambient thing rather than only
+# existing when someone remembers to type /trivia themselves. Calls the
+# deployed site's own api/telegram/auto-trivia route (Vercel) -- this
+# workflow itself does no Telegram or DB work, it's just the scheduler,
+# same reasoning as x-growth-bot.yml existing because Vercel Hobby's
+# cron is capped at once/day.
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger a trivia round
+        run: |
+          curl -sf -X POST "https://internburn.xyz/api/telegram/auto-trivia" \
+            -H "x-autotrivia-secret: ${{ secrets.TELEGRAM_AUTOTRIVIA_SECRET }}"
