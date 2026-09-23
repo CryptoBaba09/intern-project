@@ -1,16 +1,18 @@
 "use client";
 
-// Cache, the Yield Intern -- full page. Same shape as InterndexView.js
-// (persona intro, live stats, the actual flow, honesty disclosures),
-// but the flow itself is CacheDepositPreview's PREVIEW/LIVE split
-// (RewardChoicePreview's pattern) since CacheVaultDeposit isn't
-// deployed yet -- see lib/chain.js's isCacheVaultLive() and
-// docs/cache-intern-spec.md.
+// Cache, the Yield & Borrow Intern -- full page. Same shape as
+// InterndexView.js (persona intro, live stats, the actual flow).
+// User-facing copy here is deliberately product-level only -- no
+// backend/infra names, contract names, test counts, or audit-process
+// detail (see memory: frontend-copy-no-backend-leakage). The real
+// technical detail (contract addresses, what's still being fixed)
+// lives in /docs and /whitepaper's Security section instead, which
+// are explicitly the "verify it yourself" pages, not this one.
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "../components/motion";
 import CacheDepositPreview from "../components/CacheDepositPreview";
-import { CONTRACTS, isCacheVaultLive } from "../lib/chain";
+import { isCacheVaultLive } from "../lib/chain";
 import { useCacheVault, formatUsdg, MORPHO_VAULT_URL } from "./useCacheVault";
 
 function StatusBadge({ children, tone = "ember" }) {
@@ -40,42 +42,40 @@ export default function CacheView() {
           className="rounded-full border border-[var(--color-line)] w-14 h-14"
         />
         <div className="flex items-center gap-3 flex-wrap">
-          <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest">MEET CACHE · YIELD INTERN</p>
-          <StatusBadge tone={live ? "accent" : "ember"}>{live ? "LIVE" : "IN DESIGN"}</StatusBadge>
+          <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest">MEET CACHE · YIELD &amp; BORROW INTERN</p>
+          <StatusBadge tone={live ? "accent" : "ember"}>{live ? "LIVE" : "COMING SOON"}</StatusBadge>
         </div>
       </Reveal>
 
       <Reveal delay={0.05} as="h1" className="text-4xl sm:text-5xl font-semibold leading-[1.05] mb-6 max-w-2xl">
-        Deposit USDG. Earn real yield. Skim a little, burn it.
+        Deposit USDG, or borrow against a real stock. Skim a little, burn it.
       </Reveal>
 
       <Reveal delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-10">
-        Cache routes your USDG straight into the same Morpho vault{" "}
-        <a href={MORPHO_VAULT_URL} target="_blank" rel="noopener noreferrer" className="underline text-[var(--color-fg)]">
-          Robinhood Earn itself deposits into
-        </a>{" "}
-        — Steakhouse USDG, curated by Steakhouse Financial. Non-custodial: the vault shares that come back are
-        yours, in your wallet, the whole time. Cache never holds them between transactions.
+        Deposit USDG and earn real yield — or post a tokenized stock as collateral and borrow USDG against it,
+        or supply USDG directly and earn from real borrowers. Non-custodial the whole way through: whatever
+        comes back is always yours, in your own wallet. A small cut is skimmed once, auto-bought-back into
+        $INTERN and burned.
       </Reveal>
 
       <div className="grid sm:grid-cols-2 gap-4 mb-10">
         <div className="border border-[var(--color-line)] rounded-2xl p-6">
           <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">
-            VAULT TVL · LIVE ON-CHAIN READ
+            VAULT SIZE · LIVE
           </p>
           <p className="text-3xl font-semibold font-mono">
             {totalAssets !== undefined ? `$${formatUsdg(totalAssets, 0)}` : "…"}
           </p>
           <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
-            Read directly off the real vault contract, not cached — refreshes automatically.
+            Refreshes automatically — not a self-reported number.
           </p>
         </div>
         <div className="border border-[var(--color-line)] rounded-2xl p-6">
           <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">SUPPLY APY</p>
-          <p className="text-3xl font-semibold font-mono text-[var(--color-muted)]">See on Morpho ↗</p>
+          <p className="text-3xl font-semibold font-mono text-[var(--color-muted)]">See live rate ↗</p>
           <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
             <a href={MORPHO_VAULT_URL} target="_blank" rel="noopener noreferrer" className="underline">
-              Morpho&apos;s own live number
+              Check the current rate
             </a>{" "}
             — deliberately not duplicated here, so it can never quietly go stale on our side.
           </p>
@@ -87,23 +87,14 @@ export default function CacheView() {
       </Reveal>
 
       <Reveal delay={0.2} className="mt-10 border-t border-[var(--color-line)] pt-8">
-        <p className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">WHAT&apos;S REAL RIGHT NOW</p>
-        <ul className="text-sm text-[var(--color-muted)] leading-relaxed space-y-2 list-disc list-inside">
-          <li>The vault is real, live, and independently verified — $493M+ TVL confirmed directly on Morpho.</li>
-          <li>
-            <code className="text-[var(--color-fg)]">CacheVaultDeposit.sol</code> is written, unit-tested (19/19
-            passing), and has cleared an in-house Slither + manual security review — same bar this project already
-            holds itself to for its other fund-moving contracts.
-          </li>
-          <li>
-            {live ? (
-              <>Deployed at <code className="text-[var(--color-fg)]">{CONTRACTS.cacheVaultDeposit}</code>.</>
-            ) : (
-              "Not deployed anywhere yet — deploying is a separate, deliberate decision from writing and reviewing it, and hasn't been made yet."
-            )}
-          </li>
-          <li>No independent professional audit yet — in-house review is a floor, not a substitute for outside eyes.</li>
-        </ul>
+        <p className="text-sm text-[var(--color-muted)] leading-relaxed">
+          Both the deposit and borrow flows are built and going through final checks before either opens up
+          fully on this site. Full technical detail, including every contract address, lives on the{" "}
+          <Link href="/docs" className="text-[var(--color-accent)] hover:underline">
+            docs page
+          </Link>
+          .
+        </p>
         <p className="mt-6">
           <Link href="/marketplace" className="font-mono text-xs text-[var(--color-fg)] hover:underline">
             ← Back to all interns

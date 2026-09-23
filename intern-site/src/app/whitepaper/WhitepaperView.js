@@ -70,6 +70,7 @@ const ROADMAP_PHASES = [
       "A standing reward preference, so future claims land pre-converted instead of a manual step every time",
       "Independent professional security review of InternStakingRewards and InternRewardsRouter",
       "Shared, multi-approval control over both contracts' admin functions, instead of one wallet holding that access alone",
+      "Cache, the Yield & Borrow Intern — deposit USDG for real yield, or post a tokenized stock as collateral to borrow against it",
     ],
   },
   {
@@ -78,7 +79,7 @@ const ROADMAP_PHASES = [
       "Tiered loyalty bonus on top of the core staking distribution (code exists, deliberately not deployed — see Security below)",
       "Resource-sharing rewards for holders contributing resources they aren't using",
       "Custom intern builds: launch your own $INTERN-powered agent for a burn fee plus a staking minimum",
-      "Staked premium intern templates; lending/borrowing against $INTERN",
+      "Staked premium intern templates",
     ],
   },
 ];
@@ -87,7 +88,7 @@ export default function WhitepaperView() {
   return (
     <>
       <section className="px-6 pt-16 pb-12 max-w-3xl mx-auto w-full">
-        <SectionLabel>WHITEPAPER · 2026-09-16</SectionLabel>
+        <SectionLabel>WHITEPAPER · 2026-09-23</SectionLabel>
         <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6">
           One $INTERN. Multiple hats.
         </Reveal>
@@ -249,6 +250,10 @@ export default function WhitepaperView() {
             Admin controls sit with one wallet for now, moving to shared control soon. Perky, our
             loyalty bonus, is finished but intentionally not live yet — we caught a timing edge
             case in our own tests and we&apos;re not shipping it until that&apos;s closed.
+          </p>
+          <p className="text-sm text-[var(--color-muted)] leading-relaxed">
+            Same story with Cache&apos;s borrow side — we caught something in our own testing
+            before launch and we&apos;re not shipping it until it&apos;s fully closed out.
           </p>
         </Reveal>
       </section>

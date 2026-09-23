@@ -82,9 +82,7 @@ function StaticPreview() {
       </p>
       <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-3 leading-relaxed text-center">
         Real, tradeable liquidity already exists for every asset above —
-        checked directly on-chain, not a wishlist. The conversion
-        contract exists and is unit-tested, waiting on a security review
-        before any real BE flows through it.
+        checked directly on-chain, not a wishlist. Coming soon.
       </p>
     </>
   );

@@ -57,7 +57,7 @@ THE INTERNS -- current status of each
 - Promptly (Inference): live -- instant burn-for-AI-credit top-up, real spend-capped OpenRouter key (Claude, GPT, Gemini and more). Routing staked $INTERN into a shared credit pool is not live yet.
 - Synapse (Research): live, free "connectome" view mapping burn history and staking flow visually, no fee.
 - Hush (Privacy): live -- face of $interndex, swap into $INTERN from Robinhood Chain, Ethereum, Arbitrum, or Base, every swap's 0.2% fee cut auto-bought-back and burned. The confidential-swaps privacy tech she's named for is not shipped yet.
-- Cache (Yield): IN DESIGN, NOT shipped -- would let you deposit USDG into Morpho on Robinhood Chain (the same lending rail Robinhood Earn itself uses), with a 0.2% deposit fee auto-burned. No contract or frontend live yet -- don't imply otherwise.
+- Cache (Yield & Borrow): coming soon, NOT live on the site yet. Deposit USDG to earn real yield, or post a tokenized stock as collateral to borrow USDG against it, or supply USDG directly and earn from real borrowers -- 0.2% fee, auto-burned. Tell anyone asking that it isn't usable on the site yet, don't imply otherwise.
 - Perky (staking bonus tiers), Div (dividend routing), Forge (custom intern builds): all designed but NOT shipped yet.
 
 STAKING

@@ -103,6 +103,43 @@ export const CONTRACTS = {
   // beToken above, and reading it directly (TVL, share price) doesn't
   // depend on CacheVaultDeposit being deployed at all.
   cacheVault: process.env.NEXT_PUBLIC_CACHE_VAULT_MORPHO_ADDRESS || "0xBeEff033F34C046626B8D0A041844C5d1A5409dd",
+  // Cache's second contract, CacheBorrow -- the real two-sided
+  // borrow/lend market (see docs/cache-borrow-spec.md,
+  // contracts/contracts/CacheBorrow.sol). Same deliberate pattern as
+  // cacheVaultDeposit above: NO hardcoded fallback, even though this
+  // one really is deployed (2026-09-23, see
+  // contracts/scripts/deploy-cache-borrow-direct.js) and its one
+  // market -- USDG/TSLA, 62.5% LLTV -- is really allowlisted (a real
+  // setMarketAllowed() transaction from the owner wallet, same day).
+  // Going live in production is still a separate decision from those
+  // two facts being true -- set NEXT_PUBLIC_CACHE_BORROW_ADDRESS in
+  // Vercel when that decision is made. 33/33 tests passing, in-house
+  // Slither + manual review only -- no independent professional audit
+  // yet, same disclosure this project already makes for
+  // cacheVaultDeposit.
+  cacheBorrow: process.env.NEXT_PUBLIC_CACHE_BORROW_ADDRESS || null,
+  // Morpho Blue core itself -- CacheBorrow wraps this, but position()/
+  // market() reads go straight to it (see MORPHO_ABI in lib/abis.js),
+  // since a user's real collateral/borrow/supply state lives here, not
+  // in CacheBorrow (non-custodial by design). Same address
+  // deploy-cache-borrow-direct.js deployed CacheBorrow against.
+  morpho: process.env.NEXT_PUBLIC_MORPHO_ADDRESS || "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+};
+
+// CacheBorrow's one real, allowlisted market as of 2026-09-23: USDG
+// loan / TSLA collateral, 62.5% LLTV, the ChainlinkOracleV2-factory-
+// verified oracle (see docs/cache-borrow-spec.md's due-diligence
+// section) and Morpho's standard AdaptiveCurveIRM. This is the exact
+// tuple setMarketAllowed() was called with -- CacheBorrowView hashes
+// it client-side via CacheBorrow's own id() to confirm it's really
+// allowlisted before ever showing it as usable, rather than trusting
+// this constant blindly.
+export const CACHE_BORROW_TSLA_MARKET = {
+  loanToken: CONTRACTS.usdgToken,
+  collateralToken: "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+  oracle: "0xCa76875634e0b9759AA6610dC3092e92fcefE46E",
+  irm: "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
+  lltv: 625000000000000000n,
 };
 
 // Real, deployed Robinhood Stock Token addresses (confirmed against
@@ -129,6 +166,15 @@ export function isRewardsRouterLive() {
 // flow, not the live TVL/APY preview.
 export function isCacheVaultLive() {
   return Boolean(CONTRACTS.cacheVaultDeposit);
+}
+
+// Same shape as isCacheVaultLive() above, gating CacheBorrow's real
+// depositCollateral/borrow/repay/withdrawCollateral/supply/
+// withdrawSupply flow instead of the deposit-only vault. See
+// CONTRACTS.cacheBorrow's own comment for why this stays deliberately
+// unset until a separate go-live decision is made.
+export function isCacheBorrowLive() {
+  return Boolean(CONTRACTS.cacheBorrow);
 }
 
 // Same live Uniswap V3 infra intern-burn-bot/lib/swapEthForBe.js and

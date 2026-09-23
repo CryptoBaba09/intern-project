@@ -60,12 +60,11 @@ export default function PerkyPreview({ staked }) {
         {staked === null
           ? "Connect a wallet to see your real tier."
           : tier
-            ? `You'd unlock ${tier.weight} weight — but the contract funding this bonus isn't deployed yet.`
+            ? `You'd unlock ${tier.weight} weight once this bonus is live.`
             : "Stake 10,000+ $INTERN to see a tier here."}
       </p>
       <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-3 leading-relaxed text-center">
-        Real contract, unit-tested — waiting on InternStakingRewards&apos;
-        own audit before any real BE flows through it.
+        Coming soon.
       </p>
     </div>
   );
