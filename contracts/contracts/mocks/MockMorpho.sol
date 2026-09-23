@@ -21,6 +21,7 @@ contract MockMorpho is IMorpho {
 
     mapping(bytes32 => mapping(address => uint256)) public collateral;
     mapping(bytes32 => mapping(address => uint256)) public borrowShares;
+    mapping(bytes32 => mapping(address => uint256)) public supplyShares;
 
     function _id(MarketParams memory marketParams) internal pure returns (bytes32) {
         return keccak256(abi.encode(marketParams));
@@ -68,6 +69,32 @@ contract MockMorpho is IMorpho {
         require(assets <= collateral[marketId][onBehalf], "withdraw exceeds posted collateral");
         collateral[marketId][onBehalf] -= assets;
         IERC20(marketParams.collateralToken).safeTransfer(receiver, assets);
+    }
+
+    function supply(MarketParams memory marketParams, uint256 assets, uint256 shares, address onBehalf, bytes memory)
+        external
+        override
+        returns (uint256 assetsSupplied, uint256 sharesSupplied)
+    {
+        require((assets == 0) != (shares == 0), "exactly one of assets/shares must be nonzero");
+        assetsSupplied = assets == 0 ? shares : assets; // 1:1, mock only
+        sharesSupplied = assetsSupplied;
+        supplyShares[_id(marketParams)][onBehalf] += sharesSupplied;
+        IERC20(marketParams.loanToken).safeTransferFrom(msg.sender, address(this), assetsSupplied);
+    }
+
+    function withdraw(MarketParams memory marketParams, uint256 assets, uint256 shares, address onBehalf, address receiver)
+        external
+        override
+        returns (uint256 assetsWithdrawn, uint256 sharesWithdrawn)
+    {
+        require((assets == 0) != (shares == 0), "exactly one of assets/shares must be nonzero");
+        bytes32 marketId = _id(marketParams);
+        sharesWithdrawn = assets == 0 ? shares : assets; // 1:1, mock only
+        require(sharesWithdrawn <= supplyShares[marketId][onBehalf], "withdraw exceeds supplied position");
+        assetsWithdrawn = sharesWithdrawn;
+        supplyShares[marketId][onBehalf] -= sharesWithdrawn;
+        IERC20(marketParams.loanToken).safeTransfer(receiver, assetsWithdrawn);
     }
 
     function isAuthorized(address, address) external pure override returns (bool) {

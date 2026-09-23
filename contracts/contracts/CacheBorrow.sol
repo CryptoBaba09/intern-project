@@ -8,11 +8,14 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IMorpho} from "./interfaces/IMorpho.sol";
 
 /// @title CacheBorrow
-/// @notice Cache, the Yield Intern -- the borrow half. Deposit a real
-/// Robinhood Stock Token (TSLA, AAPL, NVDA, etc.) as collateral into a
-/// real, live Morpho Blue market on Robinhood Chain, borrow USDG
-/// against it. Companion to CacheVaultDeposit.sol (the supply-only
-/// deposit contract) -- deliberately a SEPARATE contract, not merged
+/// @notice Cache, the Yield Intern -- the real two-sided market: post a
+/// Robinhood Stock Token (TSLA, AAPL, NVDA, etc.) as collateral and
+/// borrow USDG against it, OR supply USDG directly into one of these
+/// same markets and earn yield from real borrowers. Both sides of a
+/// single Morpho Blue market, both routed through this one contract.
+/// Companion to CacheVaultDeposit.sol (which deposits into the
+/// diversified Steakhouse USDG meta-vault, not into any single named
+/// market like these) -- deliberately a SEPARATE contract, not merged
 /// into it. See docs/cache-borrow-spec.md for the full architecture
 /// writeup and the reasoning below in short form.
 ///
@@ -45,19 +48,24 @@ import {IMorpho} from "./interfaces/IMorpho.sol";
 /// never by ticker alone -- so a bad oracle or an unreviewed market
 /// can't be reached through this contract even if it exists on Morpho.
 ///
-/// FEE: 0.2% skimmed once, on borrow() only, off the amount actually
-/// borrowed -- same one-time-skim shape as CacheVaultDeposit's deposit
-/// fee, not an ongoing spread on the interest rate (would require this
-/// contract to track accrued interest independently of Morpho's own
-/// accounting -- real new state, real new bugs, for a fee that's meant
-/// to stay simple). No fee on supplyCollateral/repay/withdrawCollateral
-/// -- posting collateral or paying down debt isn't extracting value.
-/// Skimmed USDG accumulates at feeRecipient and gets swapped-and-burned
-/// via the same existing manual cycle CacheVaultDeposit's fee already
-/// uses -- not an inline USDG->ETH swap-and-burn in this transaction,
-/// same reasoning as CacheVaultDeposit's own NatSpec (Pons only takes
-/// native ETH pre-graduation; bolting a swap router on for a rounding-
-/// error fee isn't worth the widened audit surface).
+/// FEE: 0.2% skimmed once, on borrow() AND on supply(), off the amount
+/// actually moved each time -- same one-time-skim shape as
+/// CacheVaultDeposit's deposit fee, applied symmetrically: a fee where
+/// capital enters to do work (supplied to earn yield, borrowed to be
+/// spent), never a fee where nothing is being extracted. No fee on
+/// supplyCollateral/repay/withdrawCollateral/withdrawSupply -- posting
+/// collateral isn't extracting value, and withdrawing (either side)
+/// is just closing a position, not creating one. Not an ongoing spread
+/// on the interest rate either way (would require this contract to
+/// track accrued interest independently of Morpho's own accounting --
+/// real new state, real new bugs, for a fee that's meant to stay
+/// simple). Skimmed USDG accumulates at feeRecipient and gets
+/// swapped-and-burned via the same existing manual cycle
+/// CacheVaultDeposit's fee already uses -- not an inline USDG->ETH
+/// swap-and-burn in this transaction, same reasoning as
+/// CacheVaultDeposit's own NatSpec (Pons only takes native ETH
+/// pre-graduation; bolting a swap router on for a rounding-error fee
+/// isn't worth the widened audit surface).
 ///
 /// SECURITY NOTE: unit-tested against a mock Morpho (real Morpho Blue's
 /// own accounting, interest accrual, and liquidation logic are out of
@@ -117,6 +125,8 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
     event Borrowed(address indexed user, bytes32 indexed marketId, uint256 assetsBorrowed, uint256 fee, uint256 assetsReceived);
     event Repaid(address indexed user, bytes32 indexed marketId, uint256 assetsRepaid, uint256 sharesRepaid);
     event CollateralWithdrawn(address indexed user, bytes32 indexed marketId, uint256 assets);
+    event Supplied(address indexed user, bytes32 indexed marketId, uint256 assetsIn, uint256 fee, uint256 assetsSupplied, uint256 sharesSupplied);
+    event SupplyWithdrawn(address indexed user, bytes32 indexed marketId, uint256 assetsWithdrawn, uint256 sharesWithdrawn);
     event FeeRecipientSet(address indexed feeRecipient);
     event FeeBpsSet(uint256 feeBps);
 
@@ -124,7 +134,10 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
     error FeeTooHigh(uint256 requested, uint256 max);
     error MarketNotAllowed(bytes32 marketId);
     error WrongLoanToken(address given, address expected);
-    error SlippageTooHigh(uint256 assetsReceived, uint256 minReceived);
+    /// @dev Shared by borrow() (assets vs. minReceived) and supply()
+    /// (shares vs. minSharesOut) -- both are "you set a floor and
+    /// didn't get at least that much," just different units.
+    error SlippageTooHigh(uint256 got, uint256 min);
 
     constructor(address _morpho, address _usdgToken, address _feeRecipient, uint256 _feeBps, address _owner)
         Ownable(_owner)
@@ -272,6 +285,57 @@ contract CacheBorrow is ReentrancyGuard, Ownable {
         if (assets == 0) revert ZeroAmount();
         morpho.withdrawCollateral(marketParams, assets, msg.sender, msg.sender);
         emit CollateralWithdrawn(msg.sender, id(marketParams), assets);
+    }
+
+    /// @notice LENDER SIDE. Supply `assets` of USDG directly into this
+    /// specific market -- earning yield from whoever borrows against
+    /// the collateral, not the diversified Steakhouse allocation
+    /// CacheVaultDeposit routes into. Skims feeBps off the top, same
+    /// as borrow(); the position (Morpho supply shares) is recorded
+    /// under the CALLER's own address, this contract holds the USDG
+    /// for one transaction only. `minSharesOut` guards against the
+    /// market's share price moving between signing and mining -- same
+    /// reason CacheVaultDeposit.deposit() has a minShares floor.
+    function supply(IMorpho.MarketParams calldata marketParams, uint256 assets, uint256 minSharesOut)
+        external
+        nonReentrant
+        onlyAllowedMarket(marketParams)
+        returns (uint256 sharesSupplied)
+    {
+        if (assets == 0) revert ZeroAmount();
+
+        usdgToken.safeTransferFrom(msg.sender, address(this), assets);
+
+        uint256 fee = (assets * feeBps) / BPS_DENOMINATOR;
+        uint256 netAssets = assets - fee;
+        if (fee > 0) {
+            usdgToken.safeTransfer(feeRecipient, fee);
+        }
+
+        usdgToken.forceApprove(address(morpho), netAssets);
+        uint256 assetsSupplied;
+        (assetsSupplied, sharesSupplied) = morpho.supply(marketParams, netAssets, 0, msg.sender, "");
+        if (sharesSupplied < minSharesOut) revert SlippageTooHigh(sharesSupplied, minSharesOut);
+
+        emit Supplied(msg.sender, id(marketParams), assets, fee, assetsSupplied, sharesSupplied);
+    }
+
+    /// @notice LENDER SIDE. Withdraw supplied USDG straight to the
+    /// caller -- Morpho sends it directly via its own `receiver` param,
+    /// so this contract never touches it, same as withdrawCollateral.
+    /// Exactly one of `assets`/`shares` must be nonzero (pass `shares`
+    /// to withdraw an exact share amount, e.g. the caller's full
+    /// position, without needing to predict interest accrued since
+    /// their last read). No fee -- withdrawing isn't a new value-
+    /// creating action, it's closing one already paid for at supply time.
+    function withdrawSupply(IMorpho.MarketParams calldata marketParams, uint256 assets, uint256 shares)
+        external
+        nonReentrant
+        onlyAllowedMarket(marketParams)
+        returns (uint256 assetsWithdrawn, uint256 sharesWithdrawn)
+    {
+        (assetsWithdrawn, sharesWithdrawn) = morpho.withdraw(marketParams, assets, shares, msg.sender, msg.sender);
+        emit SupplyWithdrawn(msg.sender, id(marketParams), assetsWithdrawn, sharesWithdrawn);
     }
 
     /// @notice Owner-only: repoint where the borrow fee cut
