@@ -419,8 +419,8 @@ function MeetTheInterns() {
             One family, five jobs, all real.
           </Reveal>
           <Reveal delay={0.08} className="text-sm text-[var(--color-muted)] mt-2 max-w-xl">
-            A 6th — Cache, deposit or borrow against real tokenized stocks — is already written and
-            reviewed, not live yet.{" "}
+            A 6th — Cache, deposit or borrow against real tokenized stocks — is already deployed
+            on-chain, not live on this site yet.{" "}
             <Link href="/cache" className="text-[var(--color-accent)] hover:underline">
               See where it stands →
             </Link>

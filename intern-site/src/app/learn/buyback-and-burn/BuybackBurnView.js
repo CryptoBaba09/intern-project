@@ -225,11 +225,10 @@ export default function BuybackBurnView() {
         <Reveal className="space-y-4">
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
             This isn&apos;t a project that claims everything is done. Perky (tiered staking
-            bonus) is unit-tested but not deployed — it needs its own audit first. Div (dividend
-            routing) is blocked on Bloom Energy actually paying a real-world dividend, not on
-            anything we control. Hush&apos;s namesake feature — confidential swaps, no
-            wallet-to-trade trail — is the direction, not a shipped feature, and we&apos;re not
-            claiming otherwise.
+            bonus) is coming soon. Div (dividend routing) is waiting on Bloom Energy to actually
+            pay a real-world dividend, not on anything we control. Hush&apos;s namesake feature —
+            confidential swaps, no wallet-to-trade trail — is the direction, not a shipped
+            feature, and we&apos;re not claiming otherwise.
           </p>
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
             If a claim on this page stops being true, this page changes with it. That&apos;s the

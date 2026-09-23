@@ -129,13 +129,11 @@ function ComingSoon() {
         Staking opens at launch
       </Reveal>
       <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-base leading-relaxed">
-        The staking contract is built and unit-tested — see the{" "}
+        See the{" "}
         <a href="/tokenomics" className="text-[var(--color-accent)] hover:underline">
           tokenomics page
         </a>{" "}
-        for the full fee-split breakdown. It goes live once the v2
-        contract is deployed on Pons and has had an independent security
-        review.
+        for the full fee-split breakdown. Staking opens for v2 shortly on Pons.
       </Reveal>
     </section>
   );

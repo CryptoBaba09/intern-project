@@ -16,15 +16,35 @@ import {IMorpho} from "../interfaces/IMorpho.sol";
 /// Must be pre-funded with the loan token for borrow() to have
 /// anything to lend out -- tests do this explicitly, mirroring how a
 /// real market needs real supplied liquidity before anyone can borrow.
+///
+/// AUTHORIZATION IS FAITHFULLY MODELED, unlike the rest of this mock --
+/// this is the one piece of real Morpho Blue behavior these tests
+/// genuinely need to enforce, since it's exactly what CacheBorrow's
+/// first deployed version got wrong (see CacheBorrow.sol's own
+/// NatSpec): borrow()/withdrawCollateral()/withdraw() require
+/// `msg.sender == onBehalf || isAuthorized[onBehalf][msg.sender]`,
+/// same as real Morpho; supplyCollateral()/supply()/repay() never
+/// check it, same as real Morpho. setAuthorizationWithSig() skips real
+/// EIP-712 signature verification (a test convenience -- this mock
+/// never claims to model Morpho's cryptography), but does enforce the
+/// real nonce semantics (must match exactly, strictly increments after
+/// use), which is enough to catch a bundle-construction bug in
+/// CacheBorrow's own AuthBundle handling even without real signatures.
 contract MockMorpho is IMorpho {
     using SafeERC20 for IERC20;
 
     mapping(bytes32 => mapping(address => uint256)) public collateral;
     mapping(bytes32 => mapping(address => uint256)) public borrowShares;
     mapping(bytes32 => mapping(address => uint256)) public supplyShares;
+    mapping(address => mapping(address => bool)) internal _isAuthorized;
+    mapping(address => uint256) internal _nonce;
 
     function _id(MarketParams memory marketParams) internal pure returns (bytes32) {
         return keccak256(abi.encode(marketParams));
+    }
+
+    function _requireSenderAuthorized(address onBehalf) internal view {
+        require(msg.sender == onBehalf || _isAuthorized[onBehalf][msg.sender], "unauthorized");
     }
 
     function supplyCollateral(MarketParams memory marketParams, uint256 assets, address onBehalf, bytes memory)
@@ -40,6 +60,7 @@ contract MockMorpho is IMorpho {
         override
         returns (uint256 assetsBorrowed, uint256 sharesBorrowed)
     {
+        _requireSenderAuthorized(onBehalf);
         require((assets == 0) != (shares == 0), "exactly one of assets/shares must be nonzero");
         assetsBorrowed = assets == 0 ? shares : assets; // 1:1, mock only
         sharesBorrowed = assetsBorrowed;
@@ -65,6 +86,7 @@ contract MockMorpho is IMorpho {
         external
         override
     {
+        _requireSenderAuthorized(onBehalf);
         bytes32 marketId = _id(marketParams);
         require(assets <= collateral[marketId][onBehalf], "withdraw exceeds posted collateral");
         collateral[marketId][onBehalf] -= assets;
@@ -88,6 +110,7 @@ contract MockMorpho is IMorpho {
         override
         returns (uint256 assetsWithdrawn, uint256 sharesWithdrawn)
     {
+        _requireSenderAuthorized(onBehalf);
         require((assets == 0) != (shares == 0), "exactly one of assets/shares must be nonzero");
         bytes32 marketId = _id(marketParams);
         sharesWithdrawn = assets == 0 ? shares : assets; // 1:1, mock only
@@ -97,7 +120,26 @@ contract MockMorpho is IMorpho {
         IERC20(marketParams.loanToken).safeTransfer(receiver, assetsWithdrawn);
     }
 
-    function isAuthorized(address, address) external pure override returns (bool) {
-        return false; // CacheBorrow never relies on this being true for itself
+    function isAuthorized(address authorizer, address authorizee) external view override returns (bool) {
+        return _isAuthorized[authorizer][authorizee];
+    }
+
+    function setAuthorization(address authorized, bool newIsAuthorized) external {
+        _isAuthorized[msg.sender][authorized] = newIsAuthorized;
+    }
+
+    /// @dev Real signature verification deliberately skipped (test
+    /// convenience, documented at the contract level) -- but nonce
+    /// enforcement is real: this is what actually proves CacheBorrow's
+    /// AuthBundle grant (nonce N) / revoke (nonce N+1) pairing is
+    /// constructed correctly, independent of any real cryptography.
+    function setAuthorizationWithSig(Authorization calldata authorization, Signature calldata) external override {
+        require(authorization.nonce == _nonce[authorization.authorizer], "invalid nonce");
+        _nonce[authorization.authorizer] += 1;
+        _isAuthorized[authorization.authorizer][authorization.authorized] = authorization.isAuthorized;
+    }
+
+    function nonce(address authorizer) external view override returns (uint256) {
+        return _nonce[authorizer];
     }
 }

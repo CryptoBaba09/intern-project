@@ -80,6 +80,28 @@ body {
   animation: ember-pulse 2.4s ease-in-out infinite;
 }
 
+/* TradeView.js's GeckoTerminal chart loading state -- a real skeleton
+   (a faint sweeping highlight over a chart-shaped silhouette) instead
+   of plain centered text, so the 8-13s real-world wait (see
+   TradeView.js's own comment on why it's a fixed timer, not an onLoad
+   hook) reads as "loading something," not "blank and maybe broken." */
+@keyframes chart-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.chart-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.04) 20%,
+    rgba(255, 255, 255, 0.09) 40%,
+    rgba(255, 255, 255, 0.09) 60%,
+    rgba(255, 255, 255, 0.04) 80%
+  );
+  background-size: 800px 100%;
+  animation: chart-shimmer 1.8s ease-in-out infinite;
+}
+
 /* FloatingMascots.js -- a slow, organic bob + drift, not a mechanical
    loop: horizontal drift and vertical bob run on deliberately
    non-matching offsets/timings per keyframe so instances with different

@@ -444,6 +444,17 @@ function Generator({ balanceUsd, onSpent }) {
   const [error, setError] = useState(null);
   const isCustom = mode === "custom";
 
+  // Generation links are provider-hosted and can expire -- a plain
+  // <video> just goes black with no explanation when that happens,
+  // which reads as this site being broken rather than the link having
+  // aged out. onError below catches that and swaps in an explicit
+  // message instead. Reset whenever a fresh videoUrl shows up so an
+  // old expiry doesn't linger and hide a brand-new, working video.
+  const [videoExpired, setVideoExpired] = useState(false);
+  useEffect(() => {
+    setVideoExpired(false);
+  }, [job?.videoUrl]);
+
   useEffect(() => {
     if (!job || job.status === "ready" || job.status === "failed") return;
     const id = setInterval(async () => {
@@ -572,18 +583,30 @@ function Generator({ balanceUsd, onSpent }) {
       {job && (
         <div className="mt-5 border-t border-[var(--color-line)] pt-4">
           {job.status === "ready" && job.videoUrl ? (
-            <div className="space-y-3">
-              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-              <video src={job.videoUrl} controls className="w-full rounded-xl border border-[var(--color-line)]" />
-              <a
-                href={job.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-center font-mono text-xs text-[var(--color-accent)] hover:underline"
-              >
-                Open full video ↗
-              </a>
-            </div>
+            videoExpired ? (
+              <p className="font-mono text-xs text-[var(--color-ember)]">
+                This video&apos;s link has expired. It was already generated and the credit was
+                spent — contact the team with this task ID if you need it recovered: {job.taskId}
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                <video
+                  src={job.videoUrl}
+                  controls
+                  onError={() => setVideoExpired(true)}
+                  className="w-full rounded-xl border border-[var(--color-line)]"
+                />
+                <a
+                  href={job.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-center font-mono text-xs text-[var(--color-accent)] hover:underline"
+                >
+                  Open full video ↗
+                </a>
+              </div>
+            )
           ) : job.status === "failed" ? (
             <p className="font-mono text-xs text-[var(--color-danger)]">
               That generation failed on the provider&apos;s side. Credit already spent isn&apos;t
@@ -611,6 +634,11 @@ function Generator({ balanceUsd, onSpent }) {
 function MyGenerations({ address, refreshSignal }) {
   const [generations, setGenerations] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Per-item, same reasoning as Generator's own videoExpired above --
+  // a provider link can age out well after the card first rendered as
+  // "ready," so this is populated lazily by each <video>'s onError,
+  // not known up front from the API response.
+  const [expiredIds, setExpiredIds] = useState(new Set());
 
   useEffect(() => {
     if (!address) return;
@@ -648,13 +676,18 @@ function MyGenerations({ address, refreshSignal }) {
             key={g.id}
             className="border border-[var(--color-line)] rounded-xl bg-[var(--color-surface)] overflow-hidden"
           >
-            {g.status === "ready" && g.videoUrl ? (
+            {g.status === "ready" && g.videoUrl && !expiredIds.has(g.id) ? (
               // eslint-disable-next-line jsx-a11y/media-has-caption
-              <video src={g.videoUrl} controls className="w-full aspect-video bg-black" />
+              <video
+                src={g.videoUrl}
+                controls
+                onError={() => setExpiredIds((prev) => new Set(prev).add(g.id))}
+                className="w-full aspect-video bg-black"
+              />
             ) : (
               <div className="w-full aspect-video bg-[var(--color-bg)] flex items-center justify-center">
                 <p className="font-mono text-[10px] text-[var(--color-muted)]">
-                  {g.status === "failed" ? "Failed" : "Processing…"}
+                  {g.status === "failed" ? "Failed" : expiredIds.has(g.id) ? "Link expired" : "Processing…"}
                 </p>
               </div>
             )}
@@ -664,14 +697,18 @@ function MyGenerations({ address, refreshSignal }) {
                 {g.prompt}
               </p>
               {g.status === "ready" && g.videoUrl && (
-                <a
-                  href={g.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-[10px] text-[var(--color-accent)] hover:underline"
-                >
-                  Open / download ↗
-                </a>
+                expiredIds.has(g.id) ? (
+                  <p className="font-mono text-[10px] text-[var(--color-ember)]">Link expired — no longer available</p>
+                ) : (
+                  <a
+                    href={g.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-[10px] text-[var(--color-accent)] hover:underline"
+                  >
+                    Open / download ↗
+                  </a>
+                )
               )}
             </div>
           </div>
