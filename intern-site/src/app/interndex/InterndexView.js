@@ -72,8 +72,8 @@ export default function InterndexView() {
         Swap anything to anything. Burn $INTERN.
       </Reveal>
       <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-10">
-        Real rates across any of LI.FI&apos;s live chains and tokens —
-        not just a handful we&apos;ve hardcoded. Behind every trade, a
+        Real rates across every live chain and token our routing
+        supports — not just a handful we&apos;ve hardcoded. Behind every trade, a
         slice quietly buys back and burns $INTERN. Hush&apos;s real
         target is further out: swaps with no wallet-to-trade trail, no
         amounts sitting in the open — genuinely private. Still in the
