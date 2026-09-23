@@ -1,5 +1,14 @@
 # $INTERN X growth bot
 
+**Status: deferred, 2026-09-23.** Code is built and merged, but the X
+API step is intentionally not set up yet (real ongoing cost, paused by
+choice -- see docs/x-growth-bot.md's cost estimate). The scheduled
+workflow (`.github/workflows/x-growth-bot.yml`) checks for
+`X_BEARER_TOKEN` and skips cleanly (green check, not a failure) every
+hour until it's set -- nothing runs, nothing is spent, no noisy
+failures. To turn it on later, just work through "One-time setup"
+below; no code changes needed.
+
 Standalone Node service (`intern-x-bot/`), same "separate deployable"
 pattern as `intern-burn-bot/`, run hourly by
 `.github/workflows/x-growth-bot.yml` (GitHub Actions), not Vercel Cron
