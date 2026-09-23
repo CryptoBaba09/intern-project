@@ -6,11 +6,11 @@ pragma solidity 0.8.24;
 /// Signatures match Morpho Blue's real, public, identically-implemented
 /// ABI (same interface across every Morpho Blue deployment -- mainnet,
 /// Base, etc., documented at docs.morpho.org). Confirmed against the
-/// real deployment on Robinhood Chain (0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010)
-/// on 2026-09-23: every selector below (supplyCollateral, borrow, repay,
-/// withdrawCollateral, isAuthorized) is present in the live deployed
-/// bytecode, and a live isAuthorized() read executed successfully --
-/// not assumed from docs alone.
+/// real deployment on Robinhood Chain (0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010):
+/// every selector below (supplyCollateral, borrow, repay,
+/// withdrawCollateral, isAuthorized, supply, withdraw) is present in
+/// the live deployed bytecode, and a live isAuthorized() read executed
+/// successfully -- not assumed from docs alone.
 interface IMorpho {
     /// @notice The five-tuple that identifies a Morpho Blue market.
     /// Order matters -- Morpho derives the market's id as
@@ -53,6 +53,25 @@ interface IMorpho {
     /// withdrawn collateral at all, since there's no fee on this leg.
     function withdrawCollateral(MarketParams memory marketParams, uint256 assets, address onBehalf, address receiver)
         external;
+
+    /// @notice Lender side: supply `assets` of marketParams.loanToken
+    /// into the market, on behalf of `onBehalf`. Exactly one of
+    /// `assets`/`shares` must be nonzero. Returns the actual amounts
+    /// -- `sharesSupplied` depends on the market's current share price
+    /// (assets/totalAssets ratio), which can move between signing and
+    /// mining, same reason CacheVaultDeposit.deposit() needs a
+    /// minShares floor.
+    function supply(MarketParams memory marketParams, uint256 assets, uint256 shares, address onBehalf, bytes memory data)
+        external
+        returns (uint256 assetsSupplied, uint256 sharesSupplied);
+
+    /// @notice Lender side: withdraw supplied loanToken to `receiver`.
+    /// Exactly one of `assets`/`shares` must be nonzero. `receiver` can
+    /// be the end user directly -- no fee on this leg, so CacheBorrow
+    /// never needs to touch the withdrawn amount at all.
+    function withdraw(MarketParams memory marketParams, uint256 assets, uint256 shares, address onBehalf, address receiver)
+        external
+        returns (uint256 assetsWithdrawn, uint256 sharesWithdrawn);
 
     /// @notice Whether `authorizee` can act as `onBehalf` for
     /// `authorizer`. CacheBorrow deliberately never calls

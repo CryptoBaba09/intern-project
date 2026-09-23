@@ -331,6 +331,85 @@ describe("CacheBorrow", function () {
     });
   });
 
+  describe("supply", function () {
+    it("rejects a market that isn't allowlisted", async function () {
+      const { bob, cache, marketParams } = await loadFixture(deployFixture);
+      const marketId = await cache.id(marketParams);
+      await expect(cache.connect(bob).supply(marketParams, ethers.parseEther("10"), 0))
+        .to.be.revertedWithCustomError(cache, "MarketNotAllowed")
+        .withArgs(marketId);
+    });
+
+    it("skims the fee, supplies on the CALLER's own Morpho position, and never leaves USDG in the contract", async function () {
+      const { owner, alice, cache, morpho, usdgToken, treasury, marketParams } = await loadFixture(deployFixture);
+      await cache.connect(owner).setMarketAllowed(marketParams, true);
+      const marketId = await cache.id(marketParams);
+
+      const assets = ethers.parseEther("100");
+      const expectedFee = (assets * BigInt(FEE_BPS)) / 10_000n;
+      const expectedNet = assets - expectedFee; // mock is 1:1 assets:shares
+
+      await expect(cache.connect(alice).supply(marketParams, assets, 0))
+        .to.emit(cache, "Supplied")
+        .withArgs(alice.address, marketId, assets, expectedFee, expectedNet, expectedNet);
+
+      // The SUPPLY position is Alice's, in Morpho's own ledger -- not this contract's.
+      expect(await morpho.supplyShares(marketId, alice.address)).to.equal(expectedNet);
+      expect(await morpho.supplyShares(marketId, await cache.getAddress())).to.equal(0);
+
+      expect(await usdgToken.balanceOf(treasury.address)).to.equal(expectedFee);
+      expect(await usdgToken.balanceOf(await cache.getAddress())).to.equal(0);
+    });
+
+    it("reverts if the fee would leave the caller with fewer shares than minSharesOut", async function () {
+      const { owner, alice, cache, marketParams } = await loadFixture(deployFixture);
+      await cache.connect(owner).setMarketAllowed(marketParams, true);
+      const assets = ethers.parseEther("100");
+      const expectedShares = assets - (assets * BigInt(FEE_BPS)) / 10_000n;
+
+      await expect(cache.connect(alice).supply(marketParams, assets, expectedShares + 1n))
+        .to.be.revertedWithCustomError(cache, "SlippageTooHigh")
+        .withArgs(expectedShares, expectedShares + 1n);
+    });
+
+    it("rejects a zero-amount supply", async function () {
+      const { owner, alice, cache, marketParams } = await loadFixture(deployFixture);
+      await cache.connect(owner).setMarketAllowed(marketParams, true);
+      await expect(cache.connect(alice).supply(marketParams, 0, 0)).to.be.revertedWithCustomError(cache, "ZeroAmount");
+    });
+  });
+
+  describe("withdrawSupply", function () {
+    async function withSupply() {
+      const fx = await deployFixture();
+      await fx.cache.connect(fx.owner).setMarketAllowed(fx.marketParams, true);
+      await fx.cache.connect(fx.alice).supply(fx.marketParams, ethers.parseEther("100"), 0);
+      return fx;
+    }
+
+    it("sends withdrawn USDG straight to the caller -- this contract never touches it", async function () {
+      const fx = await withSupply();
+      const { alice, cache, morpho, usdgToken, marketParams } = fx;
+      const marketId = await cache.id(marketParams);
+      const suppliedShares = await morpho.supplyShares(marketId, alice.address); // 99.8 (post-fee)
+      const aliceBalanceBefore = await usdgToken.balanceOf(alice.address);
+
+      await cache.connect(alice).withdrawSupply(marketParams, 0, suppliedShares);
+
+      expect(await morpho.supplyShares(marketId, alice.address)).to.equal(0);
+      expect(await usdgToken.balanceOf(alice.address)).to.equal(aliceBalanceBefore + suppliedShares);
+      expect(await usdgToken.balanceOf(await cache.getAddress())).to.equal(0);
+    });
+
+    it("rejects a market that isn't allowlisted", async function () {
+      const { bob, cache, wrongLoanMarket } = await loadFixture(deployFixture);
+      await expect(cache.connect(bob).withdrawSupply(wrongLoanMarket, 0, ethers.parseEther("1"))).to.be.revertedWithCustomError(
+        cache,
+        "MarketNotAllowed"
+      );
+    });
+  });
+
   describe("setFeeRecipient", function () {
     it("is owner-only", async function () {
       const { cache, stranger } = await loadFixture(deployFixture);
