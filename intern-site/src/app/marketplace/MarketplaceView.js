@@ -79,10 +79,10 @@ const INTERNS = [
     href: null,
   },
   {
-    name: "Vault",
+    name: "Cache",
     role: "Yield Intern",
     status: "IN DESIGN",
-    body: "Deposit USDG straight into Morpho on Robinhood Chain — the same lending rail Robinhood Earn itself runs on, confirmed live (Morpho Blue: 0x9D53...1010). Non-custodial: your deposit and the vault shares it earns are yours the whole time, we're never the custodian. A small cut is skimmed once, at deposit, auto-bought-back into $INTERN and burned. See docs/vault-intern-spec.md for the real architecture and what's still unverified before this goes live.",
+    body: "Deposit USDG straight into Morpho on Robinhood Chain — the same lending rail Robinhood Earn itself runs on, confirmed live (Morpho Blue: 0x9D53...1010). Non-custodial: your deposit and the vault shares it earns are yours the whole time, we're never the custodian. A small cut is skimmed once, at deposit, auto-bought-back into $INTERN and burned. See docs/cache-intern-spec.md for the real architecture and what's still unverified before this goes live.",
     fee: "0.2% on deposit, auto-buyback-and-burn — no separate charge on top (same rate as $interndex)",
     href: null,
   },

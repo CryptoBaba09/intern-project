@@ -1,4 +1,4 @@
-# Vault — the Yield Intern (spec, NOT built or deployed)
+# Cache — the Yield Intern (spec, NOT built or deployed)
 
 Idea: deposit USDG straight into Morpho on Robinhood Chain — the exact
 same lending rail Robinhood's own "Robinhood Earn" product runs on
@@ -7,6 +7,10 @@ Morpho's own announcement of the Robinhood partnership). A small cut is
 skimmed once, at deposit, auto-bought-back into $INTERN and burned —
 same non-custodial pattern as $interndex's 0.2% swap fee, not a new
 kind of contract risk.
+
+Named 2026-09-23 (was "Vault" as a working name) — Cache, a cache/cash
+pun, matches the crew's existing wordplay naming (Promptly = prompt +
+promptly) rather than a flat literal name.
 
 **Status as of 2026-09-23:** name, scope, and mechanic decided
 (recorded below). No contract or frontend code written yet. Two real
