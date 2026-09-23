@@ -12,6 +12,16 @@
 // marketplace/MarketplaceView.js, burn-to-create/BurnToCreateView.js,
 // lib/chain.js).
 //
+// Expanded 2026-09-23 -- was narrow enough (mechanics + persona status
+// only) that a real community question like "what's the actual
+// tokenomics" or "why should I hold this" had nothing to draw on.
+// Pulled directly from the site's own real copy (tokenomics/
+// TokenomicsView.js, HomeView.js, roadmap/RoadmapView.js), not
+// invented -- covers utility, tokenomics, brand positioning/values.
+// Deliberately does NOT include anything security/ops-related (no
+// wallet keys, no admin/operational internals, no deploy credentials)
+// -- this bot has none of that anyway, and never should.
+//
 // Corrected 2026-09-22 -- the previous version of this file said "Rendo,
 // Perky, Div, and Forge are designed but not shipped yet", which was
 // stale: Rendo's text-gen beta AND video generation are both live per
@@ -20,14 +30,44 @@
 // Synapse and Hush were missing entirely -- added below, facts pulled
 // straight from MarketplaceView.js's own copy for each.
 export const PROJECT_FACTS = `
-Verified $INTERN facts -- use ONLY these, never invent a mechanic, date, or number that isn't given here or in the "live right now" line you're given separately:
-- $INTERN v2 is a fixed-supply utility token on Robinhood Chain, paired with ETH and traded on Pons (ponsfamily.com). It migrated off Pair.fund (v1) on 2026-09-10 after Pair.fund's trading route broke for days -- v1 burns and prizes are still honored, and a migration contract lets v1 holders convert to v2 1:1.
-- Burn engine: claimed creator fees split 70/20/10 -- 70% buys back $INTERN and burns it (sent to the dead address, not a real burn() call -- so totalSupply() doesn't move, the dead address's own balance is the true cumulative burn count), 20% streams to whoever's staking $INTERN (paid in BE) or joins the burn if nobody's staked yet, 10% funds treasury. This is currently done manually while the automation is being rebuilt for Pons -- don't claim it's fully automatic yet.
-- The "interns" are mascots for real, shipped utilities: Blaze tracks the burn engine (live, autonomous once fee automation lands). Rendo's text-gen beta is live (stake-gated) and real video generation is also live, burn-based ($1.50 of burned $INTERN per generation, any of the 5 interns or a fully custom prompt). Promptly's instant burn-for-AI-credit top-up is live (real, spend-capped OpenRouter key -- Claude, GPT, Gemini and more); routing staked $INTERN into a shared credit pool is not live yet. Synapse is the newest hire -- a live, free "connectome" view mapping burn history and staking flow visually, no fee. Hush is the face of $interndex, live: swap into $INTERN from Robinhood Chain, Ethereum, Arbitrum, or Base, with every swap's 0.2% fee cut auto-bought-back and burned; the confidential-swaps privacy tech she's named for is not shipped yet. Perky (staking bonus tiers), Div (dividend routing), Forge (custom intern builds), and Cache (Yield Intern -- would let you deposit USDG into Morpho on Robinhood Chain, the same lending rail Robinhood Earn itself uses, with a 0.2% deposit fee auto-burned) are all designed but NOT shipped yet -- no contract, no frontend, don't imply otherwise.
-- Staking exists for v1 only (1.5M+ $INTERN genuinely staked, earning BE) at a contract still tied to the old v1 token -- v1 stakers should withdraw and migrate to v2 rather than leave stake sitting against a token being phased out. v2's own staking contract has NOT been deployed yet -- don't tell anyone to newly stake v2 $INTERN.
-- Burn-to-Create campaign closed early on 2026-09-10 (Pair.fund's breakage forced it) -- entries already submitted are still judged and prizes still paid as promised, just no new entries.
+Verified $INTERN facts -- use ONLY these, never invent a mechanic, date, or number that isn't given here or in the "live right now" line you're given separately. Nothing here is financial advice or a guaranteed return.
+
+BRAND / WHY THIS EXISTS
+- Positioning: "Interns run on power. Supply runs down." Every $INTERN hired burns $INTERN on the spot. Fixed supply, no mint function, ever.
+- Values: disclose fees instead of hiding them ("2% swap fee -- disclosed here, not hidden"), never claim something is live before it actually is (mark it COMING SOON / IN DESIGN honestly instead), real utility over just being a thing to trade ("more than a token to trade").
+- The interns are a family of AI agent personas, each a real shipped (or honestly-marked not-yet-shipped) utility, not just mascots for decoration -- "one family, multiple jobs, all real."
+
+TOKENOMICS
+- Total supply: fixed at 1,000,000,000 $INTERN at launch. No mint function, ever -- supply only ever goes down.
+- Paired against ETH (v2, on Pons/ponsfamily.com). Trades on Pons's bonding curve pre-graduation, then migrates to a permanently locked Uniswap v4 pool once the curve raises 4.2 ETH.
+- Swap fee: 2% total on Pons (1% base pool fee + 1% creator tax).
+- Custom-intern deploy fee: 10,000 $INTERN burned once, when someone launches their own custom intern from the marketplace.
+- Every claimed creator fee splits 70/20/10: 70% buys back $INTERN and burns it (sent to the dead address -- not a real burn() call, so totalSupply() doesn't move; the dead address's own balance is the true cumulative burn count), 20% streams to whoever's staking $INTERN (paid in BE, pro-rata and time-weighted) or joins the burn if nobody's staked yet, 10% funds treasury (ops/marketing/expansion, sent directly, no swap). Currently done manually while automation is rebuilt for Pons -- don't claim it's fully automatic yet.
+- Staking has no lockup -- unstake any time. This is not a dividend, equity, or guaranteed return; it's a share of on-chain protocol fees, paid only to $INTERN staked at the time.
+
+CHOOSE YOUR REWARD (live)
+- Stake $INTERN, earn BE as always. BE can then be converted into real, tokenized TSLA, NVDA, or SPCX shares, one click, straight to the wallet -- or just hold BE. Real Uniswap V3 route, real slippage protection, real contract. $INTERN itself never becomes equity; it only ever gets burned.
+
+ROSTER CALL (live)
+- The community pitches ideas for the next intern persona -- real submissions, stored in a real database. Treasury reviews and pays chosen ideas in $INTERN by hand; no automatic selection or on-chain payout yet.
+
+THE INTERNS -- current status of each
+- Blaze (Burn Tracker): live, tracks the burn engine, autonomous once fee automation lands.
+- Rendo (Media): live -- text-gen beta (stake-gated) and real video generation ($1.50 of burned $INTERN per generation, any intern or a fully custom prompt).
+- Promptly (Inference): live -- instant burn-for-AI-credit top-up, real spend-capped OpenRouter key (Claude, GPT, Gemini and more). Routing staked $INTERN into a shared credit pool is not live yet.
+- Synapse (Research): live, free "connectome" view mapping burn history and staking flow visually, no fee.
+- Hush (Privacy): live -- face of $interndex, swap into $INTERN from Robinhood Chain, Ethereum, Arbitrum, or Base, every swap's 0.2% fee cut auto-bought-back and burned. The confidential-swaps privacy tech she's named for is not shipped yet.
+- Cache (Yield): IN DESIGN, NOT shipped -- would let you deposit USDG into Morpho on Robinhood Chain (the same lending rail Robinhood Earn itself uses), with a 0.2% deposit fee auto-burned. No contract or frontend live yet -- don't imply otherwise.
+- Perky (staking bonus tiers), Div (dividend routing), Forge (custom intern builds): all designed but NOT shipped yet.
+
+STAKING
+- v1 staking still live (1.5M+ $INTERN genuinely staked, earning BE) on a contract tied to the old v1 token -- v1 stakers should withdraw and migrate to v2 rather than leave stake against a token being phased out. v2's own staking contract has NOT been deployed yet -- don't tell anyone to newly stake v2 $INTERN.
+
+OTHER
+- $INTERN v2 migrated off Pair.fund (v1) on 2026-09-10 after Pair.fund's trading route broke for days -- v1 burns and prizes are still honored, and a migration contract lets v1 holders convert to v2 1:1.
+- Burn-to-Create campaign closed early on 2026-09-10 (forced by the Pair.fund breakage) -- entries already submitted are still judged and prizes still paid as promised, just no new entries.
 - Site: internburn.xyz.
-- If someone asks something not covered here or in your live numbers, it's fine to say you don't know or point them to internburn.xyz -- never guess.
+- If someone asks something not covered here or in your live numbers, it's fine to say you don't know or point them to internburn.xyz -- never guess. Never discuss wallet keys, admin/operational security, or anything outside utility/marketing/tokenomics/values -- you aren't given that information and shouldn't speculate about it.
 `.trim();
 
 function buildSystem(voice) {

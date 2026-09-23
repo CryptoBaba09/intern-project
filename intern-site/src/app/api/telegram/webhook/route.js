@@ -58,6 +58,22 @@ function looksLikeSpam(text) {
   return SPAM_PATTERNS.some((re) => re.test(text));
 }
 
+// Catches genuine community questions that don't happen to contain a
+// burn/stake/trade/credits keyword (findTopicGif's list below) or an
+// explicit @mention -- e.g. "how do I get started?" or "is this safe"
+// used to get zero reply at all. A trailing "?" is the strongest, most
+// reliable signal; the question-word prefix check catches the common
+// case of someone dropping the "?" entirely. Deliberately loose --
+// false positives just mean an extra grounded reply, not a wrong one
+// (the persona system prompt already says to say "don't know, check
+// the site" rather than guess on anything outside PROJECT_FACTS).
+function looksLikeQuestion(text) {
+  const trimmed = text.trim();
+  if (trimmed.length < 4 || trimmed.length > 300) return false;
+  if (trimmed.endsWith("?")) return true;
+  return /^(what|how|why|when|where|who|which|can|could|is|are|does|do|will|should)\b/i.test(trimmed);
+}
+
 // Escalating enforcement: 1st/2nd spam hit in a chat gets deleted (or
 // flagged) and a warning; the 3rd within STRIKE_WINDOW_MS gets the user
 // actually removed, not just warned forever -- "kick spam out" per the
@@ -465,19 +481,26 @@ export async function POST(req) {
   }
 
   // Passive: reply to every on-topic message (burn/stake/trade/credits
-  // keywords), gated only by a per-chat cooldown so a run of consecutive
-  // on-topic messages doesn't get a reply each -- not by a coin flip that
-  // used to skip most of them.
+  // keywords) OR anything that reads as a genuine question -- so someone
+  // asking "how do I get started?" gets an answer even though it hits no
+  // topic keyword and nobody @mentioned the bot. Gated only by a per-chat
+  // cooldown so a run of consecutive messages doesn't get a reply each --
+  // not by a coin flip that used to skip most of them.
   const now = Date.now();
   const last = lastOrganicReply.get(chatId) ?? 0;
   if (now - last < ORGANIC_COOLDOWN_MS) return Response.json({ ok: true });
 
   const topic = findTopicGif(text);
-  if (topic) {
+  const isQuestion = looksLikeQuestion(text);
+  if (topic || isQuestion) {
     lastOrganicReply.set(chatId, now);
-    // Coin flip between a meme gif and a persona one-liner so the chat
-    // doesn't get the same reply shape every time.
-    if (Math.random() < 0.5) {
+    // A meme gif only makes sense when there's an actual topic to
+    // illustrate -- a bare question with no topic match always gets a
+    // real grounded answer, never a gif with no relevant caption. When
+    // there IS a topic, keep the existing coin flip between a meme gif
+    // and a persona one-liner so the chat doesn't get the same reply
+    // shape every time.
+    if (topic && Math.random() < 0.5) {
       await sendAnimation(chatId, topic.gif, topic.caption, messageId);
     } else {
       const persona = randomPersona();
