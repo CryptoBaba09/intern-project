@@ -88,30 +88,55 @@ page at `app.morpho.org/robinhood-chain/vault/0xBeEff033F34C046626B8D0A041844C5d
 net APY at time of check. This closes the address gap; the contract
 now has something real to point at.
 
-## What's still NOT done — the real gate before this touches real funds
+## Contract, tests, in-house review — done, 2026-09-23
 
-- **No contract written yet.** Finding the vault address doesn't
-  create the deposit-skim-forward contract described above -- that's
-  real Solidity + tests, not written.
-- **Whether the vault's `deposit()` supports a distinct `receiver`
-  argument** (see Architecture above) -- standard ERC-4626, expected,
-  but not yet confirmed against this vault's actual deployed ABI. Check
-  this before writing the contract, not after.
-- **No security review.** Same bar as `InternRewardsRouter` and
-  `InternStakingRewards`: an in-house Slither pass plus manual review,
-  minimum, before any real deposit -- not a step that gets skipped
-  because a human tests the happy path by hand. Testing with a real
-  wallet is a valid FINAL step (a small canary deposit, after the
-  contract exists and has been reviewed) -- it is not a substitute for
-  the contract existing or being reviewed in the first place.
+- **Contract written.** `contracts/contracts/CacheVaultDeposit.sol` --
+  the deposit-skim-forward pattern described above, non-custodial,
+  `receiver = msg.sender` on the vault call.
+- **The vault's `deposit()` receiver argument -- confirmed live, not
+  assumed.** Checked two ways directly against Robinhood Chain mainnet
+  on 2026-09-23: (1) the runtime bytecode at
+  `0xBeEff033F34C046626B8D0A041844C5d1A5409dd` contains the
+  `deposit(uint256,address)` selector (`0x6e553f65`), plus `asset()`,
+  `previewDeposit()`, `convertToShares()`, `maxDeposit()` -- the full
+  standard ERC-4626 surface, not a partial/custom one; (2) a live
+  read-only call to `asset()` returned
+  `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` -- the exact same USDG
+  address this codebase already uses for `InternRewardsRouter`'s
+  deployment, a real cross-check, not a coincidence worth ignoring if
+  it *hadn't* matched. This was the one open architecture question;
+  it's closed.
+- **In-house security review -- done, same bar as `InternRewardsRouter`
+  and `InternStakingRewards`.** Slither static analysis: zero
+  High/Medium findings, only cosmetic/informational ones (a
+  constructor-param shadowing an inherited private var, two
+  naming-convention nits, OpenZeppelin's own pragma/assembly
+  boilerplate) -- nothing actionable. Manual review beyond what Slither
+  flags caught one real gap: `deposit()` originally had no slippage
+  floor, unlike `InternRewardsRouter.convert()`'s `minAmountOut` --
+  fixed by adding a `minShares` parameter that reverts
+  (`SlippageTooHigh`) if the vault would mint fewer shares than the
+  caller specifies. 19/19 tests passing after the fix (two new tests
+  cover the revert path and the exact-match boundary).
+- **This is still not an independent professional audit.** Same
+  honesty this project applies everywhere else real money moves:
+  in-house Slither + manual review is the floor, not a substitute for
+  outside eyes on a contract that will hold real USDG (briefly) and
+  mint real Morpho shares. A small canary deposit from a real wallet,
+  after all of the above, is a valid final check -- not a substitute
+  for any of the above.
+
+## What's still NOT done
+
+- **Not deployed anywhere yet** -- testnet or mainnet. Deploying is a
+  separate, deliberate decision from writing/testing/reviewing the
+  contract (see `scripts/deploy-cache-vault-deposit-direct.js`) --
+  nothing points real value at it until that decision is made
+  explicitly.
+- **Frontend not wired.** No deposit UI, no live APY/TVL pulled from
+  the vault for display -- marketplace card still says "IN DESIGN" for
+  a reason.
 - Real APY/TVL for that vault, to show honest live numbers on the
-  frontend preview instead of a placeholder.
-
-## Before this touches real user funds
-
-Same bar this project already holds itself to for `InternRewardsRouter`
-and `InternStakingRewards`: an in-house Slither pass plus manual review
-at minimum, called out honestly as not a substitute for an independent
-professional audit, before `DRY_RUN`-equivalent testing gives way to
-real deposits. Not skipped, not rushed, same reasoning as everywhere
-else real money moves in this codebase.
+  frontend preview instead of a placeholder -- confirmed 3.91% net APY
+  / $493.4M TVL on 2026-09-23 (see vault address section above), but
+  that's a point-in-time check, not a live feed yet.
