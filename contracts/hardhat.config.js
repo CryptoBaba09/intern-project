@@ -9,7 +9,25 @@ module.exports = {
     version: "0.8.24",
     settings: {
       optimizer: { enabled: true, runs: 200 },
+      // Needed as of CacheVaultDeposit.sol (2026-09-23) -- OpenZeppelin
+      // 5.6.1's IERC4626 pulls in Memory.sol, which uses the `mcopy`
+      // opcode (Cancun). Without this, solc rejects it outright:
+      // "DeclarationError: Function 'mcopy' not found." Confirmed by
+      // testing the actual compile, not guessed. Matches the `cancun`
+      // hardfork already declared for the Hardhat Network simulator
+      // below -- this is the real compiler-target counterpart to that,
+      // not a duplicate of it.
+      evmVersion: "cancun",
     },
+  },
+  // Mocha's default 40s per-test timeout was hit on the very first
+  // CacheVaultDeposit test (2026-09-23) -- not a code bug, every other
+  // test using the identical fixture passed fine right after; that one
+  // just ate the one-time cold-start cost of the network/EDR spinning up
+  // for the first time. Doubled with real headroom rather than raised to
+  // the exact observed time.
+  mocha: {
+    timeout: 120_000,
   },
   networks: {
     hardhat: {
