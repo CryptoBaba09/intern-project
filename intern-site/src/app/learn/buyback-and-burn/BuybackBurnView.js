@@ -140,7 +140,7 @@ export default function BuybackBurnView() {
           <RevenuePath
             tag="HUSH · $INTERNDEX"
             title="Swap-fee buyback"
-            body="Every swap routed through $interndex — any chain, any token, in or out — takes a 0.2% fee. That fee buys $INTERN at the live rate and burns it, in the same flow as the swap. Not gated to a handful of pairs — LI.FI-routed, so it applies across the chains and tokens LI.FI supports."
+            body="Every swap routed through $interndex — any chain, any token, in or out — takes a 0.2% fee. That fee buys $INTERN at the live rate and burns it, in the same flow as the swap. Not gated to a handful of pairs — it applies across every chain and token $interndex supports."
           />
         </div>
       </section>

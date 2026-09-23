@@ -272,7 +272,7 @@ export default function PersonasView() {
             {
               n: "02",
               title: "Pick a persona, scene, or your own prompt",
-              body: "Any of the 4 interns in Studio or Beach, via Runway or HeyGen — or skip the character entirely with a custom text-to-video prompt.",
+              body: "Any of the 4 interns in Studio or Beach — or skip the character entirely with a custom text-to-video prompt.",
             },
             {
               n: "03",

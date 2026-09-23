@@ -58,9 +58,15 @@ const PERSONAS = [
   },
 ];
 
+// Labels/desc are user-facing and deliberately capability-named, not
+// vendor-named -- which backend actually renders each mode (Runway vs
+// HeyGen) is an implementation detail, same as a real product wouldn't
+// tell you which cloud it runs on. `id` stays "runway"/"heygen" since
+// that's the wire value api/blaze/generate/route.js's `engine` param
+// already expects -- internal only, never rendered.
 const ENGINES = [
-  { id: "runway", label: "Runway", desc: "Animate the scene — describe the motion." },
-  { id: "heygen", label: "HeyGen", desc: "Make the persona talk — write what they say." },
+  { id: "runway", label: "Motion", desc: "Animate the scene — describe the motion." },
+  { id: "heygen", label: "Talking", desc: "Make the persona talk — write what they say." },
 ];
 
 function LiveBadge({ children }) {
@@ -375,7 +381,7 @@ function EngineTabs({ selected, onSelect }) {
 
 const MODES = [
   { id: "persona", label: "Persona", desc: "One of the 4 crew, in a set scene" },
-  { id: "custom", label: "Custom Prompt", desc: "Any idea — Runway text-to-video, no character" },
+  { id: "custom", label: "Custom Prompt", desc: "Any idea — pure text-to-video, no character" },
 ];
 
 function ModeTabs({ selected, onSelect }) {
@@ -494,7 +500,7 @@ function Generator({ balanceUsd, onSpent }) {
             rows={3}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value.slice(0, 500))}
-            placeholder="Describe any video — no character, pure text-to-video. Runway picks the model."
+            placeholder="Describe any video — no character, pure text-to-video."
             disabled={submitting}
             className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 font-mono text-xs outline-none focus:border-[var(--color-accent)]/50 disabled:opacity-50 resize-none mb-3"
           />
@@ -672,7 +678,7 @@ function MyGenerations({ address, refreshSignal }) {
         ))}
       </div>
       <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-4 leading-relaxed">
-        Links come from the provider (Runway/HeyGen) and may expire after a
+        Links come from the generation backend and may expire after a
         while — save what you want to keep.
       </p>
     </div>
@@ -713,7 +719,7 @@ export default function VideoCreditsView() {
             Promptly
           </Link>{" "}
           already ships for text: burn $INTERN at the live price, spend the credit on a real
-          Runway or HeyGen generation of any of the four interns — in whichever scene you
+          AI-generated video of any of the four interns — in whichever scene you
           pick, or skip the character entirely with a custom prompt — right here, no key to
           copy. Staked $INTERN also drops the price per generation — see the discount below
           once you&apos;re connected.
