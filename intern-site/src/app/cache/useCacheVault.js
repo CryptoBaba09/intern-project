@@ -26,12 +26,15 @@ import { ERC4626_VAULT_ABI, ERC20_ABI } from "../lib/abis";
 
 export const MORPHO_VAULT_URL = `https://app.morpho.org/robinhood-chain/vault/${CONTRACTS.cacheVault}/steakhouse-usdg`;
 
+// USDG is a USD-pegged stablecoin, 1 USDG ~= $1 -- but its real
+// decimals() is 6, not 18 (verified live on-chain 2026-09-24, see
+// CONTRACTS.usdgDecimals's own comment in lib/chain.js). This function
+// used to hardcode 18, same bug CacheBorrowPanel had -- every number
+// this formats (vault TVL, a wallet's USDG balance) was off by 10^12
+// until this was fixed.
 export function formatUsdg(value, maxFractionDigits = 2) {
   if (value === undefined || value === null) return "—";
-  // USDG is a USD-pegged stablecoin (same assumption this codebase
-  // already makes for USDG elsewhere, e.g. RewardChoicePreview's
-  // BE/USDG quoting) -- 18 decimals, 1 USDG ≈ $1.
-  return Number(formatUnits(value, 18)).toLocaleString(undefined, {
+  return Number(formatUnits(value, CONTRACTS.usdgDecimals)).toLocaleString(undefined, {
     maximumFractionDigits: maxFractionDigits,
   });
 }

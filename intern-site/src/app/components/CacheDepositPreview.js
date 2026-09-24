@@ -69,7 +69,7 @@ function LiveDepositor() {
 
   const parsedAmount = (() => {
     try {
-      return amount ? parseUnits(amount, 18) : 0n;
+      return amount ? parseUnits(amount, CONTRACTS.usdgDecimals) : 0n;
     } catch {
       return 0n;
     }
@@ -162,7 +162,7 @@ function LiveDepositor() {
         />
         <button
           type="button"
-          onClick={() => usdgBalance !== undefined && setAmount(formatUnits(usdgBalance, 18))}
+          onClick={() => usdgBalance !== undefined && setAmount(formatUnits(usdgBalance, CONTRACTS.usdgDecimals))}
           disabled={busy}
           className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-medium text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-lg px-2 py-1 hover:bg-[var(--color-accent)]/10 transition-colors disabled:opacity-50"
         >
