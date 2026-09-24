@@ -53,32 +53,6 @@ const INTERNS = [
     href: "/interndex",
   },
   {
-    name: "Perky",
-    role: "Rewards Intern",
-    status: "COMING SOON",
-    body: "Not a hire — a perk. Stake past a threshold and Perky adds a tiered bonus on top of your core BE distribution, funded separately from treasury. See your tier preview on the stake page today.",
-    fee: "No fee — a staking perk, not a paid service",
-    href: "/stake",
-  },
-  {
-    name: "Div",
-    role: "Dividends Intern",
-    status: "PENDING",
-    body: "Point your claimed BE straight at real dividend value the moment there's any to route. Waiting on Bloom Energy to start paying one — the instant it does, Div is ready.",
-    fee: "No fee once live",
-    href: "https://dripswap.tech",
-    external: true,
-  },
-  {
-    name: "Forge",
-    role: "Custom Build Intern",
-    icon: "/personas/forge-icon.png",
-    status: "IN DESIGN",
-    body: "Bring your own intern — payments, writing, automations, or anything else you can spec. A one-time $INTERN fee forges it; a minimum staked balance keeps it running. Drop below the minimum and it pauses until you top back up.",
-    fee: "10,000 $INTERN one-time (burned) + 50,000 $INTERN staked, ongoing",
-    href: null,
-  },
-  {
     name: "Cache",
     role: "Yield & Borrow Intern",
     icon: "/personas/cache-icon.png",
@@ -168,9 +142,8 @@ export default function MarketplaceView() {
           The goal isn&apos;t one token you hold and hope. It&apos;s a place
           people come to actually build and run agents — where every real
           utility spends $INTERN, and that spend burns supply or rewards
-          the people staking it. Six are live today, in different
-          forms. The rest are being built in the open — check each
-          one&apos;s real status before you plan around it.
+          the people staking it. All six below are live today, in
+          different forms — see what&apos;s shipping next on the roadmap.
         </Reveal>
       </section>
 

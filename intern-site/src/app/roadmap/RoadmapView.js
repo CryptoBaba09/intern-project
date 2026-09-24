@@ -128,6 +128,12 @@ function Protocol() {
       href: "/personas",
     },
     {
+      title: "On-chain connectome",
+      body: "Synapse maps burn history, staking flow, and holder activity as a literal connectome — real numbers, live now, no fee.",
+      status: "LIVE",
+      href: "/synapse",
+    },
+    {
       title: "Inference credits",
       body: "Burn $INTERN for an instant OpenRouter credit top-up — live today. Staked $INTERN earning a pro-rata share of a treasury-funded credit pool is still in design.",
       status: "TOP-UP LIVE",
@@ -158,8 +164,14 @@ function Protocol() {
     },
     {
       title: "Tiered loyalty rewards",
-      body: "A recurring treasury-funded bonus on top of the core staking distribution — bigger stakers earn a larger weighted share, funded separately from the 70/20/10 split.",
-      status: "IN DESIGN",
+      body: "Perky, our loyalty bonus: a recurring treasury-funded bonus on top of the core staking distribution — bigger stakers earn a larger weighted share, funded separately from the 70/20/10 split. Built, in final review before it goes live.",
+      status: "COMING SOON",
+      href: "/stake",
+    },
+    {
+      title: "Dividend routing",
+      body: "Div points your claimed BE straight at real dividend value the moment there's any to route — waiting on Bloom Energy to actually start paying one.",
+      status: "PENDING",
     },
     {
       title: "Staked premium interns",
@@ -168,8 +180,8 @@ function Protocol() {
     },
     {
       title: "Lending & borrowing",
-      body: "Cache, the Yield & Borrow Intern: post a real tokenized stock as collateral and borrow USDG, or supply USDG directly and earn yield from real borrowers.",
-      status: "COMING SOON",
+      body: "Cache, the Yield & Borrow Intern: deposit USDG to earn yield, or post a real tokenized stock as collateral and borrow USDG against it, or supply USDG directly and earn yield from real borrowers.",
+      status: "LIVE",
       href: "/cache",
     },
     {
