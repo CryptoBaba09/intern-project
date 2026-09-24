@@ -16,7 +16,7 @@ import PersonaProductSplit from "../components/PersonaProductSplit";
 import CacheDepositPreview from "../components/CacheDepositPreview";
 import CacheBorrowPanel from "../components/CacheBorrowPanel";
 import { isCacheVaultLive, isCacheBorrowLive } from "../lib/chain";
-import { useCacheVault, formatUsdg, MORPHO_VAULT_URL } from "./useCacheVault";
+import { useCacheVault, useVaultApy, formatUsdg, MORPHO_VAULT_URL } from "./useCacheVault";
 
 function StatusBadge({ children, tone = "ember" }) {
   const colorClass =
@@ -33,6 +33,7 @@ function StatusBadge({ children, tone = "ember" }) {
 export default function CacheView() {
   const live = isCacheVaultLive() || isCacheBorrowLive();
   const { totalAssets } = useCacheVault();
+  const vaultApy = useVaultApy();
 
   return (
     <section className="px-6 pt-16 pb-24 max-w-5xl mx-auto w-full">
@@ -84,13 +85,20 @@ export default function CacheView() {
               </p>
             </div>
             <div className="border border-[var(--color-line)] rounded-2xl p-6">
-              <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">SUPPLY APY</p>
-              <p className="text-3xl font-semibold font-mono text-[var(--color-muted)]">See live rate ↗</p>
+              <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">SUPPLY APY · LIVE</p>
+              <p className="text-3xl font-semibold font-mono">
+                {vaultApy.loading
+                  ? "…"
+                  : vaultApy.apy != null
+                    ? `${(vaultApy.apy * 100).toFixed(2)}%`
+                    : "—"}
+              </p>
               <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
+                Refreshes automatically —{" "}
                 <a href={MORPHO_VAULT_URL} target="_blank" rel="noopener noreferrer" className="underline">
-                  Check the current rate
-                </a>{" "}
-                — deliberately not duplicated here, so it can never quietly go stale on our side.
+                  verify it yourself
+                </a>
+                .
               </p>
             </div>
           </div>

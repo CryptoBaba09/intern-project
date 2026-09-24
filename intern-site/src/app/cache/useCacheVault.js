@@ -10,16 +10,16 @@
 // confirmed (bytecode selector check + live asset() read matching
 // CONTRACTS.usdgToken exactly).
 //
-// APY is deliberately NOT computed here. A MetaMorpho vault's real
-// supply APY depends on the underlying market's utilization/IRM curve
-// across possibly several allocated markets -- reconstructing that
-// correctly on-chain risks quietly going stale or simply being wrong
-// in a way nobody would catch quickly. Morpho's own app already shows
-// the real, live number; linking to it is more honest than a second,
-// possibly-wrong copy on our own site (same reasoning this codebase
-// already applies to buyback/burn numbers elsewhere -- "not self-
-// reported, check every link yourself").
+// APY comes from /api/cache/vault-apy, which proxies Morpho's own
+// vaultV2ByAddress -- their own already-computed number, not a second,
+// possibly-wrong copy reconstructed here from allocation/IRM data
+// (2026-09-24: an earlier pass assumed Morpho's API didn't index this
+// vault at all, based on querying the classic vault schema instead of
+// vaultV2ByAddress -- it does, this was a wrong assumption, not a real
+// gap). Same "display-only, never safety-critical" status as the
+// borrow-market APY in useCacheBorrow.js.
 import { useAccount, useReadContracts } from "wagmi";
+import { useEffect, useState } from "react";
 import { formatUnits } from "viem";
 import { CONTRACTS } from "../lib/chain";
 import { ERC4626_VAULT_ABI, ERC20_ABI } from "../lib/abis";
@@ -39,6 +39,28 @@ export function formatUsdg(value, maxFractionDigits = 2) {
   });
 }
 
+export function useVaultApy() {
+  const [state, setState] = useState({ loading: true });
+
+  useEffect(() => {
+    let cancelled = false;
+    function load() {
+      fetch("/api/cache/vault-apy")
+        .then((res) => res.json())
+        .then((json) => !cancelled && setState({ loading: false, ...json }))
+        .catch(() => !cancelled && setState({ loading: false, error: "unreachable" }));
+    }
+    load();
+    const interval = setInterval(load, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  return state; // { loading, apy, netApy, totalAssetsUsd, error }
+}
+
 export function useCacheVault() {
   const { address } = useAccount();
 
@@ -54,7 +76,7 @@ export function useCacheVault() {
   const [totalAssets, usdgBalance, vaultShares] = data?.map((d) => d.result) ?? [];
 
   return {
-    totalAssets, // real live TVL, in USDG's own 18-decimal units
+    totalAssets, // real live TVL, in USDG's own 6-decimal units
     usdgBalance, // connected wallet's spendable USDG, if any
     vaultShares, // connected wallet's existing Steakhouse USDG vault shares, if any
     refetch,
