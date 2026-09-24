@@ -1,7 +1,7 @@
 "use client";
 
-// Live reads for CacheBorrow's one real market (USDG loan / TSLA
-// collateral, see CACHE_BORROW_TSLA_MARKET in lib/chain.js). Position
+// Live reads for one CacheBorrow market (see CACHE_BORROW_MARKETS in
+// lib/chain.js -- pass one entry in as `market`, not a global). Position
 // state (collateral/borrowShares/supplyShares) is read straight off
 // Morpho Blue itself via MORPHO_ABI, not off CacheBorrow -- the whole
 // point of the non-custodial design is that a user's real position
@@ -15,7 +15,7 @@
 // calls pass raw shares themselves, not this approximation).
 import { useAccount, useReadContracts } from "wagmi";
 import { formatUnits } from "viem";
-import { CONTRACTS, CACHE_BORROW_TSLA_MARKET } from "../lib/chain";
+import { CONTRACTS } from "../lib/chain";
 import { ERC20_ABI, CACHE_BORROW_ABI, MORPHO_ABI } from "../lib/abis";
 
 export function formatToken(value, decimals = 18, maxFractionDigits = 4) {
@@ -34,9 +34,8 @@ function sharesToAssetsApprox(shares, totalShares, totalAssets) {
   return (shares * totalAssets) / totalShares;
 }
 
-export function useCacheBorrow() {
+export function useCacheBorrow(market) {
   const { address } = useAccount();
-  const market = CACHE_BORROW_TSLA_MARKET;
 
   const { data, refetch } = useReadContracts({
     contracts: [
@@ -92,7 +91,7 @@ export function useCacheBorrow() {
     usdgAllowance,
     collateralAllowance,
     feeBps,
-    collateral, // raw TSLA collateral posted, in the market's own units
+    collateral, // raw collateral posted, in the market's own units
     supplyShares,
     borrowShares,
     supplyAssetsApprox, // ~USDG currently supplied (principal + accrued interest)

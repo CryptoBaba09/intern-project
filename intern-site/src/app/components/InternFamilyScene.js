@@ -160,6 +160,18 @@ export default function InternFamilyScene({ title, subtitle, ctaHref, ctaLabel }
       stat: null,
       href: "/interndex",
     },
+    {
+      id: "cache",
+      name: "Cache",
+      role: "Yield & Borrow Intern",
+      icon: "/personas/cache-icon.png",
+      glow: "#D9A441",
+      floatOffset: 2.0,
+      status: "LIVE",
+      blurb: "Deposit USDG to earn real yield, or post a tokenized stock as collateral and borrow USDG against it — or supply USDG directly and earn from real borrowers.",
+      stat: null,
+      href: "/cache",
+    },
   ];
 
   const active = CREW.find((m) => m.id === activeId) ?? null;

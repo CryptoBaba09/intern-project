@@ -11,8 +11,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "../components/motion";
+import PersonaIntroVideo from "../components/PersonaIntroVideo";
 import CacheDepositPreview from "../components/CacheDepositPreview";
-import { isCacheVaultLive } from "../lib/chain";
+import CacheBorrowPanel from "../components/CacheBorrowPanel";
+import { isCacheVaultLive, isCacheBorrowLive } from "../lib/chain";
 import { useCacheVault, formatUsdg, MORPHO_VAULT_URL } from "./useCacheVault";
 
 function StatusBadge({ children, tone = "ember" }) {
@@ -28,7 +30,7 @@ function StatusBadge({ children, tone = "ember" }) {
 }
 
 export default function CacheView() {
-  const live = isCacheVaultLive();
+  const live = isCacheVaultLive() || isCacheBorrowLive();
   const { totalAssets } = useCacheVault();
 
   return (
@@ -58,6 +60,16 @@ export default function CacheView() {
         $INTERN and burned.
       </Reveal>
 
+      <div className="max-w-2xl mb-10">
+        <Reveal delay={0.12}>
+          <PersonaIntroVideo
+            src="/personas/videos/cache-intro.mp4"
+            poster="/personas/cache.png"
+            label="Cache idle animation"
+          />
+        </Reveal>
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-4 mb-10">
         <div className="border border-[var(--color-line)] rounded-2xl p-6">
           <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">
@@ -82,14 +94,21 @@ export default function CacheView() {
         </div>
       </div>
 
-      <Reveal delay={0.15}>
+      <Reveal delay={0.15} className="mb-10">
+        <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-3">JUST EARN YIELD</p>
         <CacheDepositPreview />
+      </Reveal>
+
+      <Reveal delay={0.18}>
+        <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-3">
+          BORROW AGAINST YOUR STOCK, OR SUPPLY AND EARN
+        </p>
+        <CacheBorrowPanel />
       </Reveal>
 
       <Reveal delay={0.2} className="mt-10 border-t border-[var(--color-line)] pt-8">
         <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-          Both the deposit and borrow flows are built and going through final checks before either opens up
-          fully on this site. Full technical detail, including every contract address, lives on the{" "}
+          Full technical detail, including every contract address, lives on the{" "}
           <Link href="/docs" className="text-[var(--color-accent)] hover:underline">
             docs page
           </Link>

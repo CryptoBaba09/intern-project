@@ -416,13 +416,13 @@ function MeetTheInterns() {
             THE CREW
           </Reveal>
           <Reveal as="h2" delay={0.05} className="text-3xl sm:text-4xl font-semibold max-w-xl">
-            One family, five jobs, all real.
+            One family, six jobs, all real.
           </Reveal>
           <Reveal delay={0.08} className="text-sm text-[var(--color-muted)] mt-2 max-w-xl">
-            A 6th — Cache, deposit or borrow against real tokenized stocks — is already deployed
-            on-chain, not live on this site yet.{" "}
+            The newest — Cache, deposit USDG to earn yield or post a tokenized stock as collateral to
+            borrow against it.{" "}
             <Link href="/cache" className="text-[var(--color-accent)] hover:underline">
-              See where it stands →
+              Meet Cache →
             </Link>
           </Reveal>
         </div>
