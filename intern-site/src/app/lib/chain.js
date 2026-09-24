@@ -107,16 +107,16 @@ export const CONTRACTS = {
   // borrow/lend market (see docs/cache-borrow-spec.md,
   // contracts/contracts/CacheBorrow.sol). Same deliberate pattern as
   // cacheVaultDeposit above: NO hardcoded fallback, even though this
-  // one really is deployed (2026-09-23, see
-  // contracts/scripts/deploy-cache-borrow-direct.js) and its one
-  // market -- USDG/TSLA, 62.5% LLTV -- is really allowlisted (a real
-  // setMarketAllowed() transaction from the owner wallet, same day).
-  // Going live in production is still a separate decision from those
-  // two facts being true -- set NEXT_PUBLIC_CACHE_BORROW_ADDRESS in
-  // Vercel when that decision is made. 33/33 tests passing, in-house
-  // Slither + manual review only -- no independent professional audit
-  // yet, same disclosure this project already makes for
-  // cacheVaultDeposit.
+  // one really is deployed. Redeployed 2026-09-24 to
+  // 0x28B3bE65b6B3ee17aE9D81ca9AB66812dFEe168b (see
+  // contracts/scripts/deploy-cache-borrow-direct.js) after a real bug
+  // was caught in the first deployment's borrow/withdraw side (see
+  // this file's own AuthBundle-related comments and
+  // docs/cache-borrow-spec.md) -- 37/37 tests passing, in-house
+  // Slither + manual review, no independent professional audit yet.
+  // Going live in production is still a separate decision from being
+  // deployed -- set NEXT_PUBLIC_CACHE_BORROW_ADDRESS in Vercel when
+  // that decision is made.
   cacheBorrow: process.env.NEXT_PUBLIC_CACHE_BORROW_ADDRESS || null,
   // Morpho Blue core itself -- CacheBorrow wraps this, but position()/
   // market() reads go straight to it (see MORPHO_ABI in lib/abis.js),
@@ -126,21 +126,39 @@ export const CONTRACTS = {
   morpho: process.env.NEXT_PUBLIC_MORPHO_ADDRESS || "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
 };
 
-// CacheBorrow's one real, allowlisted market as of 2026-09-23: USDG
-// loan / TSLA collateral, 62.5% LLTV, the ChainlinkOracleV2-factory-
-// verified oracle (see docs/cache-borrow-spec.md's due-diligence
-// section) and Morpho's standard AdaptiveCurveIRM. This is the exact
-// tuple setMarketAllowed() was called with -- CacheBorrowView hashes
-// it client-side via CacheBorrow's own id() to confirm it's really
-// allowlisted before ever showing it as usable, rather than trusting
-// this constant blindly.
-export const CACHE_BORROW_TSLA_MARKET = {
-  loanToken: CONTRACTS.usdgToken,
-  collateralToken: "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
-  oracle: "0xCa76875634e0b9759AA6610dC3092e92fcefE46E",
-  irm: "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
-  lltv: 625000000000000000n,
-};
+// CacheBorrow's real, allowlisted markets on the corrected contract
+// (0x28B3bE65b6B3ee17aE9D81ca9AB66812dFEe168b, redeployed 2026-09-24
+// after the AuthBundle fix). Each entry is a real, on-chain
+// setMarketAllowed() transaction -- TSLA and NVDA confirmed live
+// 2026-09-24, both with genuine six-figure-cent real supply liquidity
+// (not dust) and a ChainlinkOracleV2-factory-verified oracle (see
+// docs/cache-borrow-spec.md's due-diligence section). SPY and SPCX
+// were researched and vetted the same day (SPY: real liquidity,
+// factory-verified; SPCX: factory-verified oracle but only ~$100 real
+// liquidity today) but aren't allowlisted yet -- add them here once
+// they are, never before. CacheBorrowPanel hashes each one client-side
+// via CacheBorrow's own id() to confirm it's really allowlisted before
+// ever showing it as usable, rather than trusting this list blindly.
+export const CACHE_BORROW_MARKETS = [
+  {
+    symbol: "TSLA",
+    name: "Tesla",
+    loanToken: CONTRACTS.usdgToken,
+    collateralToken: "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+    oracle: "0xCa76875634e0b9759AA6610dC3092e92fcefE46E",
+    irm: "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
+    lltv: 625000000000000000n,
+  },
+  {
+    symbol: "NVDA",
+    name: "NVIDIA",
+    loanToken: CONTRACTS.usdgToken,
+    collateralToken: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+    oracle: "0xC5b8A6C5fDF14f9744dB1C8595f49E42Ce23031a",
+    irm: "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
+    lltv: 625000000000000000n,
+  },
+];
 
 // Real, deployed Robinhood Stock Token addresses (confirmed against
 // docs.robinhood.com/chain/contracts, the official on-chain asset

@@ -82,8 +82,8 @@ const INTERNS = [
     name: "Cache",
     role: "Yield & Borrow Intern",
     icon: "/personas/cache-icon.png",
-    status: "COMING SOON",
-    body: "Deposit USDG to earn real yield — or post a tokenized stock (starting with Tesla) as collateral and borrow USDG against it, or supply USDG directly and earn from real borrowers. Non-custodial the whole way through — whatever comes back is always yours, in your own wallet.",
+    status: "LIVE",
+    body: "Deposit USDG to earn real yield — or post a tokenized stock (Tesla or NVIDIA to start) as collateral and borrow USDG against it, or supply USDG directly and earn from real borrowers. Non-custodial the whole way through — whatever comes back is always yours, in your own wallet.",
     fee: "0.2% skimmed once, auto-bought-back into $INTERN and burned — no separate charge on top",
     href: "/cache",
   },
@@ -168,7 +168,7 @@ export default function MarketplaceView() {
           The goal isn&apos;t one token you hold and hope. It&apos;s a place
           people come to actually build and run agents — where every real
           utility spends $INTERN, and that spend burns supply or rewards
-          the people staking it. Five are live today, in different
+          the people staking it. Six are live today, in different
           forms. The rest are being built in the open — check each
           one&apos;s real status before you plan around it.
         </Reveal>

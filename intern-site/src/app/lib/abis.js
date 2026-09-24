@@ -201,6 +201,52 @@ export const CACHE_VAULT_DEPOSIT_ABI = [
   { type: "function", name: "feeRecipient", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
 ];
 
+// Shared tuple fragments -- reused by every CACHE_BORROW_ABI entry
+// below instead of retyping the same nested struct shape six times.
+// Must match IMorpho.MarketParams / CacheBorrow.AuthBundle exactly, or
+// wagmi encodes the wrong calldata silently (no runtime type check
+// catches a mismatched ABI the way a compiler would).
+const MARKET_PARAMS_COMPONENT = {
+  name: "marketParams",
+  type: "tuple",
+  components: [
+    { name: "loanToken", type: "address" },
+    { name: "collateralToken", type: "address" },
+    { name: "oracle", type: "address" },
+    { name: "irm", type: "address" },
+    { name: "lltv", type: "uint256" },
+  ],
+};
+
+const AUTHORIZATION_COMPONENTS = [
+  { name: "authorizer", type: "address" },
+  { name: "authorized", type: "address" },
+  { name: "isAuthorized", type: "bool" },
+  { name: "nonce", type: "uint256" },
+  { name: "deadline", type: "uint256" },
+];
+
+const SIGNATURE_COMPONENTS = [
+  { name: "v", type: "uint8" },
+  { name: "r", type: "bytes32" },
+  { name: "s", type: "bytes32" },
+];
+
+// The AuthBundle param every authorization-gated CacheBorrow function
+// (borrow/withdrawCollateral/withdrawSupply) now requires post-fix --
+// see CacheBorrow.sol's own AuthBundle struct and docs/cache-borrow-spec.md.
+// Built by lib/morphoAuth.js's signAuthBundle(), never by hand.
+const AUTH_BUNDLE_COMPONENT = {
+  name: "auth",
+  type: "tuple",
+  components: [
+    { name: "grant", type: "tuple", components: AUTHORIZATION_COMPONENTS },
+    { name: "grantSig", type: "tuple", components: SIGNATURE_COMPONENTS },
+    { name: "revoke", type: "tuple", components: AUTHORIZATION_COMPONENTS },
+    { name: "revokeSig", type: "tuple", components: SIGNATURE_COMPONENTS },
+  ],
+};
+
 // CacheBorrow -- the real two-sided Morpho Blue wrapper (see
 // contracts/contracts/CacheBorrow.sol, docs/cache-borrow-spec.md).
 // MarketParams is passed as a tuple matching Morpho's own struct
@@ -208,46 +254,25 @@ export const CACHE_VAULT_DEPOSIT_ABI = [
 // function below takes it first, same shape the deployed contract
 // itself expects. id()/isMarketAllowed() let the front end check a
 // given market is actually allowlisted before ever showing it as
-// choosable, rather than trusting a hardcoded assumption.
+// choosable, rather than trusting a hardcoded assumption. Matches the
+// corrected contract (0x28B3bE65b6B3ee17aE9D81ca9AB66812dFEe168b,
+// redeployed 2026-09-24) -- borrow/withdrawCollateral/withdrawSupply
+// take the AuthBundle above; depositCollateral/repay/supply don't
+// (Morpho's own supplyCollateral/repay/supply are permissionless, see
+// CacheBorrow.sol's own NatSpec on why).
 export const CACHE_BORROW_ABI = [
   {
     type: "function",
     name: "depositCollateral",
     stateMutability: "nonpayable",
-    inputs: [
-      {
-        name: "marketParams",
-        type: "tuple",
-        components: [
-          { name: "loanToken", type: "address" },
-          { name: "collateralToken", type: "address" },
-          { name: "oracle", type: "address" },
-          { name: "irm", type: "address" },
-          { name: "lltv", type: "uint256" },
-        ],
-      },
-      { name: "assets", type: "uint256" },
-    ],
+    inputs: [MARKET_PARAMS_COMPONENT, { name: "assets", type: "uint256" }],
     outputs: [],
   },
   {
     type: "function",
     name: "withdrawCollateral",
     stateMutability: "nonpayable",
-    inputs: [
-      {
-        name: "marketParams",
-        type: "tuple",
-        components: [
-          { name: "loanToken", type: "address" },
-          { name: "collateralToken", type: "address" },
-          { name: "oracle", type: "address" },
-          { name: "irm", type: "address" },
-          { name: "lltv", type: "uint256" },
-        ],
-      },
-      { name: "assets", type: "uint256" },
-    ],
+    inputs: [MARKET_PARAMS_COMPONENT, { name: "assets", type: "uint256" }, AUTH_BUNDLE_COMPONENT],
     outputs: [],
   },
   {
@@ -255,19 +280,10 @@ export const CACHE_BORROW_ABI = [
     name: "borrow",
     stateMutability: "nonpayable",
     inputs: [
-      {
-        name: "marketParams",
-        type: "tuple",
-        components: [
-          { name: "loanToken", type: "address" },
-          { name: "collateralToken", type: "address" },
-          { name: "oracle", type: "address" },
-          { name: "irm", type: "address" },
-          { name: "lltv", type: "uint256" },
-        ],
-      },
+      MARKET_PARAMS_COMPONENT,
       { name: "assets", type: "uint256" },
       { name: "minReceived", type: "uint256" },
+      AUTH_BUNDLE_COMPONENT,
     ],
     outputs: [{ name: "assetsReceived", type: "uint256" }],
   },
@@ -276,17 +292,7 @@ export const CACHE_BORROW_ABI = [
     name: "repay",
     stateMutability: "nonpayable",
     inputs: [
-      {
-        name: "marketParams",
-        type: "tuple",
-        components: [
-          { name: "loanToken", type: "address" },
-          { name: "collateralToken", type: "address" },
-          { name: "oracle", type: "address" },
-          { name: "irm", type: "address" },
-          { name: "lltv", type: "uint256" },
-        ],
-      },
+      MARKET_PARAMS_COMPONENT,
       { name: "assets", type: "uint256" },
       { name: "shares", type: "uint256" },
       { name: "maxAssetsIn", type: "uint256" },
@@ -300,21 +306,7 @@ export const CACHE_BORROW_ABI = [
     type: "function",
     name: "supply",
     stateMutability: "nonpayable",
-    inputs: [
-      {
-        name: "marketParams",
-        type: "tuple",
-        components: [
-          { name: "loanToken", type: "address" },
-          { name: "collateralToken", type: "address" },
-          { name: "oracle", type: "address" },
-          { name: "irm", type: "address" },
-          { name: "lltv", type: "uint256" },
-        ],
-      },
-      { name: "assets", type: "uint256" },
-      { name: "minSharesOut", type: "uint256" },
-    ],
+    inputs: [MARKET_PARAMS_COMPONENT, { name: "assets", type: "uint256" }, { name: "minSharesOut", type: "uint256" }],
     outputs: [{ name: "sharesSupplied", type: "uint256" }],
   },
   {
@@ -322,19 +314,10 @@ export const CACHE_BORROW_ABI = [
     name: "withdrawSupply",
     stateMutability: "nonpayable",
     inputs: [
-      {
-        name: "marketParams",
-        type: "tuple",
-        components: [
-          { name: "loanToken", type: "address" },
-          { name: "collateralToken", type: "address" },
-          { name: "oracle", type: "address" },
-          { name: "irm", type: "address" },
-          { name: "lltv", type: "uint256" },
-        ],
-      },
+      MARKET_PARAMS_COMPONENT,
       { name: "assets", type: "uint256" },
       { name: "shares", type: "uint256" },
+      AUTH_BUNDLE_COMPONENT,
     ],
     outputs: [
       { name: "assetsWithdrawn", type: "uint256" },
@@ -353,19 +336,7 @@ export const CACHE_BORROW_ABI = [
     type: "function",
     name: "id",
     stateMutability: "pure",
-    inputs: [
-      {
-        name: "marketParams",
-        type: "tuple",
-        components: [
-          { name: "loanToken", type: "address" },
-          { name: "collateralToken", type: "address" },
-          { name: "oracle", type: "address" },
-          { name: "irm", type: "address" },
-          { name: "lltv", type: "uint256" },
-        ],
-      },
-    ],
+    inputs: [MARKET_PARAMS_COMPONENT],
     outputs: [{ type: "bytes32" }],
   },
 ];
@@ -406,6 +377,21 @@ export const MORPHO_ABI = [
       { name: "lastUpdate", type: "uint128" },
       { name: "fee", type: "uint128" },
     ],
+  },
+  // The authorizer's current nonce -- what a fresh Authorization to be
+  // signed (see lib/morphoAuth.js) must set as its own `nonce` field.
+  // Read live right before signing, never cached, since a stale nonce
+  // makes setAuthorizationWithSig revert.
+  { type: "function", name: "nonce", stateMutability: "view", inputs: [{ name: "authorizer", type: "address" }], outputs: [{ type: "uint256" }] },
+  {
+    type: "function",
+    name: "isAuthorized",
+    stateMutability: "view",
+    inputs: [
+      { name: "authorizer", type: "address" },
+      { name: "authorized", type: "address" },
+    ],
+    outputs: [{ type: "bool" }],
   },
 ];
 
