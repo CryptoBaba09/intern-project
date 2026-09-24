@@ -180,7 +180,7 @@ function Protocol() {
     },
     {
       title: "Genesis Interns (NFTs)",
-      body: "500 Blaze-based NFTs, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further. The live volume gauge on the preview page is currently broken (PAIR's API died in the Pons migration) — shows honestly, not silently.",
+      body: "500 Blaze-based NFTs, minting only after $INTERN crosses $1,000,000 in real trading volume. Mint, stake for BE, burn to claim and shrink supply further.",
       status: "IN DESIGN",
       href: "/genesis",
     },

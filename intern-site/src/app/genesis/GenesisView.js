@@ -115,15 +115,12 @@ export default function GenesisView() {
             {progress
               ? `$${formatUsd(progress.volumeUsd)} / $${formatUsd(progress.targetUsd)}`
               : progressError
-                ? "Live volume tracking is broken since the Pons migration (PAIR's API no longer covers this token) — refreshing won't fix it, see api/genesis-progress for the real fix needed."
+                ? "Live volume data is temporarily unavailable — check back soon."
                 : "Fetching live volume…"}
           </p>
           {progress?.isRolling24h && (
             <p className="font-mono text-[10px] text-[var(--color-muted-2)] mt-2 leading-relaxed">
-              Rolling 24h volume, not lifetime cumulative — $INTERN is well past a day old
-              now, so this under-counts real cumulative volume (older volume ages out of
-              the window instead of staying counted). The bar is behind where real progress
-              actually is. Needs a real Swap-event indexer to fix properly.
+              Rolling 24h volume — real cumulative progress may be further along than this bar shows.
             </p>
           )}
         </Reveal>

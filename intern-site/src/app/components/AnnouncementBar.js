@@ -25,7 +25,7 @@ const CAMPAIGN = {
   start: "2026-09-18",
   end: "2026-09-25",
   label: "$INTERN Trading Competition",
-  copy: "Top 3 net-buyers win a real tokenized stock of their choice (TSLA, NVDA, BE, or SPCX) from treasury — $50 / $30 / $20, $100 minimum net-buy volume to qualify.",
+  copy: "Top 3 net-buyers win a real tokenized stock of their choice (TSLA, NVDA, BE, or SPCX) from treasury — $50 / $30 / $20, $20 minimum net-buy volume to qualify.",
 };
 
 function daysLeft() {

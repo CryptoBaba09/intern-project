@@ -300,12 +300,9 @@ export default function BlazeView() {
         >
           No deploy, no fee, nothing to buy. Every time creator fees are
           claimed off the $INTERN/ETH pool, most of it is bought back and
-          burned automatically — that automation is genuinely running now
-          (fixed 2026-09-16; it existed in code for weeks but was never
-          actually deployed as a scheduled job until then). The live
-          number below is the dead address&apos;s real balance, but
-          it&apos;s every burn source combined, not Blaze&apos;s output
-          alone — see the note underneath it.
+          burned automatically. The number below is the dead
+          address&apos;s real balance — the true cumulative burn total,
+          across every source.
         </Reveal>
       </section>
 

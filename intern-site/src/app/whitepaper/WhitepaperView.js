@@ -23,7 +23,7 @@ function StatusTag({ children }) {
 const LIVE_TODAY = [
   {
     title: "Autonomous burn engine",
-    body: "Blaze claims creator fees off the $INTERN/ETH pool on a daily schedule and splits them 70/20/10 — no deploy step, no user action. Confirmed running for real 2026-09-16, after a Vercel Cron frequency-limit bug silently blocked every deploy since it was written.",
+    body: "Blaze claims creator fees off the $INTERN/ETH pool on a daily schedule and splits them 70/20/10 — no deploy step, no user action.",
     status: "LIVE",
   },
   {
@@ -248,12 +248,7 @@ export default function WhitepaperView() {
           </p>
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
             Admin controls sit with one wallet for now, moving to shared control soon. Perky, our
-            loyalty bonus, is finished but intentionally not live yet — we caught a timing edge
-            case in our own tests and we&apos;re not shipping it until that&apos;s closed.
-          </p>
-          <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            Same story with Cache&apos;s borrow side — we caught something in our own testing
-            before launch and we&apos;re not shipping it until it&apos;s fully closed out.
+            loyalty bonus, is built and in final review before it goes live.
           </p>
         </Reveal>
       </section>
