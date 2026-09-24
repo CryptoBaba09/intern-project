@@ -87,6 +87,18 @@ export const CONTRACTS = {
   usdgToken:
     process.env.NEXT_PUBLIC_USDG_TOKEN_ADDRESS ||
     "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  // USDG's real on-chain decimals() -- 6, NOT 18. Verified live via a
+  // direct eth_call to decimals() on the address above (2026-09-24),
+  // after the Cache borrow panel's live health-factor build surfaced
+  // every USDG amount on this site (both the CacheVaultDeposit "Just
+  // Earn Yield" flow and every CacheBorrow borrow/repay/supply amount)
+  // had been silently assuming 18 decimals like $INTERN/TSLA/NVDA.
+  // Every USDG parseUnits/formatUnits call site must use this, never a
+  // hardcoded 18 -- getting this wrong doesn't corrupt a transaction
+  // (a wrong-by-10^12 amount just reverts on insufficient balance/
+  // allowance), but it does mean every USDG balance/debt/supply number
+  // shown anywhere on the site was wrong until this was added.
+  usdgDecimals: 6,
   // Cache's CacheVaultDeposit -- same deliberate pattern as
   // rewardsRouter above: NO hardcoded fallback. Contract is written,
   // unit-tested (19/19), and passed an in-house Slither + manual

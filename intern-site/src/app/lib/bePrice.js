@@ -19,7 +19,13 @@ export async function fetchBePriceUsd() {
     functionName: "quoteExactInput",
     args: [encodeBeToUsdgPath(), oneBe],
   });
-  return Number(usdgOut) / 1e18;
+  // usdgOut is a raw USDG amount -- USDG's real decimals() is 6, not
+  // 18 (see CONTRACTS.usdgDecimals's own comment). Dividing by 1e18
+  // here made this come back ~10^12 too small, which fed straight into
+  // /api/stake/apy's real APR calculation -- the Stake page's "LIVE
+  // STAKING APR" has been wrong since this was written, not because of
+  // genuinely low activity.
+  return Number(usdgOut) / 10 ** CONTRACTS.usdgDecimals;
 }
 
 function encodeBeToUsdgPath() {

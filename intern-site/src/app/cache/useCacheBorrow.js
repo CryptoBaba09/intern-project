@@ -30,6 +30,18 @@ import { ERC20_ABI, CACHE_BORROW_ABI, MORPHO_ABI, ORACLE_ABI } from "../lib/abis
 
 const ORACLE_PRICE_SCALE = 1_000_000_000_000_000_000_000_000_000_000_000_000n; // 1e36
 const WAD = 1_000_000_000_000_000_000n; // 1e18
+const COLLATERAL_DECIMALS = 18; // true for both TSLA and NVDA, verified on-chain
+
+// The oracle's raw price() integer is scaled so that
+// collateral_raw * price / 1e36 = value_in_loanAsset_raw always holds,
+// regardless of either token's decimals (that adjustment is baked into
+// the number the oracle itself returns -- see ORACLE_ABI's own
+// comment). To turn that raw integer into a human "$X per 1 whole
+// collateral token" figure, though, you divide by
+// 36 + loanDecimals - collateralDecimals, not a flat 1e36 -- getting
+// this wrong doesn't affect any real transaction (nothing on-chain
+// reads this constant), just what the price display shows.
+const ORACLE_PRICE_DISPLAY_DECIMALS = 36 + CONTRACTS.usdgDecimals - COLLATERAL_DECIMALS;
 
 export function formatToken(value, decimals = 18, maxFractionDigits = 4) {
   if (value === undefined || value === null) return "—";
@@ -196,13 +208,15 @@ export function useCacheBorrow(market) {
     borrowAssetsApprox, // ~USDG currently owed (principal + accrued interest)
     totalSupplyAssets,
     totalBorrowAssets,
-    oraclePrice, // 1e36-scaled: units of USDG per 1 unit of collateral
-    collateralValueLoan, // your collateral's live value, in USDG
-    maxBorrowAtLltv, // the most you could ever borrow at this market's lltv
+    oraclePrice, // raw 1e36-convention price -- see ORACLE_PRICE_DISPLAY_DECIMALS for how to display it
+    oraclePriceDisplayDecimals: ORACLE_PRICE_DISPLAY_DECIMALS,
+    collateralValueLoan, // your collateral's live value, in USDG's own raw (6-decimal) units
+    maxBorrowAtLltv, // the most you could ever borrow at this market's lltv, raw USDG units
     healthFactor, // undefined = loading, null = no debt, else a ratio (>=1 healthy)
     currentLtvPercent,
     lltvPercent: Number(market.lltv) / 1e16, // e.g. 62.5
     apy, // { loading, rates: { borrowApy, supplyApy, utilization } | null, error }
+    usdgDecimals: CONTRACTS.usdgDecimals, // 6 -- every USDG parseUnits/formatUnits call must use this, not 18
     refetch: refetchAll,
   };
 }

@@ -93,9 +93,9 @@ function PositionSummary({ cb, market }) {
         <InfoCell
           label={`${market.symbol} COLLATERAL`}
           value={formatToken(cb.collateral)}
-          sub={cb.collateralValueLoan !== undefined ? `≈ ${formatUsd(cb.collateralValueLoan)}` : undefined}
+          sub={cb.collateralValueLoan !== undefined ? `≈ ${formatUsd(cb.collateralValueLoan, cb.usdgDecimals)}` : undefined}
         />
-        <InfoCell label="DEBT · USDG" value={`~${formatToken(cb.borrowAssetsApprox)}`} />
+        <InfoCell label="DEBT · USDG" value={`~${formatToken(cb.borrowAssetsApprox, cb.usdgDecimals)}`} />
         <InfoCell
           label="LTV NOW / MAX"
           value={`${cb.currentLtvPercent.toFixed(1)}% / ${cb.lltvPercent}%`}
@@ -124,7 +124,7 @@ function MarketInfoCard({ cb, market, apyField, apyLabel }) {
       <div className="grid grid-cols-3 gap-4">
         <InfoCell
           label={`${market.symbol} PRICE`}
-          value={cb.oraclePrice !== undefined ? formatUsd(cb.oraclePrice, 36) : "…"}
+          value={cb.oraclePrice !== undefined ? formatUsd(cb.oraclePrice, cb.oraclePriceDisplayDecimals) : "…"}
         />
         <InfoCell label="MAX LTV (LIQ. THRESHOLD)" value={`${cb.lltvPercent}%`} />
         <InfoCell
@@ -326,7 +326,7 @@ function CollateralAndBorrow({ market }) {
       setAuthPending(true);
       const auth = await buildAuthBundle();
       setAuthPending(false);
-      const assets = parseUnits(borrowAmt || "0", 18);
+      const assets = parseUnits(borrowAmt || "0", cb.usdgDecimals);
       const feeBps = cb.feeBps ?? 20n;
       const expectedNet = assets - (assets * feeBps) / 10_000n;
       const minReceived = (expectedNet * BigInt(Math.round((100 - SLIPPAGE_PERCENT) * 100))) / 10000n;
@@ -342,7 +342,7 @@ function CollateralAndBorrow({ market }) {
   }
 
   const needsUsdgApproval =
-    cb.usdgAllowance !== undefined && repayAmt && cb.usdgAllowance < parseUnits(repayAmt || "0", 18);
+    cb.usdgAllowance !== undefined && repayAmt && cb.usdgAllowance < parseUnits(repayAmt || "0", cb.usdgDecimals);
 
   function handleApproveUsdg() {
     setBusyAction("approveRepay");
@@ -363,7 +363,7 @@ function CollateralAndBorrow({ market }) {
     // unused portion is swept straight back by the contract itself
     // (see CacheBorrow.sol's own repay(), same pattern CacheVaultDeposit
     // never needed but RewardChoicePreview's convert() established).
-    const maxAssetsIn = parseUnits(repayAmt || "0", 18);
+    const maxAssetsIn = parseUnits(repayAmt || "0", cb.usdgDecimals);
     writeContract({
       address: CONTRACTS.cacheBorrow,
       abi: CACHE_BORROW_ABI,
@@ -377,7 +377,7 @@ function CollateralAndBorrow({ market }) {
   function usdForCollateral(amountStr) {
     const amt = parseFloat(amountStr);
     if (!amt || Number.isNaN(amt) || cb.oraclePrice === undefined) return undefined;
-    const priceFloat = Number(formatUnits(cb.oraclePrice, 36));
+    const priceFloat = Number(formatUnits(cb.oraclePrice, cb.oraclePriceDisplayDecimals));
     return (amt * priceFloat).toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
   }
   function usdForUsdg(amountStr) {
@@ -395,7 +395,7 @@ function CollateralAndBorrow({ market }) {
       setBorrowAmt("0");
       return;
     }
-    setBorrowAmt(formatUnits((headroom * BigInt(SAFE_BORROW_BUFFER_PERCENT)) / 100n, 18));
+    setBorrowAmt(formatUnits((headroom * BigInt(SAFE_BORROW_BUFFER_PERCENT)) / 100n, cb.usdgDecimals));
   }
 
   if (!cb.marketId) return null;
@@ -490,12 +490,14 @@ function CollateralAndBorrow({ market }) {
 
         <div>
           <p className="font-mono text-[10px] text-[var(--color-muted)] mb-2">
-            Repay — owed: ~{formatToken(cb.borrowAssetsApprox)} USDG
+            Repay — owed: ~{formatToken(cb.borrowAssetsApprox, cb.usdgDecimals)} USDG
           </p>
           <AmountInput
             value={repayAmt}
             onChange={setRepayAmt}
-            onMax={() => cb.borrowAssetsApprox !== undefined && setRepayAmt(formatUnits(cb.borrowAssetsApprox, 18))}
+            onMax={() =>
+              cb.borrowAssetsApprox !== undefined && setRepayAmt(formatUnits(cb.borrowAssetsApprox, cb.usdgDecimals))
+            }
             disabled={busy}
             usdValue={usdForUsdg(repayAmt)}
           />
@@ -564,7 +566,7 @@ function SupplyAndEarn({ market }) {
 
   const busy = isPending || isConfirming || authPending;
   const needsUsdgApproval =
-    cb.usdgAllowance !== undefined && supplyAmt && cb.usdgAllowance < parseUnits(supplyAmt || "0", 18);
+    cb.usdgAllowance !== undefined && supplyAmt && cb.usdgAllowance < parseUnits(supplyAmt || "0", cb.usdgDecimals);
 
   function handleApprove() {
     setBusyAction("approve");
@@ -580,7 +582,7 @@ function SupplyAndEarn({ market }) {
   function handleSupply() {
     setBusyAction("supply");
     reset();
-    const assets = parseUnits(supplyAmt || "0", 18);
+    const assets = parseUnits(supplyAmt || "0", cb.usdgDecimals);
     // No slippage floor here beyond 0 -- unlike borrow(), a fee-rate
     // change is the only variable, and it's the same feeBps read live
     // just above; a real share-price quote would need previewDeposit-
@@ -605,7 +607,7 @@ function SupplyAndEarn({ market }) {
         address: CONTRACTS.cacheBorrow,
         abi: CACHE_BORROW_ABI,
         functionName: "withdrawSupply",
-        args: [market, parseUnits(withdrawAmt || "0", 18), 0n, auth],
+        args: [market, parseUnits(withdrawAmt || "0", cb.usdgDecimals), 0n, auth],
       });
     } catch {
       setAuthPending(false);
@@ -626,19 +628,21 @@ function SupplyAndEarn({ market }) {
         <p className="font-mono text-[9px] text-[var(--color-muted-2)] tracking-widest mb-1">
           YOUR SUPPLY · ~USDG (APPROX., INCL. EARNED)
         </p>
-        <p className="font-mono text-lg">{formatToken(cb.supplyAssetsApprox)}</p>
+        <p className="font-mono text-lg">{formatToken(cb.supplyAssetsApprox, cb.usdgDecimals)}</p>
       </div>
       <MarketInfoCard cb={cb} market={market} apyField="supplyApy" apyLabel="LIVE SUPPLY APY" />
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <p className="font-mono text-[10px] text-[var(--color-muted)] mb-2">
-            Supply USDG — balance: {formatToken(cb.usdgBalance)}
+            Supply USDG — balance: {formatToken(cb.usdgBalance, cb.usdgDecimals)}
           </p>
           <AmountInput
             value={supplyAmt}
             onChange={setSupplyAmt}
-            onMax={() => cb.usdgBalance !== undefined && setSupplyAmt(formatUnits(cb.usdgBalance, 18))}
+            onMax={() =>
+              cb.usdgBalance !== undefined && setSupplyAmt(formatUnits(cb.usdgBalance, cb.usdgDecimals))
+            }
             disabled={busy}
             usdValue={usdForUsdg(supplyAmt)}
           />
@@ -668,12 +672,15 @@ function SupplyAndEarn({ market }) {
 
         <div>
           <p className="font-mono text-[10px] text-[var(--color-muted)] mb-2">
-            Withdraw — supplied: ~{formatToken(cb.supplyAssetsApprox)} USDG
+            Withdraw — supplied: ~{formatToken(cb.supplyAssetsApprox, cb.usdgDecimals)} USDG
           </p>
           <AmountInput
             value={withdrawAmt}
             onChange={setWithdrawAmt}
-            onMax={() => cb.supplyAssetsApprox !== undefined && setWithdrawAmt(formatUnits(cb.supplyAssetsApprox, 18))}
+            onMax={() =>
+              cb.supplyAssetsApprox !== undefined &&
+              setWithdrawAmt(formatUnits(cb.supplyAssetsApprox, cb.usdgDecimals))
+            }
             disabled={busy}
             usdValue={usdForUsdg(withdrawAmt)}
           />
