@@ -47,6 +47,7 @@ const NAV_ITEMS = [
       { href: "/roadmap", label: "Roadmap" },
       { href: "/whitepaper", label: "Whitepaper" },
       { href: "/docs", label: "Docs" },
+      { href: "/faq", label: "FAQ" },
     ],
   },
 ];
