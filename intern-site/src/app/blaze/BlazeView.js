@@ -8,6 +8,7 @@ import { useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import AnimatedNumber from "../components/AnimatedNumber";
 import PersonaIntroVideo from "../components/PersonaIntroVideo";
+import PersonaProductSplit from "../components/PersonaProductSplit";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { formatNumber } from "../lib/format";
 import { CONTRACTS, DEAD_ADDRESS, isStakingLive, isTradingLive } from "../lib/chain";
@@ -141,7 +142,7 @@ function BurnSplitSimulator() {
   ];
 
   return (
-    <section className="px-6 py-20 max-w-3xl mx-auto w-full">
+    <div>
       <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
         TRY IT
       </Reveal>
@@ -151,7 +152,7 @@ function BurnSplitSimulator() {
       <Reveal
         as="p"
         delay={0.1}
-        className="text-[var(--color-muted)] text-sm leading-relaxed mb-8 max-w-xl"
+        className="text-[var(--color-muted)] text-sm leading-relaxed mb-8"
       >
         Type in a hypothetical ETH fee claim and watch it split exactly the
         way{" "}
@@ -222,7 +223,7 @@ function BurnSplitSimulator() {
           real amount currently staked.
         </p>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -306,18 +307,23 @@ export default function BlazeView() {
         </Reveal>
       </section>
 
-      <section className="px-6 pb-10 max-w-3xl mx-auto w-full">
+      <section className="px-6 pb-16 max-w-5xl mx-auto w-full">
         <Reveal delay={0.15}>
-          <PersonaIntroVideo
-            src="/personas/videos/blaze-intro.mp4"
-            poster="/personas/blaze.png"
-            label="Blaze idle animation"
-          />
+          <PersonaProductSplit
+            media={
+              <PersonaIntroVideo
+                src="/personas/videos/blaze-intro.mp4"
+                poster="/personas/blaze.png"
+                label="Blaze idle animation"
+              />
+            }
+          >
+            <BurnSplitSimulator />
+          </PersonaProductSplit>
         </Reveal>
       </section>
 
       <LiveBurnTicker />
-      <BurnSplitSimulator />
       <HowItWorks />
 
       <section className="px-6 pb-24 max-w-5xl mx-auto w-full text-center">

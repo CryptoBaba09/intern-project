@@ -12,6 +12,7 @@ import {
 import { formatUnits, parseUnits } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
 import PersonaIntroVideo from "../components/PersonaIntroVideo";
+import PersonaProductSplit from "../components/PersonaProductSplit";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { CONTRACTS, DEAD_ADDRESS, isTradingLive } from "../lib/chain";
 import { ERC20_ABI } from "../lib/abis";
@@ -362,43 +363,45 @@ export default function InferenceCreditsView() {
         </Reveal>
       </section>
 
-      <section className="px-6 pb-10 max-w-3xl mx-auto w-full">
+      <section className="px-6 pb-20 max-w-5xl mx-auto w-full">
         <Reveal delay={0.2}>
-          <PersonaIntroVideo
-            src="/personas/videos/promptly-intro.mp4"
-            poster="/personas/promptly.png"
-            label="Promptly idle animation"
-          />
+          <PersonaProductSplit
+            media={
+              <PersonaIntroVideo
+                src="/personas/videos/promptly-intro.mp4"
+                poster="/personas/promptly.png"
+                label="Promptly idle animation"
+              />
+            }
+          >
+            {live ? (
+              <PromptlyTopUp />
+            ) : (
+              <div className="w-full border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6 text-center">
+                <p className="font-mono text-sm text-[var(--color-muted)]">$INTERN isn&apos;t live yet.</p>
+              </div>
+            )}
+            <div className="mt-6">
+              <p className="font-mono text-xs text-[var(--color-muted)] tracking-widest mb-4">
+                WORKS WITH
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {MODELS.map((m) => (
+                  <span
+                    key={m}
+                    className="font-mono text-xs text-[var(--color-fg)] border border-[var(--color-line)] rounded-full px-3 py-1.5"
+                  >
+                    {m}
+                  </span>
+                ))}
+              </div>
+              <p className="text-sm text-[var(--color-muted)] leading-relaxed mt-6 max-w-md">
+                The key you get is a plain OpenRouter API key with a spend cap — whatever already
+                works with OpenRouter works unchanged, no proprietary SDK.
+              </p>
+            </div>
+          </PersonaProductSplit>
         </Reveal>
-      </section>
-
-      <section className="px-6 pb-20 max-w-5xl mx-auto w-full flex flex-col lg:flex-row gap-10 items-start">
-        {live ? (
-          <PromptlyTopUp />
-        ) : (
-          <div className="w-full max-w-md border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6 text-center">
-            <p className="font-mono text-sm text-[var(--color-muted)]">$INTERN isn&apos;t live yet.</p>
-          </div>
-        )}
-        <div className="flex-1">
-          <p className="font-mono text-xs text-[var(--color-muted)] tracking-widest mb-4">
-            WORKS WITH
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {MODELS.map((m) => (
-              <span
-                key={m}
-                className="font-mono text-xs text-[var(--color-fg)] border border-[var(--color-line)] rounded-full px-3 py-1.5"
-              >
-                {m}
-              </span>
-            ))}
-          </div>
-          <p className="text-sm text-[var(--color-muted)] leading-relaxed mt-6 max-w-md">
-            The key you get is a plain OpenRouter API key with a spend cap — whatever already
-            works with OpenRouter works unchanged, no proprietary SDK.
-          </p>
-        </div>
       </section>
 
       <section className="px-6 py-20 border-t border-[var(--color-line)] max-w-5xl mx-auto w-full">
