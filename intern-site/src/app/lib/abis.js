@@ -395,6 +395,17 @@ export const MORPHO_ABI = [
   },
 ];
 
+// Morpho's IOracle -- price() returns the price of 1 unit of collateral
+// quoted in 1 unit of loan asset, scaled by 1e36 (verified against
+// Morpho Blue's own IOracle.sol NatSpec and Morpho.sol's _isHealthy():
+// maxBorrow = collateral * price / 1e36 * lltv / 1e18). Read directly
+// on-chain rather than trusted from any API, since this feeds the
+// health-factor math shown to users -- that number has to come from
+// the same source Morpho itself would actually liquidate against.
+export const ORACLE_ABI = [
+  { type: "function", name: "price", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+];
+
 // A minimal, standard ERC-4626 read surface -- used to read the real
 // Steakhouse USDG vault directly (live share price/TVL for the
 // preview), not routed through CacheVaultDeposit for reads since the

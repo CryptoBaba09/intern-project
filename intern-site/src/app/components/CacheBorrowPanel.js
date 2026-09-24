@@ -17,34 +17,189 @@ import { formatUnits, parseUnits, maxUint256 } from "viem";
 import { CONTRACTS, CACHE_BORROW_MARKETS, isCacheBorrowLive } from "../lib/chain";
 import { ERC20_ABI, CACHE_BORROW_ABI, MORPHO_ABI } from "../lib/abis";
 import { signAuthBundle } from "../lib/morphoAuth";
-import { useCacheBorrow, formatToken } from "../cache/useCacheBorrow";
+import { useCacheBorrow, formatToken, formatUsd } from "../cache/useCacheBorrow";
+
+const BLOCKSCOUT_ADDRESS_URL = "https://robinhoodchain.blockscout.com/address/";
+
+// Percentage of true max-at-lltv the MAX button on the borrow input
+// targets, rather than the exact liquidation line -- borrowing right up
+// to health factor 1.00 means the very next price tick can liquidate
+// you. Fenn.cash's own MAX button doesn't disclose a buffer; this one
+// does, in the copy right under the button.
+const SAFE_BORROW_BUFFER_PERCENT = 90;
+
+function pctColor(healthFactor) {
+  if (healthFactor === null || healthFactor === undefined) return "var(--color-accent)";
+  if (healthFactor >= 1.5) return "var(--color-accent)";
+  if (healthFactor >= 1.1) return "var(--color-ember)";
+  return "var(--color-danger)";
+}
+
+function healthFactorLabel(healthFactor) {
+  if (healthFactor === undefined) return "…";
+  if (healthFactor === null) return "∞";
+  return healthFactor.toFixed(2);
+}
+
+// Same shape as StakeView's stat cards, sized down. `sub` is an
+// optional second, muted line (a $ conversion, a live rate, etc.).
+function InfoCell({ label, value, sub, valueColor }) {
+  return (
+    <div>
+      <p className="font-mono text-[9px] text-[var(--color-muted-2)] tracking-widest mb-1">{label}</p>
+      <p className="font-mono text-sm" style={valueColor ? { color: valueColor } : undefined}>
+        {value}
+      </p>
+      {sub && <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+// Health factor as a colored bar, same convention Morpho itself
+// liquidates on: healthy iff >= 1.00. Visually capped at 3x so one
+// very safe position doesn't make the bar always look empty at
+// realistic values -- the capping only affects the bar's fill, never
+// the number shown next to it.
+function HealthFactorBar({ healthFactor }) {
+  if (healthFactor === undefined) {
+    return <div className="h-2 rounded-full bg-[var(--color-line)]" />;
+  }
+  const pct = healthFactor === null ? 100 : Math.max(4, Math.min(100, (healthFactor / 3) * 100));
+  return (
+    <div className="h-2 rounded-full bg-[var(--color-line)] overflow-hidden">
+      <div
+        className="h-full rounded-full transition-all"
+        style={{ width: `${pct}%`, backgroundColor: pctColor(healthFactor) }}
+      />
+    </div>
+  );
+}
+
+// Your live position on this market -- collateral posted (with its
+// live $ value), debt owed, current LTV against this market's real
+// lltv, and the health-factor bar. All the numbers a user actually
+// needs to judge their own liquidation risk, in one place, instead of
+// scattered across separate boxes the way this panel used to show them.
+function PositionSummary({ cb, market }) {
+  return (
+    <div className="border border-[var(--color-line)] rounded-xl p-4 mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest">YOUR POSITION</p>
+        <span className="font-mono text-xs" style={{ color: pctColor(cb.healthFactor) }}>
+          HEALTH FACTOR {healthFactorLabel(cb.healthFactor)}
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-4 mb-3">
+        <InfoCell
+          label={`${market.symbol} COLLATERAL`}
+          value={formatToken(cb.collateral)}
+          sub={cb.collateralValueLoan !== undefined ? `≈ ${formatUsd(cb.collateralValueLoan)}` : undefined}
+        />
+        <InfoCell label="DEBT · USDG" value={`~${formatToken(cb.borrowAssetsApprox)}`} />
+        <InfoCell
+          label="LTV NOW / MAX"
+          value={`${cb.currentLtvPercent.toFixed(1)}% / ${cb.lltvPercent}%`}
+        />
+      </div>
+      <HealthFactorBar healthFactor={cb.healthFactor} />
+      <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
+        Below 1.00, your collateral can be liquidated. Higher is safer — this uses the same live
+        price Morpho itself would liquidate against.
+      </p>
+    </div>
+  );
+}
+
+// The market's own live facts -- price, this market's real lltv, and
+// live borrow/supply APY straight from Morpho, plus the collateral
+// token's own contract + price feed for anyone who wants to verify it
+// themselves (same "verify it yourself" spirit as /docs, just one
+// click closer to where you'd actually use it).
+function MarketInfoCard({ cb, market, apyField, apyLabel }) {
+  const [showAddresses, setShowAddresses] = useState(false);
+  const rate = cb.apy.rates?.[apyField];
+
+  return (
+    <div className="border border-[var(--color-line)] rounded-xl p-4 mb-5">
+      <div className="grid grid-cols-3 gap-4">
+        <InfoCell
+          label={`${market.symbol} PRICE`}
+          value={cb.oraclePrice !== undefined ? formatUsd(cb.oraclePrice, 36) : "…"}
+        />
+        <InfoCell label="MAX LTV (LIQ. THRESHOLD)" value={`${cb.lltvPercent}%`} />
+        <InfoCell
+          label={apyLabel}
+          value={cb.apy.loading ? "…" : rate != null ? `${(rate * 100).toFixed(2)}%` : "—"}
+        />
+      </div>
+      <button
+        type="button"
+        onClick={() => setShowAddresses((v) => !v)}
+        className="font-mono text-[9px] text-[var(--color-accent)] mt-3 hover:underline"
+      >
+        {showAddresses ? "Hide" : "Verify"} {market.symbol} contract + price feed ↓
+      </button>
+      {showAddresses && (
+        <div className="mt-2 space-y-1.5">
+          <p className="font-mono text-[9px] text-[var(--color-muted-2)] break-all">
+            {market.symbol} token:{" "}
+            <a
+              href={`${BLOCKSCOUT_ADDRESS_URL}${market.collateralToken}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--color-accent)] hover:underline"
+            >
+              {market.collateralToken}
+            </a>
+          </p>
+          <p className="font-mono text-[9px] text-[var(--color-muted-2)] break-all">
+            Price feed:{" "}
+            <a
+              href={`${BLOCKSCOUT_ADDRESS_URL}${market.oracle}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--color-accent)] hover:underline"
+            >
+              {market.oracle}
+            </a>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const ROBINHOOD_CHAIN_ID = 4663;
 // Same fixed, simple slippage choice CacheDepositPreview.js and
 // RewardChoicePreview.js already make rather than exposing a raw knob.
 const SLIPPAGE_PERCENT = 1;
 
-function AmountInput({ value, onChange, onMax, disabled, placeholder = "0.0" }) {
+function AmountInput({ value, onChange, onMax, disabled, placeholder = "0.0", usdValue, maxLabel = "MAX" }) {
   return (
-    <div className="relative">
-      <input
-        type="text"
-        inputMode="decimal"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ""))}
-        disabled={disabled}
-        className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl pl-4 pr-16 py-3 font-mono text-sm outline-none focus:border-[var(--color-accent)]/50 disabled:opacity-50"
-      />
-      {onMax && (
-        <button
-          type="button"
-          onClick={onMax}
+    <div>
+      <div className="relative">
+        <input
+          type="text"
+          inputMode="decimal"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ""))}
           disabled={disabled}
-          className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-medium text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-lg px-2 py-1 hover:bg-[var(--color-accent)]/10 transition-colors disabled:opacity-50"
-        >
-          MAX
-        </button>
+          className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl pl-4 pr-16 py-3 font-mono text-sm outline-none focus:border-[var(--color-accent)]/50 disabled:opacity-50"
+        />
+        {onMax && (
+          <button
+            type="button"
+            onClick={onMax}
+            disabled={disabled}
+            className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-medium text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-lg px-2 py-1 hover:bg-[var(--color-accent)]/10 transition-colors disabled:opacity-50"
+          >
+            {maxLabel}
+          </button>
+        )}
+      </div>
+      {usdValue !== undefined && (
+        <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-1">≈ {usdValue}</p>
       )}
     </div>
   );
@@ -217,24 +372,38 @@ function CollateralAndBorrow({ market }) {
     });
   }
 
+  // Display-only $ estimates while typing -- never used for the actual
+  // transaction amount, which always passes the raw typed value itself.
+  function usdForCollateral(amountStr) {
+    const amt = parseFloat(amountStr);
+    if (!amt || Number.isNaN(amt) || cb.oraclePrice === undefined) return undefined;
+    const priceFloat = Number(formatUnits(cb.oraclePrice, 36));
+    return (amt * priceFloat).toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  }
+  function usdForUsdg(amountStr) {
+    const amt = parseFloat(amountStr);
+    if (!amt || Number.isNaN(amt)) return undefined;
+    return amt.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  }
+
+  // Targets a buffer under the exact liquidation line (health factor
+  // 1.00), not the line itself -- see SAFE_BORROW_BUFFER_PERCENT.
+  function handleMaxBorrow() {
+    if (cb.maxBorrowAtLltv === undefined || cb.borrowAssetsApprox === undefined) return;
+    const headroom = cb.maxBorrowAtLltv - cb.borrowAssetsApprox;
+    if (headroom <= 0n) {
+      setBorrowAmt("0");
+      return;
+    }
+    setBorrowAmt(formatUnits((headroom * BigInt(SAFE_BORROW_BUFFER_PERCENT)) / 100n, 18));
+  }
+
   if (!cb.marketId) return null;
 
   return (
     <div className="space-y-6">
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="border border-[var(--color-line)] rounded-xl p-4">
-          <p className="font-mono text-[9px] text-[var(--color-muted-2)] tracking-widest mb-1">
-            YOUR {market.symbol} COLLATERAL
-          </p>
-          <p className="font-mono text-lg">{formatToken(cb.collateral)}</p>
-        </div>
-        <div className="border border-[var(--color-line)] rounded-xl p-4">
-          <p className="font-mono text-[9px] text-[var(--color-muted-2)] tracking-widest mb-1">
-            YOUR DEBT · ~USDG (APPROX.)
-          </p>
-          <p className="font-mono text-lg">{formatToken(cb.borrowAssetsApprox)}</p>
-        </div>
-      </div>
+      <PositionSummary cb={cb} market={market} />
+      <MarketInfoCard cb={cb} market={market} apyField="borrowApy" apyLabel="LIVE BORROW APY" />
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
@@ -246,6 +415,7 @@ function CollateralAndBorrow({ market }) {
             onChange={setDepositAmt}
             onMax={() => cb.collateralBalance !== undefined && setDepositAmt(formatUnits(cb.collateralBalance, 18))}
             disabled={busy}
+            usdValue={usdForCollateral(depositAmt)}
           />
           <div className="mt-2">
             {needsCollateralApproval ? (
@@ -275,6 +445,7 @@ function CollateralAndBorrow({ market }) {
             onChange={setWithdrawAmt}
             onMax={() => cb.collateral !== undefined && setWithdrawAmt(formatUnits(cb.collateral, 18))}
             disabled={busy}
+            usdValue={usdForCollateral(withdrawAmt)}
           />
           <div className="mt-2">
             <ActionButton
@@ -294,7 +465,13 @@ function CollateralAndBorrow({ market }) {
       <div className="grid sm:grid-cols-2 gap-4 border-t border-[var(--color-line)] pt-6">
         <div>
           <p className="font-mono text-[10px] text-[var(--color-muted)] mb-2">Borrow USDG against your collateral</p>
-          <AmountInput value={borrowAmt} onChange={setBorrowAmt} disabled={busy} />
+          <AmountInput
+            value={borrowAmt}
+            onChange={setBorrowAmt}
+            onMax={handleMaxBorrow}
+            disabled={busy}
+            usdValue={usdForUsdg(borrowAmt)}
+          />
           <div className="mt-2">
             <ActionButton
               onClick={handleBorrow}
@@ -304,11 +481,11 @@ function CollateralAndBorrow({ market }) {
               label="BORROW USDG"
             />
           </div>
-          {cb.feeBps !== undefined && (
-            <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
-              {Number(cb.feeBps) / 100}% skimmed, auto-bought-back and burned.
-            </p>
-          )}
+          <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
+            MAX leaves a {100 - SAFE_BORROW_BUFFER_PERCENT}% safety buffer under your liquidation line, not the exact
+            line.
+            {cb.feeBps !== undefined && ` ${Number(cb.feeBps) / 100}% skimmed, auto-bought-back and burned.`}
+          </p>
         </div>
 
         <div>
@@ -320,6 +497,7 @@ function CollateralAndBorrow({ market }) {
             onChange={setRepayAmt}
             onMax={() => cb.borrowAssetsApprox !== undefined && setRepayAmt(formatUnits(cb.borrowAssetsApprox, 18))}
             disabled={busy}
+            usdValue={usdForUsdg(repayAmt)}
           />
           <div className="mt-2">
             {needsUsdgApproval ? (
@@ -434,6 +612,12 @@ function SupplyAndEarn({ market }) {
     }
   }
 
+  function usdForUsdg(amountStr) {
+    const amt = parseFloat(amountStr);
+    if (!amt || Number.isNaN(amt)) return undefined;
+    return amt.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  }
+
   if (!cb.marketId) return null;
 
   return (
@@ -444,6 +628,7 @@ function SupplyAndEarn({ market }) {
         </p>
         <p className="font-mono text-lg">{formatToken(cb.supplyAssetsApprox)}</p>
       </div>
+      <MarketInfoCard cb={cb} market={market} apyField="supplyApy" apyLabel="LIVE SUPPLY APY" />
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
@@ -455,6 +640,7 @@ function SupplyAndEarn({ market }) {
             onChange={setSupplyAmt}
             onMax={() => cb.usdgBalance !== undefined && setSupplyAmt(formatUnits(cb.usdgBalance, 18))}
             disabled={busy}
+            usdValue={usdForUsdg(supplyAmt)}
           />
           <div className="mt-2">
             {needsUsdgApproval ? (
@@ -489,6 +675,7 @@ function SupplyAndEarn({ market }) {
             onChange={setWithdrawAmt}
             onMax={() => cb.supplyAssetsApprox !== undefined && setWithdrawAmt(formatUnits(cb.supplyAssetsApprox, 18))}
             disabled={busy}
+            usdValue={usdForUsdg(withdrawAmt)}
           />
           <div className="mt-2">
             <ActionButton
