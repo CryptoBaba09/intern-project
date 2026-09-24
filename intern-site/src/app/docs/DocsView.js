@@ -53,8 +53,8 @@ const CONTRACT_ROWS = [
   ["InternStakingRewards (v1, paired with old token)", "0xe7804319Ea528CfED8C7908A4197EdE0ae44895a"],
   ["InternStakingRewards (v2)", "0xd73a24D7bd311E36151344E233a7e6C73369E558 — deployed, not yet security-reviewed"],
   ["InternRewardsRouter (BE → TSLA/NVDA/SPCX)", "0x71b7863210A772F1986Ac943917dC9a65CebEAfC — Slither-reviewed + manual review, not a professional audit"],
-  ["CacheVaultDeposit (USDG yield)", "0x82a0378cf6c2e88Ba7b6135FB9A536863094812C — Slither-reviewed + manual review, not a professional audit. Not live on this site yet."],
-  ["CacheBorrow (collateral & borrow)", "0x1FCa71EDa56453CfAf3F0B1f41325EAc1bf5ccBA — a bug was caught post-deployment and is being fixed, not yet redeployed. Do not use. Not live on this site."],
+  ["CacheVaultDeposit (USDG yield)", "0x82a0378cf6c2e88Ba7b6135FB9A536863094812C — Slither-reviewed + manual review, not a professional audit"],
+  ["CacheBorrow (collateral & borrow, TSLA/NVDA)", "0x28B3bE65b6B3ee17aE9D81ca9AB66812dFEe168b — Slither-reviewed + manual review, not a professional audit"],
   ["Dead / burn address", "0x000000000000000000000000000000000000dEaD"],
 ];
 
