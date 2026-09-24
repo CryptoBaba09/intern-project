@@ -14,6 +14,7 @@
 import Image from "next/image";
 import ConnectWalletButton from "../components/ConnectWalletButton";
 import PersonaIntroVideo from "../components/PersonaIntroVideo";
+import PersonaProductSplit from "../components/PersonaProductSplit";
 import TokenSearchSelect from "../components/TokenSearchSelect";
 import Confetti from "../components/Confetti";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
@@ -80,21 +81,24 @@ export default function InterndexView() {
         lab, no date yet, but that&apos;s where this is headed.
       </Reveal>
 
-      <div className="grid lg:grid-cols-2 gap-8 items-start mb-6">
-        <Reveal delay={0.12}>
-          <PersonaIntroVideo
-            src="/personas/videos/hush-intro.mp4"
-            poster="/personas/hush.png"
-            label="Hush idle animation"
-          />
-        </Reveal>
-
-      <motion.div
-        initial="hidden"
-        animate="show"
-        variants={staggerContainer}
-        className="border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6"
-      >
+      <div className="mb-6">
+        <PersonaProductSplit
+          media={
+            <Reveal delay={0.12}>
+              <PersonaIntroVideo
+                src="/personas/videos/hush-intro.mp4"
+                poster="/personas/hush.png"
+                label="Hush idle animation"
+              />
+            </Reveal>
+          }
+        >
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={staggerContainer}
+            className="border border-[var(--color-line)] rounded-2xl bg-[var(--color-surface)] p-6"
+          >
         <motion.div variants={fadeUp} className="grid sm:grid-cols-2 gap-4 mb-5">
           <ChainPicker label="FROM CHAIN" chains={s.chains} selected={s.fromChainId} onSelect={s.selectFromChain} disabled={s.busy} />
           <ChainPicker label="TO CHAIN" chains={s.chains} selected={s.toChainId} onSelect={s.selectToChain} disabled={s.busy} />
@@ -223,7 +227,8 @@ export default function InterndexView() {
             )}
           </p>
         )}
-      </motion.div>
+          </motion.div>
+        </PersonaProductSplit>
       </div>
 
       <p className="font-mono text-[10px] text-[var(--color-muted-2)] max-w-2xl">

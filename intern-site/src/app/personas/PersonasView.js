@@ -7,6 +7,7 @@ import { useAccount, useReadContract } from "wagmi";
 import { formatUnits } from "viem";
 import ConnectWalletButton from "../components/ConnectWalletButton";
 import PersonaIntroVideo from "../components/PersonaIntroVideo";
+import PersonaProductSplit from "../components/PersonaProductSplit";
 import { Reveal, fadeUp, staggerContainer } from "../components/motion";
 import { CONTRACTS, isStakingLive } from "../lib/chain";
 import { ERC20_ABI, STAKING_REWARDS_ABI } from "../lib/abis";
@@ -230,18 +231,20 @@ export default function PersonasView() {
         </Reveal>
       </section>
 
-      <section className="px-6 pb-10 max-w-3xl mx-auto w-full">
+      <section className="px-6 pb-16 max-w-5xl mx-auto w-full">
         <Reveal delay={0.2}>
-          <PersonaIntroVideo
-            src="/personas/videos/rendo-intro.mp4"
-            poster="/personas/rendo.png"
-            label="Rendo idle animation"
-          />
+          <PersonaProductSplit
+            media={
+              <PersonaIntroVideo
+                src="/personas/videos/rendo-intro.mp4"
+                poster="/personas/rendo.png"
+                label="Rendo idle animation"
+              />
+            }
+          >
+            <RendoTool />
+          </PersonaProductSplit>
         </Reveal>
-      </section>
-
-      <section className="px-6 pb-16 max-w-3xl mx-auto w-full">
-        <RendoTool />
       </section>
 
       <section className="px-6 py-20 border-t border-[var(--color-line)] max-w-5xl mx-auto w-full">

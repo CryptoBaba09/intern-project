@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "../components/motion";
 import PersonaIntroVideo from "../components/PersonaIntroVideo";
+import PersonaProductSplit from "../components/PersonaProductSplit";
 import CacheDepositPreview from "../components/CacheDepositPreview";
 import CacheBorrowPanel from "../components/CacheBorrowPanel";
 import { isCacheVaultLive, isCacheBorrowLive } from "../lib/chain";
@@ -60,50 +61,52 @@ export default function CacheView() {
         $INTERN and burned.
       </Reveal>
 
-      <div className="max-w-2xl mb-10">
-        <Reveal delay={0.12}>
-          <PersonaIntroVideo
-            src="/personas/videos/cache-intro.mp4"
-            poster="/personas/cache.png"
-            label="Cache idle animation"
-          />
-        </Reveal>
-      </div>
+      <Reveal delay={0.12} className="mb-10">
+        <PersonaProductSplit
+          media={
+            <PersonaIntroVideo
+              src="/personas/videos/cache-intro.mp4"
+              poster="/personas/cache.png"
+              label="Cache idle animation"
+            />
+          }
+        >
+          <div className="grid sm:grid-cols-2 gap-4 mb-6">
+            <div className="border border-[var(--color-line)] rounded-2xl p-6">
+              <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">
+                VAULT SIZE · LIVE
+              </p>
+              <p className="text-3xl font-semibold font-mono">
+                {totalAssets !== undefined ? `$${formatUsdg(totalAssets, 0)}` : "…"}
+              </p>
+              <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
+                Refreshes automatically — not a self-reported number.
+              </p>
+            </div>
+            <div className="border border-[var(--color-line)] rounded-2xl p-6">
+              <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">SUPPLY APY</p>
+              <p className="text-3xl font-semibold font-mono text-[var(--color-muted)]">See live rate ↗</p>
+              <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
+                <a href={MORPHO_VAULT_URL} target="_blank" rel="noopener noreferrer" className="underline">
+                  Check the current rate
+                </a>{" "}
+                — deliberately not duplicated here, so it can never quietly go stale on our side.
+              </p>
+            </div>
+          </div>
 
-      <div className="grid sm:grid-cols-2 gap-4 mb-10">
-        <div className="border border-[var(--color-line)] rounded-2xl p-6">
-          <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">
-            VAULT SIZE · LIVE
-          </p>
-          <p className="text-3xl font-semibold font-mono">
-            {totalAssets !== undefined ? `$${formatUsdg(totalAssets, 0)}` : "…"}
-          </p>
-          <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
-            Refreshes automatically — not a self-reported number.
-          </p>
-        </div>
-        <div className="border border-[var(--color-line)] rounded-2xl p-6">
-          <p className="font-mono text-[10px] text-[var(--color-muted)] tracking-widest mb-2">SUPPLY APY</p>
-          <p className="text-3xl font-semibold font-mono text-[var(--color-muted)]">See live rate ↗</p>
-          <p className="font-mono text-[9px] text-[var(--color-muted-2)] mt-2">
-            <a href={MORPHO_VAULT_URL} target="_blank" rel="noopener noreferrer" className="underline">
-              Check the current rate
-            </a>{" "}
-            — deliberately not duplicated here, so it can never quietly go stale on our side.
-          </p>
-        </div>
-      </div>
+          <div className="mb-6">
+            <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-3">JUST EARN YIELD</p>
+            <CacheDepositPreview />
+          </div>
 
-      <Reveal delay={0.15} className="mb-10">
-        <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-3">JUST EARN YIELD</p>
-        <CacheDepositPreview />
-      </Reveal>
-
-      <Reveal delay={0.18}>
-        <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-3">
-          BORROW AGAINST YOUR STOCK, OR SUPPLY AND EARN
-        </p>
-        <CacheBorrowPanel />
+          <div>
+            <p className="font-mono text-xs text-[var(--color-muted)] tracking-wide mb-3">
+              BORROW AGAINST YOUR STOCK, OR SUPPLY AND EARN
+            </p>
+            <CacheBorrowPanel />
+          </div>
+        </PersonaProductSplit>
       </Reveal>
 
       <Reveal delay={0.2} className="mt-10 border-t border-[var(--color-line)] pt-8">
