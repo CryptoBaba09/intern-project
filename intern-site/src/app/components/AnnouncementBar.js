@@ -12,24 +12,24 @@ import Link from "next/link";
 // one live campaign at a time, so a config array is more machinery than
 // this needs right now.
 //
-// Swapped in 2026-09-18 for the trading competition (ends 2026-09-25,
-// before the migration deadline) -- the migration reminder isn't gone,
+// Swapped in 2026-09-26 for trading competition #2 (ends 2026-10-03 12:00 UTC;
+// #1 ran 2026-09-18 to 2026-09-25, before the migration deadline) -- the migration reminder isn't gone,
 // it still surfaces automatically on /stake for any wallet actually
 // holding v1 (see MigrationBox), same pattern Nav.js's own comment
 // describes for why it dropped out of primary nav. Swap this object
 // back once the competition ends, or replace it with whatever's next.
 const CAMPAIGN = {
-  id: "trading-competition-sep-2026",
+  id: "trading-competition-2-sep-2026",
   href: "/trade",
   cta: "Go trade →",
-  start: "2026-09-18",
-  end: "2026-09-25",
-  label: "$INTERN Trading Competition",
-  copy: "Top 3 net-buyers win a real tokenized stock of their choice (TSLA, NVDA, BE, or SPCX) from treasury — $50 / $30 / $20, $20 minimum net-buy volume to qualify.",
+  start: "2026-09-26",
+  end: "2026-10-03T12:00:00Z",
+  label: "$INTERN Trading Competition #2",
+  copy: "Top 5 win tokenized stocks (TSLA, NVDA, SPCX or BE). Prize pool = 1% of all volume, $20 already in. Buy $10+, stake it or trade $200, tag @InternburnHQ on X.",
 };
 
 function daysLeft() {
-  const end = new Date(`${CAMPAIGN.end}T23:59:59Z`);
+  const end = new Date(CAMPAIGN.end.length > 10 ? CAMPAIGN.end : `${CAMPAIGN.end}T23:59:59Z`);
   const now = new Date();
   const ms = end.getTime() - now.getTime();
   return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));

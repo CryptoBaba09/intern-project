@@ -108,9 +108,10 @@ authorization in place; it can get the account flagged.
 ## Team split
 
 - **Me:** draft every post/thread/caption, build every visual via the
-  Canva brand kit + existing video/GIF pipeline, track this plan against
-  [growth-log.md](growth-log.md), flag real hooks as they appear (on-chain
-  milestones, real news).
+  Canva brand kit + existing video/GIF pipeline, track this plan against a
+  growth log (recreate once @InternburnHQ has real numbers to track — the
+  old growth-log.md tracked the suspended @Internburn_xyz and was deleted
+  with it), flag real hooks as they appear (on-chain milestones, real news).
 - **Community manager:** owns the 1–3hr/day reply-and-quote-tweet grind,
   first-hour engagement on anything just posted, Telegram community
   activity — once X Pro Team access is set up (see prior conversation).
