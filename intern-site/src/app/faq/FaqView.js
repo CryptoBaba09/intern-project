@@ -347,7 +347,7 @@ export default function FaqView() {
             </a>{" "}
             or{" "}
             <a
-              href="https://x.com/Internburn_xyz"
+              href="https://x.com/InternburnHQ"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[var(--color-accent)] hover:underline"

@@ -207,7 +207,7 @@ export default function BurnToCreateView() {
             BURN &amp; CREATE →
           </Link>
           <a
-            href="https://x.com/Internburn_xyz"
+            href="https://x.com/InternburnHQ"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-line)] text-[var(--color-fg)] font-mono text-sm font-medium px-6 py-3 hover:border-[var(--color-accent)]/50 transition-colors"
