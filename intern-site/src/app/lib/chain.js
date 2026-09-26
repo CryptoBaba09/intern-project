@@ -99,14 +99,14 @@ export const CONTRACTS = {
   // allowance), but it does mean every USDG balance/debt/supply number
   // shown anywhere on the site was wrong until this was added.
   usdgDecimals: 6,
-  // Cache's CacheVaultDeposit -- same deliberate pattern as
-  // rewardsRouter above: NO hardcoded fallback. Contract is written,
-  // unit-tested (19/19), and passed an in-house Slither + manual
-  // review (see docs/cache-intern-spec.md), but is not yet deployed
-  // anywhere. Leaving this unset is what keeps /cache rendering its
-  // honest, non-interactive preview instead of a real deposit() flow.
-  // Only set this once a real deployment exists on Robinhood Chain --
-  // see contracts/scripts/deploy-cache-vault-deposit-direct.js.
+  // Cache's CacheVaultDeposit -- unit-tested (19/19), passed an
+  // in-house Slither + manual review (see docs/cache-intern-spec.md),
+  // and deployed live on Robinhood Chain 2026-09-24 at
+  // 0x82a0378cf6c2e88Ba7b6135FB9A536863094812C (confirmed via
+  // Blockscout). NEXT_PUBLIC_CACHE_VAULT_ADDRESS is set in Vercel, so
+  // /cache renders the real deposit() flow, not the preview state --
+  // still no independent third-party audit, same posture as every
+  // other unaudited-but-shipped contract on this site.
   cacheVaultDeposit: process.env.NEXT_PUBLIC_CACHE_VAULT_ADDRESS || null,
   // The real, live Steakhouse USDG Morpho vault itself -- confirmed
   // live on Robinhood Chain 2026-09-23 (bytecode selector check +
