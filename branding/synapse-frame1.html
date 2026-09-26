@@ -1,0 +1,56 @@
+<meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;}
+  .stage{
+    width:1080px;height:1080px;background:#0B0C0B;
+    position:relative;overflow:hidden;font-family:Arial,sans-serif;
+    background-image: radial-gradient(ellipse 700px 600px at 50% 40%, rgba(0,200,5,0.16), transparent 70%);
+  }
+  .eyebrow{
+    position:absolute;top:130px;left:0;width:1080px;text-align:center;
+    font-family:ui-monospace,monospace;font-size:24px;color:#00C805;letter-spacing:0.16em;
+  }
+  .title{
+    position:absolute;top:172px;left:0;width:1080px;text-align:center;
+    font-size:56px;font-weight:800;color:#EDEEF0;
+  }
+  .steps{
+    position:absolute;top:330px;left:90px;width:900px;
+    display:flex;justify-content:space-between;
+  }
+  .step{width:260px;text-align:center;}
+  .step .pill{
+    display:inline-block;font-family:ui-monospace,monospace;font-size:20px;font-weight:700;
+    border-radius:999px;padding:10px 22px;margin-bottom:0;
+    border:2px solid #1B1D1B;color:#4A4F54;
+  }
+  .step.active .pill{border-color:#00C805;color:#00C805;background:rgba(0,200,5,0.1);}
+  .arrow{width:60px;text-align:center;font-size:30px;color:#1B1D1B;padding-top:8px;}
+  .arrow.active{color:#00C805;}
+  .desc{
+    position:absolute;top:520px;left:140px;width:800px;text-align:center;
+    font-size:40px;font-weight:700;color:#EDEEF0;line-height:1.35;
+  }
+  .sub{
+    position:absolute;top:680px;left:190px;width:700px;text-align:center;
+    font-size:24px;color:#9BA1A6;line-height:1.5;
+  }
+  .footer{
+    position:absolute;top:960px;left:0;width:1080px;text-align:center;
+    font-family:ui-monospace,monospace;font-size:20px;color:#4A4F54;
+  }
+</style>
+<div class="stage">
+  <div class="eyebrow">$INTERN UTILITY &middot; SYNAPSE</div>
+  <div class="title">Synapse</div>
+  <div class="steps">
+    <div class="step "><div class="pill">01 READ CHAIN</div></div>
+    <div class="arrow active">&rarr;</div>
+    <div class="step active"><div class="pill">02 MAP NODES</div></div>
+    <div class="arrow ">&rarr;</div>
+    <div class="step "><div class="pill">03 SEE IT LIVE</div></div>
+  </div>
+  <div class="desc">Burn and stake, mapped as a network</div>
+  <div class="sub">v1 live now, real numbers, no fee.</div>
+  <div class="footer">internburn.xyz/synapse</div>
+</div>
