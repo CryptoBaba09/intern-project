@@ -106,11 +106,9 @@ export default function DocsView() {
           Deployed addresses
         </Reveal>
         <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-sm leading-relaxed mb-6 max-w-2xl">
-          $INTERN v2 is live on Pons, paired against ETH — migrated off
-          v1/Pair.fund on 2026-09-10 after Pair.fund's trading route broke
-          for days. Every address below is real and deployed; where
-          something hasn't had a professional security review yet, that's
-          disclosed next to the address instead of hidden.
+          $INTERN v2 is live on Pons, paired against ETH. Every address below
+          is real and deployed; where something hasn't had a professional
+          security review yet, that's noted next to the address.
         </Reveal>
         <Reveal>
           <InfoTable rows={CONTRACT_ROWS} />

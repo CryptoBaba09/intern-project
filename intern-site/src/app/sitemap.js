@@ -24,7 +24,7 @@ const ROUTES = [
   { path: "/docs", priority: 0.5, changeFrequency: "monthly" },
   { path: "/synapse", priority: 0.5, changeFrequency: "daily" },
   { path: "/roster", priority: 0.5, changeFrequency: "weekly" },
-  { path: "/burn-to-create", priority: 0.5, changeFrequency: "weekly" },
+  { path: "/burn-to-create", priority: 0.7, changeFrequency: "weekly" },
   { path: "/migrate", priority: 0.3, changeFrequency: "monthly" },
 ];
 

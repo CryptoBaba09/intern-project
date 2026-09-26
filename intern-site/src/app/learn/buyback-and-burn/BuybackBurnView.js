@@ -218,21 +218,18 @@ export default function BuybackBurnView() {
       </section>
 
       <section className="px-6 pb-16 max-w-3xl mx-auto w-full">
-        <Label>WHAT&apos;S NOT LIVE YET</Label>
+        <Label>WHAT&apos;S NEXT</Label>
         <Reveal as="h2" delay={0.05} className="text-2xl font-semibold mb-6">
-          Honestly, not everything is finished
+          Still on the roadmap
         </Reveal>
         <Reveal className="space-y-4">
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            This isn&apos;t a project that claims everything is done. Perky (tiered staking
-            bonus) is coming soon. Div (dividend routing) is waiting on Bloom Energy to actually
-            pay a real-world dividend, not on anything we control. Hush&apos;s namesake feature —
-            confidential swaps, no wallet-to-trade trail — is the direction, not a shipped
-            feature, and we&apos;re not claiming otherwise.
+            Perky (tiered staking bonus) is coming soon. Div (dividend routing) switches on
+            when Bloom Energy pays a real-world dividend. Hush&apos;s confidential swaps are
+            the next step for the swap intern.
           </p>
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            If a claim on this page stops being true, this page changes with it. That&apos;s the
-            same rule as everything else we publish.
+            This page is updated whenever the mechanics change.
           </p>
         </Reveal>
       </section>

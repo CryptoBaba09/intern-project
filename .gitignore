@@ -26,3 +26,17 @@ yarn-error.log*
 # Editor
 .vscode/
 .idea/
+
+# Internal growth playbooks (kept locally, not published)
+docs/growth-plan.md
+docs/listing-kit.md
+docs/x-daily-template.md
+docs/x-reply-playbook.md
+docs/x-vision-series.md
+
+# Large media and generated packs
+*.mp4
+branding/x-content-pack.zip
+
+# iCloud sync duplicates ("name 2.ext")
+* 2.*
