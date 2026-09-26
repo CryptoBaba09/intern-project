@@ -19,13 +19,13 @@ import Link from "next/link";
 // describes for why it dropped out of primary nav. Swap this object
 // back once the competition ends, or replace it with whatever's next.
 const CAMPAIGN = {
-  id: "trading-competition-2-sep-2026",
-  href: "/trade",
-  cta: "Go trade →",
+  id: "contests-oct-2026",
+  href: "/burn-to-create",
+  cta: "See both contests →",
   start: "2026-09-26",
   end: "2026-10-03T12:00:00Z",
-  label: "$INTERN Trading Competition #2",
-  copy: "Top 5 win tokenized stocks (TSLA, NVDA, SPCX or BE). Prize pool = 1% of all volume, $20 already in. Buy $10+, stake it or trade $200, tag @InternburnHQ on X.",
+  label: "$INTERN Contests",
+  copy: "Trade to win tokenized stocks, or burn $INTERN and make a meme with an intern — top 5 win stock in each. Both end Oct 3.",
 };
 
 function daysLeft() {

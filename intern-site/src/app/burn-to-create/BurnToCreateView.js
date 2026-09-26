@@ -10,8 +10,8 @@ import AnimatedNumber from "../components/AnimatedNumber";
 import { CONTRACTS, DEAD_ADDRESS, isTradingLive } from "../lib/chain";
 import { ERC20_ABI } from "../lib/abis";
 
-const ROUND2_START = "Sep 16, 2026";
-const ROUND2_END = "Sep 30, 2026";
+const ROUND3_START = "Sep 26, 2026";
+const ROUND3_END = "Oct 3, 2026";
 
 function LiveBurnStrip() {
   const { data: burnedRaw } = useReadContract({
@@ -110,8 +110,8 @@ function EntryForm({ onSubmitted }) {
       <div className="border border-[var(--color-accent)]/30 rounded-2xl p-8 text-center">
         <p className="text-lg font-medium mb-2">Entry logged.</p>
         <p className="text-sm text-[var(--color-muted)]">
-          The team reviews entries by hand — no automatic judging. Winners get a real
-          treasury-funded credit top-up, picked before {ROUND2_END}.
+          The team reviews entries by hand — no automatic judging. The top 5 win tokenized
+          stock rewards, picked after {ROUND3_END}.
         </p>
         <button
           type="button"
@@ -182,16 +182,15 @@ export default function BurnToCreateView() {
     <>
       <section className="px-6 pt-16 pb-12 max-w-4xl mx-auto w-full">
         <Reveal as="p" className="font-mono text-xs text-[var(--color-accent)] tracking-widest mb-3">
-          BURN TO CREATE · ROUND 2 · {ROUND2_START} – {ROUND2_END}
+          BURN TO CREATE · ROUND 3 · {ROUND3_START} – {ROUND3_END}
         </Reveal>
         <Reveal as="h1" delay={0.05} className="text-4xl sm:text-5xl font-semibold mb-6">
-          Burn $INTERN. Make something. Get more credit.
+          Burn $INTERN. Make a meme with an intern. Win stock.
         </Reveal>
         <Reveal as="p" delay={0.1} className="text-[var(--color-muted)] text-lg leading-relaxed max-w-2xl mb-6">
-          Video generation is real and live today — burn $INTERN via Video Credits, animate any of
-          the four crew (or a fully custom prompt), and submit it. Top 3 entries get their burn
-          matched — 5x for 1st, 4x for 2nd, 3x for 3rd — paid on-chain from the founder wallet,
-          exactly like Round 1.
+          Buy back and burn $INTERN, then make any video that features our interns — Blaze,
+          Rendo, Promptly, Synapse, Hush or Cache. Any tool works. Post it on X, tag
+          @InternburnHQ, and the top 5 entries win tokenized stock rewards.
         </Reveal>
         <Reveal delay={0.15}>
           <LiveBurnStrip />
@@ -234,17 +233,17 @@ export default function BurnToCreateView() {
           <StepCard
             n="01"
             title="Burn"
-            body="Burn $INTERN through Video Credits for a real, spend-capped generation credit — same live flow the site already runs on."
+            body="Buy back and burn at least $5 of $INTERN — through Video Credits on the site, or by sending it to the dead address. Keep the transaction hash."
           />
           <StepCard
             n="02"
             title="Create"
-            body="Generate a real video with Blaze, Rendo, Promptly, or Synapse — or skip the character entirely with a fully custom prompt."
+            body="Make any video that features our interns. Any tool, any style — but the intern has to be in it to be eligible."
           />
           <StepCard
             n="03"
             title="Submit"
-            body={`Post it (X is safest -- generation links can expire) and submit the link below with the wallet that burned for it. Entries close ${ROUND2_END}.`}
+            body={`Post it on X, tag @InternburnHQ with your wallet and burn transaction, then submit the link below. Entries close ${ROUND3_END}.`}
           />
         </motion.div>
       </section>
@@ -254,32 +253,36 @@ export default function BurnToCreateView() {
           THE PRIZE
         </Reveal>
         <Reveal as="h2" delay={0.05} className="text-2xl font-semibold mb-3">
-          Real burn match, tiered by placement.
+          Top 5 win tokenized stocks.
         </Reveal>
         <Reveal as="p" delay={0.08} className="text-[var(--color-muted)] text-sm leading-relaxed max-w-2xl mb-6">
-          The team still judges by hand, on creativity and quality — same as always. What changes
-          is the payout once the top 3 are picked: whatever $INTERN you burned to make your entry
-          gets multiplied and sent back to your wallet, on-chain, from the founder wallet.
+          The prize pool is 0.5% of everything entrants burn during the round, so the more the
+          community burns, the bigger it gets. It is split 40 / 25 / 15 / 10 / 10 across the top
+          5 and paid in the tokenized stock of your choice — TSLA, NVDA, SPCX or BE. Places unlock
+          as the pool grows: 1st only under $25, the top 3 up to $99, the top 5 from $100. The
+          team still judges by hand, on creativity, how well the interns are used, and reach.
         </Reveal>
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
           variants={staggerContainer}
-          className="grid sm:grid-cols-3 gap-6 max-w-2xl"
+          className="grid grid-cols-2 sm:grid-cols-5 gap-4 max-w-3xl"
         >
-          <StepCard n="1ST" title="5x burn match" body="Whatever you burned to make your entry, multiplied by 5 and sent back." />
-          <StepCard n="2ND" title="4x burn match" body="Whatever you burned to make your entry, multiplied by 4 and sent back." />
-          <StepCard n="3RD" title="3x burn match" body="Whatever you burned to make your entry, multiplied by 3 and sent back." />
+          <StepCard n="1ST" title="40%" body="of the pool" />
+          <StepCard n="2ND" title="25%" body="of the pool" />
+          <StepCard n="3RD" title="15%" body="of the pool" />
+          <StepCard n="4TH" title="10%" body="of the pool" />
+          <StepCard n="5TH" title="10%" body="of the pool" />
         </motion.div>
         <Reveal delay={0.1} className="text-[var(--color-muted)] text-sm leading-relaxed max-w-2xl mt-6">
-          Standout entries outside the top 3 also get pinned on X and Telegram, credited by name or
+          Standout entries outside the top 5 also get pinned on X and Telegram, credited by name or
           handle. And separately from this contest: the moment $INTERN crosses{" "}
           <Link href="/genesis" className="text-[var(--color-accent)] hover:underline">
             $1,000,000 in real cumulative trading volume
           </Link>
           , 500 Genesis Intern NFTs unlock for anyone to mint — one more reason every burn here
-          helps everyone, not just the top 3.
+          helps everyone, not just the top 5.
         </Reveal>
       </section>
 
@@ -305,7 +308,11 @@ export default function BurnToCreateView() {
               Judged by the team on creativity and quality, not entry volume — manual and
               subjective, because there isn&apos;t a fair automated way to do it yet.
             </li>
-            <li>One entry per wallet counts toward winning — only your best entry is judged.</li>
+            <li>One entry per wallet counts toward winning — only your best entry is judged. One prize per person: wallets that pass tokens between each other count as one entrant.</li>
+            <li>
+              A $5 minimum burn applies, and the prize pool is 0.5% of the $INTERN burned by
+              entrants during the round, valued at the time of each burn.
+            </li>
             <li>
               This is a promotional contest, not an investment: winning doesn&apos;t imply anything
               about $INTERN&apos;s future price, and entering doesn&apos;t either.
@@ -320,13 +327,13 @@ export default function BurnToCreateView() {
 
       <section className="px-6 pb-24 max-w-4xl mx-auto w-full">
         <Reveal as="p" className="font-mono text-xs text-[var(--color-muted-2)] tracking-widest mb-3">
-          ROUND 1 RECAP
+          PREVIOUS ROUNDS
         </Reveal>
         <Reveal className="border border-[var(--color-line)] rounded-2xl p-6">
           <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-            Round 1 (Sep 7–11, 2026) closed early, on purpose, when Pair.fund&apos;s trading route
-            broke for days — every entry already in was still honored in full, including the 5x
-            burn match, paid on-chain from the founder wallet exactly as promised.
+            Round 1 (Sep 7–11, 2026) matched every entry&apos;s burn on-chain as promised. Round 2
+            entries already submitted are still judged under Round 2&apos;s terms; Round 3 above
+            replaces it for everything new.
           </p>
         </Reveal>
       </section>
