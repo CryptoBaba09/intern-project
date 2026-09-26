@@ -7,6 +7,7 @@ import Footer from "./components/Footer";
 import CursorGlow from "./components/CursorGlow";
 import SpaceField from "./components/SpaceField";
 import FloatingMascots from "./components/FloatingMascots";
+import { Analytics } from "@vercel/analytics/next";
 
 // Real bug found during an SEO/social-sharing audit (2026-09-07): this was
 // still the old Vercel preview URL from before internburn.xyz was live.
@@ -151,6 +152,7 @@ export default function RootLayout({ children }) {
           {children}
           <Footer />
         </Web3Provider>
+        <Analytics />
       </body>
     </html>
   );
