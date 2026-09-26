@@ -34,9 +34,8 @@ export default function MigrateView() {
         delay={0.1}
         className="text-[var(--color-muted)] text-base leading-relaxed mb-10"
       >
-        $INTERN moved to Pons on 2026-09-10 after Pair.fund&apos;s trading
-        route broke. If you held or staked the old (v1) token before then,
-        swap it here for the real, live v2 token — fixed 1:1, enforced by
+        $INTERN v2 trades on Pons. If you held or staked the old (v1) token
+        before the move, swap it here for the live v2 token — fixed 1:1, enforced by
         the contract, not a quote. If you still have v1 staked in the old
         contract, this walks you through unstaking it first.
       </Reveal>

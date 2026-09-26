@@ -1,9 +1,9 @@
 import BurnToCreateView from "./BurnToCreateView";
 
 export const metadata = {
-  title: "Burn to Create",
+  title: "Burn to Create — Round 3",
   description:
-    "Round 2 is live. Burn $INTERN for real video-generation credit, animate any of the four crew, and submit your entry. Winners get a treasury-funded credit top-up, picked by hand.",
+    "Round 3 is live until Oct 3. Burn $INTERN, make a video with any of our interns, tag @InternburnHQ, and the top 5 entries win tokenized stock.",
 };
 
 export default function BurnToCreatePage() {

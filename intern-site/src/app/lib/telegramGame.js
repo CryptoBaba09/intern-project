@@ -22,12 +22,12 @@ export const TRIVIA_QUESTIONS = [
   { q: "What AI credit provider does Promptly's top-up key work with?", a: ["openrouter"] },
   { q: "What chain does $INTERN live on?", a: ["robinhood", "robinhood chain"] },
   { q: "True or false: burning $INTERN calls a real burn() function that reduces totalSupply().", a: ["false"] },
-  { q: "True or false: v2 $INTERN staking is live and accepting new stakers.", a: ["false"] },
+  { q: "True or false: v2 $INTERN staking is live and accepting new stakers.", a: ["true"] },
   { q: "True or false: Rendo's video generation is burn-based, not stake-gated.", a: ["true"] },
   { q: "True or false: the burn/distribute/treasury split is fully automatic today.", a: ["false"] },
   { q: "Which intern's role is 'Research Intern'?", a: ["synapse"] },
   { q: "How many chains can you swap into $INTERN from via $interndex? (Robinhood Chain + how many others)", a: ["3", "three"] },
-  { q: "What was $INTERN's DEX before it migrated to Pons?", a: ["pair", "pair.fund"] },
+  { q: "Which platform does $INTERN v2 trade on?", a: ["pons"] },
 ];
 
 // On-brand promotion ladder instead of a bare score number -- fits the

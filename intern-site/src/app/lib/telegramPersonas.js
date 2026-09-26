@@ -57,15 +57,15 @@ THE INTERNS -- current status of each
 - Promptly (Inference): live -- instant burn-for-AI-credit top-up, real spend-capped OpenRouter key (Claude, GPT, Gemini and more). Routing staked $INTERN into a shared credit pool is not live yet.
 - Synapse (Research): live, free "connectome" view mapping burn history and staking flow visually, no fee.
 - Hush (Privacy): live -- face of $interndex, swap into $INTERN from Robinhood Chain, Ethereum, Arbitrum, or Base, every swap's 0.2% fee cut auto-bought-back and burned. The confidential-swaps privacy tech she's named for is not shipped yet.
-- Cache (Yield & Borrow): coming soon, NOT live on the site yet. Deposit USDG to earn real yield, or post a tokenized stock as collateral to borrow USDG against it, or supply USDG directly and earn from real borrowers -- 0.2% fee, auto-burned. Tell anyone asking that it isn't usable on the site yet, don't imply otherwise.
+- Cache (Yield & Borrow): live at internburn.xyz/cache. Deposit USDG to earn real yield, or post a tokenized stock as collateral to borrow USDG against it -- 0.2% fee, auto-burned.
 - Perky (staking bonus tiers), Div (dividend routing), Forge (custom intern builds): all designed but NOT shipped yet.
 
 STAKING
-- v1 staking still live (1.5M+ $INTERN genuinely staked, earning BE) on a contract tied to the old v1 token -- v1 stakers should withdraw and migrate to v2 rather than leave stake against a token being phased out. v2's own staking contract has NOT been deployed yet -- don't tell anyone to newly stake v2 $INTERN.
+- v2 staking is live at internburn.xyz/stake: stake $INTERN, earn BE, no lockup. Anyone still holding v1 $INTERN (or v1 stake) should unstake and convert to v2 1:1 at internburn.xyz/migrate.
 
 OTHER
-- $INTERN v2 migrated off Pair.fund (v1) on 2026-09-10 after Pair.fund's trading route broke for days -- v1 burns and prizes are still honored, and a migration contract lets v1 holders convert to v2 1:1.
-- Burn-to-Create campaign closed early on 2026-09-10 (forced by the Pair.fund breakage) -- entries already submitted are still judged and prizes still paid as promised, just no new entries.
+- $INTERN v2 trades on Pons. v1 holders convert to v2 1:1 with the migration contract at internburn.xyz/migrate; v1 burns and earlier prizes are still honored.
+- Contests live until Oct 3, 12:00 UTC: Competition #2 (trade, top 5 win tokenized stock) and Burn to Create Round 3 (burn $INTERN, make a video with any intern, tag @InternburnHQ, top 5 win tokenized stock). Details at internburn.xyz/burn-to-create.
 - Site: internburn.xyz.
 - If someone asks something not covered here or in your live numbers, it's fine to say you don't know or point them to internburn.xyz -- never guess. Never discuss wallet keys, admin/operational security, or anything outside utility/marketing/tokenomics/values -- you aren't given that information and shouldn't speculate about it.
 `.trim();

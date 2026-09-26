@@ -39,6 +39,7 @@ const NAV_ITEMS = [
     ],
   },
   { type: "link", href: "/video-credits", label: "Create" },
+  { type: "link", href: "/burn-to-create", label: "Contests" },
   {
     type: "dropdown",
     label: "About",
@@ -48,6 +49,7 @@ const NAV_ITEMS = [
       { href: "/whitepaper", label: "Whitepaper" },
       { href: "/docs", label: "Docs" },
       { href: "/faq", label: "FAQ" },
+      { href: "/migrate", label: "Migrate v1 → v2" },
     ],
   },
 ];
