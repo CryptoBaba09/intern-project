@@ -1,0 +1,34 @@
+<meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;}
+  .stage{
+    width:1200px;height:675px;background:#0B0C0B;
+    position:relative;overflow:hidden;font-family:Arial,sans-serif;
+    background-image: radial-gradient(ellipse 700px 500px at 15% 85%, rgba(0,200,5,0.10), transparent 70%);
+  }
+  .eyebrow{
+    position:absolute;top:56px;left:70px;
+    font-family:ui-monospace,monospace;font-size:17px;color:#00C805;letter-spacing:0.14em;
+  }
+  h1{
+    position:absolute;top:92px;left:70px;width:900px;
+    font-size:48px;font-weight:800;line-height:1.15;margin:0;color:#EDEEF0;
+  }
+  .list{position:absolute;top:250px;left:70px;width:1060px;display:flex;flex-direction:column;gap:14px;}
+  .item{display:flex;align-items:center;gap:18px;border:1px solid #1B1D1B;border-radius:14px;padding:16px 22px;background:#0F1113;}
+  .status{font-family:ui-monospace,monospace;font-size:12px;border-radius:999px;padding:5px 12px;white-space:nowrap;}
+  .live{color:#00C805;border:1px solid rgba(0,200,5,0.35);}
+  .design{color:#D9A441;border:1px solid rgba(217,164,65,0.35);}
+  .name{font-size:20px;color:#EDEEF0;font-weight:700;width:280px;}
+  .desc{font-size:15px;color:#9BA1A6;}
+</style>
+<div class="stage">
+  <div class="eyebrow">$INTERN ROADMAP</div>
+  <h1>One token, more than one job.</h1>
+  <div class="list">
+    <div class="item"><span class="status live">LIVE</span><span class="name">Autonomous burn engine</span><span class="desc">Claims fees, burns 70% automatically — no deploy step.</span></div>
+    <div class="item"><span class="status live">LIVE</span><span class="name">Staking → BE yield</span><span class="desc">Time-weighted, streamed rewards from every fee claim.</span></div>
+    <div class="item"><span class="status design">IN DESIGN</span><span class="name">Genesis Interns (NFTs)</span><span class="desc">500 supply, unlocks at $1M in real trading volume.</span></div>
+    <div class="item"><span class="status design">IN DESIGN</span><span class="name">Inference credits</span><span class="desc">Staked $INTERN earns real LLM credit — Claude, GPT, Gemini.</span></div>
+  </div>
+</div>

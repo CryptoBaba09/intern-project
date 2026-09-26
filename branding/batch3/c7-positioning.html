@@ -1,0 +1,43 @@
+<meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;}
+  .stage{
+    width:1200px;height:675px;background:#0B0C0B;
+    position:relative;overflow:hidden;font-family:Arial,sans-serif;
+    background-image: radial-gradient(ellipse 650px 500px at 85% 30%, rgba(0,200,5,0.12), transparent 70%);
+  }
+  .eyebrow{position:absolute;top:60px;left:70px;font-family:ui-monospace,monospace;font-size:16px;color:#00C805;letter-spacing:0.14em;}
+  h1{position:absolute;top:96px;left:70px;width:1000px;font-size:48px;font-weight:800;line-height:1.15;margin:0;color:#EDEEF0;}
+  .body{position:absolute;top:260px;left:70px;width:640px;font-size:19px;color:#9BA1A6;line-height:1.55;}
+  .content{position:absolute;top:260px;left:70px;width:1060px;}
+  .footer{position:absolute;bottom:56px;left:70px;font-family:ui-monospace,monospace;font-size:15px;color:#00C805;}
+  .row{display:flex;gap:14px;flex-wrap:wrap;}
+  .chip{font-family:ui-monospace,monospace;font-size:14px;color:#EDEEF0;border:1px solid #1B1D1B;border-radius:10px;padding:12px 18px;background:#0F1113;}
+  .chip b{color:#00C805;}
+  .check{display:flex;align-items:center;gap:12px;font-size:17px;color:#EDEEF0;margin-bottom:12px;}
+  .check .mark{color:#00C805;font-weight:800;width:22px;}
+  .cross{display:flex;align-items:center;gap:12px;font-size:17px;color:#4A4F54;margin-bottom:12px;}
+  .cross .mark{color:#4A4F54;font-weight:800;width:22px;}
+  .cols{display:flex;gap:60px;}
+  .col{width:460px;}
+  .col h3{font-family:ui-monospace,monospace;font-size:14px;letter-spacing:0.06em;margin:0 0 16px;}
+</style>
+<div class="stage">
+  <div class="eyebrow">MOST MEMECOINS VS $INTERN</div>
+  <h1>Vibes are easy. Mechanics are the hard part.</h1>
+  <div class="cols" style="position:absolute;top:250px;left:70px;">
+    <div class="col">
+      <h3 style="color:#4A4F54;">TYPICAL MEMECOIN</h3>
+      <div class="cross"><span class="mark">&times;</span> Roadmap is a promise</div>
+      <div class="cross"><span class="mark">&times;</span> "Utility" is a Discord role</div>
+      <div class="cross"><span class="mark">&times;</span> Burns are a marketing screenshot</div>
+    </div>
+    <div class="col">
+      <h3 style="color:#00C805;">$INTERN</h3>
+      <div class="check"><span class="mark">&#10003;</span> Staking + trading, live today</div>
+      <div class="check"><span class="mark">&#10003;</span> Utility is a deployed contract</div>
+      <div class="check"><span class="mark">&#10003;</span> Burns are on-chain, checkable now</div>
+    </div>
+  </div>
+  <div class="footer">internburn.xyz</div>
+</div>
